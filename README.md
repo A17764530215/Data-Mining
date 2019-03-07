@@ -9,7 +9,7 @@ Code for paper: [Multi-task least squares twin support vector machine for classi
 * PSVM: Proximal support vector machine
 * TWSVM: Twin support vector machine
 * LS-TWSVM: Least squares twin support vector machine
-* \nu-TWSVM: \nu Twin support vector machine
+* $\nu$-TWSVM: $\nu$ Twin support vector machine
 ## Multi-task learning
 * RMTL: Regularized multi-task learning
 * MTLS-SVM: Multi-task least squares support vector machine
