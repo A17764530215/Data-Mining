@@ -17,17 +17,17 @@ for i = 1 : n
     Params.solver = opts.solver;
     tic;
     [ H2 ] = GetHessian(X, Y, TaskNum, Params);
-    b = EqualsTo(Params, LastParams);
-    if i == 1 || ~empty(b)
+    if i == 1
         % solve the first problem
         [ Alpha{i} ] = IRMTL(H2, Params);
     else
         % solve the rest problem
+        b = EqualsTo(Params, LastParams);
         switch(b)
-            case 1 % C有变化
-                [ Alpha{i} ] = SSR_C(H2, Alpha{i-1}, Params, LastParams);
-            case {2,3} % mu和p有变化
+            case 1 % C无变化，mu和p有变化
                 [ Alpha{i} ] = SSR_P_MU(H1, H2, Alpha{i-1}); 
+            case {2,3} % mu和p无变化，C有变化
+                [ Alpha{i} ] = SSR_C(H2, Alpha{i-1}, Params, LastParams);
             otherwise
                 throw(MException('SSR_IRMTL','error in solve the rest problem'));
         end
@@ -44,13 +44,13 @@ end
         k1 = p1.kernel;
         k2 = p2.kernel;
         if strcmp(k1.kernel, 'rbf') && strcmp(k2.kernel, 'rbf')
-            b1 = k1.p1 == k2.p1 && p1.mu == p2.mu;% C 有变化
-            b2 = k1.p1 == k2.p1 && p1.C == p2.C;% mu 有变化
-            b3 = p1.C == p2.C && p1.mu == p2.mu;% p1 有变化
+            b1 = k1.p1 ~= k2.p1 && p1.mu ~= p2.mu;% C 无变化
+            b2 = k1.p1 ~= k2.p1 && p1.C ~= p2.C;% mu 无变化
+            b3 = p1.C ~= p2.C && p1.mu ~= p2.mu;% p1 无变化
         else
-            b1 = p1.mu == p2.mu;% C 有变化
-            b2 = p1.C == p2.C;% mu 有变化
-            b3 = 0;% p1 无变化
+            b1 = p1.mu ~= p2.mu;% C 无变化
+            b2 = p1.C ~= p2.C;% mu 无变化
+            b3 = 1;% p1 无变化
         end
         b = find([b1, b2, b3] == 1);
     end
