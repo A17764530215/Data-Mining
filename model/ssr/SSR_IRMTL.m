@@ -17,13 +17,20 @@ for i = 1 : n
     Params.solver = opts.solver;
     tic;
     [ H2 ] = GetHessian(X, Y, TaskNum, Params);
-    if i == 1 ||  ~EqualsTo(Params, LastParams)
+    b = EqualsTo(Params, LastParams);
+    if i == 1 || ~empty(b)
         % solve the first problem
         [ Alpha{i} ] = IRMTL(H2, Params);
     else
         % solve the rest problem
-%         [ Alpha{i} ] = SSR1(H1, H2, Alpha{i-1});
-        [ Alpha{i} ] = SSR2(H2, Alpha{i-1}, Params, LastParams);
+        switch(b)
+            case 1 % C有变化
+                [ Alpha{i} ] = SSR1(H1, H2, Alpha{i-1}); 
+            case {2,3} % mu和p有变化
+                [ Alpha{i} ] = SSR2(H2, Alpha{i-1}, Params, LastParams);
+            otherwise
+                throw(MException('SSR_IRMTL','error in solve the rest problem'));
+        end
         [ Alpha{i}, CVRate(i,1) ] = Reduced_IRMTL(H2, Alpha{i}, Params);
     end
     CVTime(i, 1) = toc;
@@ -37,13 +44,15 @@ end
         k1 = p1.kernel;
         k2 = p2.kernel;
         if strcmp(k1.kernel, 'rbf') && strcmp(k2.kernel, 'rbf')
-            b1 = k1.p1 == k2.p1 && p1.C == p2.C;
-            b2 = k1.p1 == k2.p1 && p1.mu == p2.mu;
-            b3 = p1.C == p1.C && p1.mu == p2.mu;
-            b = b2;
+            b1 = k1.p1 == k2.p1 && p1.mu == p2.mu;% C 有变化
+            b2 = k1.p1 == k2.p1 && p1.C == p2.C;% mu 有变化
+            b3 = p1.C == p2.C && p1.mu == p2.mu;% p1 有变化
         else
-            b = p1.mu == p2.mu;
+            b1 = p1.mu == p2.mu;% C 有变化
+            b2 = p1.C == p2.C;% mu 有变化
+            b3 = 0;% p1 无变化
         end
+        b = find([b1, b2, b3] == 1);
     end
 
 %% Predict
@@ -59,12 +68,12 @@ end
             Ht = Kernel([xTest{t}, et], X, opts.kernel);
             y0 = predict(Ht, Y, Alpha);
             yt = predict(Ht(:,Tt), Y(Tt,:), Alpha(Tt,:));
-            y = sign(y0/mu + yt);
+            y = sign(mu*y0 + yt);
             y(y==0) = 1;
             yTest{t} = y;
         end
         
-        Rate = mean(Alpha == 0 | Alpha == C);
+        Rate = mean((Alpha < 1e-5) | (abs(Alpha - C)<1e-5));
         
             function [ y ] = predict(H, Y, Alpha)
                 svi = Alpha~=0;
@@ -132,7 +141,7 @@ end
             Tt = T==t;
             P = blkdiag(P, Q(Tt,Tt));
         end
-        H = Cond(Q/opts.mu + P);
+        H = Cond(opts.mu*Q + P);
         H = symmetric(H);
     end
 end

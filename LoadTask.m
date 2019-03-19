@@ -20,19 +20,20 @@ IParams = CreateParams(CParams{12});
 Params = struct2cell(IParams)';
 Result = cell(54, 1);
 State = zeros(54, 8);
-Error = cell(54, 1);
+Error = zeros(54, 8);
+I = 1009:1728;
 for i = [1:54]
     D = DataSets(i);
     A = load(['IRMTL-', D.Name,'.mat']);
     B = load(['SSR_IRMTL-', D.Name,'.mat']);
-    T = mean(A.CVTime-B.CVTime, 1)/mean(A.CVTime(:,1));
-    C = permute(A.CVStat(:,1,:)==B.CVStat(:,1,:), [1 3 2]);
+    T = mean(A.CVTime(I,:)-B.CVTime(I,:), 1)/mean(A.CVTime(:,1));
+    C = permute(A.CVStat(I,1,:)==B.CVStat(I,1,:), [1 3 2]);
     % Result
-    IDX = B.CVRate>0;
+    IDX = B.CVRate(I,:)>0;
     cnt = sum(IDX, 1);
-    avg0 = mean(B.CVRate, 1);
-    avg1 = sum(B.CVRate, 1)./cnt;
-    Result{i} = [mean([A.CVStat(:,1,:), B.CVStat(:,1,:)], 3), B.CVRate];
+    avg0 = mean(B.CVRate(I,:), 1);
+    avg1 = sum(B.CVRate(I,:), 1)./cnt;
+    Result{i} = [mean([A.CVStat(I,1,:), B.CVStat(I,1,:)], 3), B.CVRate(I,:)];
     if mean(C(:)) == 1
         fprintf('Success: %d\n', i);
         State(i,:) = [cnt, avg0(:,1)/avg0(:,2), avg0, avg1, T(1)];
