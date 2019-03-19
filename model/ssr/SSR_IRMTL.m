@@ -25,9 +25,9 @@ for i = 1 : n
         % solve the rest problem
         switch(b)
             case 1 % C有变化
-                [ Alpha{i} ] = SSR1(H1, H2, Alpha{i-1}); 
+                [ Alpha{i} ] = SSR_C(H2, Alpha{i-1}, Params, LastParams);
             case {2,3} % mu和p有变化
-                [ Alpha{i} ] = SSR2(H2, Alpha{i-1}, Params, LastParams);
+                [ Alpha{i} ] = SSR_P_MU(H1, H2, Alpha{i-1}); 
             otherwise
                 throw(MException('SSR_IRMTL','error in solve the rest problem'));
         end
@@ -91,7 +91,7 @@ end
     end
 
 %% SSR for $\mu$, $p$, $C$
-    function [ Alpha2 ] = SSR1(H1, H2, Alpha1)
+    function [ Alpha2 ] = SSR_P_MU(H1, H2, Alpha1)
         % safe screening rules for $\mu$, $p$
         P = chol(H2, 'upper');
         LL = (H1+H2)*Alpha1/2;
@@ -102,7 +102,7 @@ end
         Alpha2(LL + RR < 1) = 1;
     end
 
-    function [ Alpha2 ] = SSR2(H2, Alpha1, Params, LastParams)
+    function [ Alpha2 ] = SSR_C(H2, Alpha1, Params, LastParams)
         C = Params.C;
         C0 = LastParams.C;
         k1 = (C+C0)/(2*C0);
@@ -145,4 +145,3 @@ end
         H = symmetric(H);
     end
 end
-
