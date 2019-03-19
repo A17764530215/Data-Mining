@@ -22,16 +22,12 @@ for i = 1 : n
         [ Alpha{i} ] = IRMTL(H2, Params);
     else
         % solve the rest problem
-        b = EqualsTo(Params, LastParams);
-        switch(b)
-            case 1 % C无变化，mu和p有变化
-                [ Alpha{i} ] = SSR_P_MU(H1, H2, Alpha{i-1}); 
-            case {2,3} % mu和p无变化，C有变化
-                [ Alpha{i} ] = SSR_C(H2, Alpha{i-1}, Params, LastParams);
-            otherwise
-                throw(MException('SSR_IRMTL','error in solve the rest problem'));
+        if idx(Params, LastParams)
+            [ Alpha{i} ] = SSR_P_MU(H1, H2, Alpha{i-1}); % C无变化
+        else
+            [ Alpha{i} ] = SSR_C(H2, Alpha{i-1}, Params, LastParams); % C有变化
         end
-        [ Alpha{i}, CVRate(i,1) ] = Reduced_IRMTL(H2, Alpha{i}, Params);
+        [ H1, Alpha{i}, CVRate(i,1) ] = Reduced_IRMTL(H2, Alpha{i}, Params);
     end
     CVTime(i, 1) = toc;
     [ y_hat, CVRate(i, 2) ] = Predict(X, Y, xTest, Alpha{i}, Params);
@@ -40,19 +36,17 @@ for i = 1 : n
 end
 
 %% Compare
-    function [ b ] = EqualsTo(p1, p2)
-        k1 = p1.kernel;
-        k2 = p2.kernel;
-        if strcmp(k1.kernel, 'rbf') && strcmp(k2.kernel, 'rbf')
-            b1 = k1.p1 ~= k2.p1 && p1.mu ~= p2.mu;% C 无变化
-            b2 = k1.p1 ~= k2.p1 && p1.C ~= p2.C;% mu 无变化
-            b3 = p1.C ~= p2.C && p1.mu ~= p2.mu;% p1 无变化
-        else
-            b1 = p1.mu ~= p2.mu;% C 无变化
-            b2 = p1.C ~= p2.C;% mu 无变化
-            b3 = 1;% p1 无变化
-        end
-        b = find([b1, b2, b3] == 1);
+    function [ b ] = idx(p1, p2)
+       % 查找无变化的参数
+       k1 = p1.kernel;
+       k2 = p2.kernel;
+       if strcmp(k1.kernel, 'rbf') && strcmp(k1.kernel, 'rbf')
+           b1 = k1.p1 == k2.p1;
+           b2 = p1.C == p2.C;
+           b3 = p1.C == p2.mu;
+           b = (b1<<2|b2<<1|b1)
+       else
+       end       
     end
 
 %% Predict
@@ -118,7 +112,9 @@ end
     end
 
 %% Reduced-RMTL
-    function [ Alpha2, Rate ] = Reduced_IRMTL(H2, Alpha2, Params)
+    function [ H1, Alpha2, Rate ] = Reduced_IRMTL(H2, Alpha2, Params)
+        % save old hessian matrix         
+        H1 = H2;
         % reduced problem
         R = Alpha2 == Inf;
         S = Alpha2 ~= Inf;
