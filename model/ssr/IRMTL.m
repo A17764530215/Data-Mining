@@ -47,6 +47,4 @@ end
         svi = Alpha~=0;
         y = H(:,svi)*(Y(svi,:).*Alpha(svi,:));
     end
-
 end
-
