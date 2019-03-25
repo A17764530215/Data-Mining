@@ -22,8 +22,8 @@ DataSets = [MTL_UCI5; Caltech5; MLC5];
 IParams = CParams;
 
 % 数据集
-DataSetIndices = [ 1:20 ];
-ParamIndices = [ 11 12 ];
+DataSetIndices = [ 2:9 1 28:54 ];
+ParamIndices = [ 1:2 ];
 
 %% 实验设置 RMTL
 solver = struct('Display', 'off');

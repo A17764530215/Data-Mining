@@ -4,7 +4,6 @@ function [  CVStat, CVTime, CVRate ] = SSR_IRMTL( xTrain, yTrain, xTest, yTest, 
 %   此处显示详细说明
 
 %% Fit
-tic;
 [ X, Y, T, ~ ] = GetAllData(xTrain, yTrain, TaskNum);
 X = [X, ones(size(Y))];
 n = GetParamsCount(IParams);
@@ -17,17 +16,14 @@ for i = 1 : n
     Params.solver = opts.solver;
     tic;
     [ H2 ] = GetHessian(X, Y, TaskNum, Params);
-    if i == 1
+    if i == 1 ||  ~EqualsTo(Params, LastParams)
         % solve the first problem
         [ Alpha{i} ] = IRMTL(H2, Params);
     else
         % solve the rest problem
-        if idx(Params, LastParams)
-            [ Alpha{i} ] = SSR_P_MU(H1, H2, Alpha{i-1}); % C无变化
-        else
-            [ Alpha{i} ] = SSR_C(H2, Alpha{i-1}, Params, LastParams); % C有变化
-        end
-        [ H1, Alpha{i}, CVRate(i,1) ] = Reduced_IRMTL(H2, Alpha{i}, Params);
+%         [ Alpha{i} ] = SSR1(H1, H2, Alpha{i-1});
+        [ Alpha{i} ] = SSR2(H2, Alpha{i-1}, Params, LastParams);
+        [ Alpha{i}, CVRate(i,1) ] = Reduced_IRMTL(H2, Alpha{i}, Params);
     end
     CVTime(i, 1) = toc;
     [ y_hat, CVRate(i, 2) ] = Predict(X, Y, xTest, Alpha{i}, Params);
@@ -36,17 +32,17 @@ for i = 1 : n
 end
 
 %% Compare
-    function [ b ] = idx(p1, p2)
-       % 查找无变化的参数
-       k1 = p1.kernel;
-       k2 = p2.kernel;
-       if strcmp(k1.kernel, 'rbf') && strcmp(k1.kernel, 'rbf')
-           b1 = k1.p1 == k2.p1;
-           b2 = p1.C == p2.C;
-           b3 = p1.C == p2.mu;
-           b = (b1<<2|b2<<1|b1)
-       else
-       end       
+    function [ b ] = EqualsTo(p1, p2)
+        k1 = p1.kernel;
+        k2 = p2.kernel;
+        if strcmp(k1.kernel, 'rbf') && strcmp(k2.kernel, 'rbf')
+            b1 = k1.p1 == k2.p1 && p1.C == p2.C;
+            b2 = k1.p1 == k2.p1 && p1.mu == p2.mu;
+            b3 = p1.C == p1.C && p1.mu == p2.mu;
+            b = b2;
+        else
+            b = p1.mu == p2.mu;
+        end
     end
 
 %% Predict
@@ -62,12 +58,12 @@ end
             Ht = Kernel([xTest{t}, et], X, opts.kernel);
             y0 = predict(Ht, Y, Alpha);
             yt = predict(Ht(:,Tt), Y(Tt,:), Alpha(Tt,:));
-            y = sign(mu*y0 + yt);
+            y = sign(y0/mu + yt);
             y(y==0) = 1;
             yTest{t} = y;
         end
         
-        Rate = mean((Alpha < 1e-5) | (abs(Alpha - C)<1e-5));
+        Rate = mean(abs(Alpha)<1e-7 | abs(Alpha-C)<1e-7);
         
             function [ y ] = predict(H, Y, Alpha)
                 svi = Alpha~=0;
@@ -85,7 +81,7 @@ end
     end
 
 %% SSR for $\mu$, $p$, $C$
-    function [ Alpha2 ] = SSR_P_MU(H1, H2, Alpha1)
+    function [ Alpha2 ] = SSR1(H1, H2, Alpha1)
         % safe screening rules for $\mu$, $p$
         P = chol(H2, 'upper');
         LL = (H1+H2)*Alpha1/2;
@@ -96,7 +92,7 @@ end
         Alpha2(LL + RR < 1) = 1;
     end
 
-    function [ Alpha2 ] = SSR_C(H2, Alpha1, Params, LastParams)
+    function [ Alpha2 ] = SSR2(H2, Alpha1, Params, LastParams)
         C = Params.C;
         C0 = LastParams.C;
         k1 = (C+C0)/(2*C0);
@@ -112,9 +108,7 @@ end
     end
 
 %% Reduced-RMTL
-    function [ H1, Alpha2, Rate ] = Reduced_IRMTL(H2, Alpha2, Params)
-        % save old hessian matrix         
-        H1 = H2;
+    function [ Alpha2, Rate ] = Reduced_IRMTL(H2, Alpha2, Params)
         % reduced problem
         R = Alpha2 == Inf;
         S = Alpha2 ~= Inf;
@@ -137,7 +131,7 @@ end
             Tt = T==t;
             P = blkdiag(P, Q(Tt,Tt));
         end
-        H = Cond(opts.mu*Q + P);
+        H = Cond(Q/opts.mu + P);
         H = symmetric(H);
     end
 end

@@ -4,7 +4,6 @@ function [ CVStat, CVTime, CVRate ] = SSR_RMTL( xTrain, yTrain, xTest, yTest, Ta
 %   此处显示详细说明
 
 %% Fit
-tic;
 [ X, Y, T, ~ ] = GetAllData(xTrain, yTrain, TaskNum);
 X = [X, ones(size(Y))];
 n = GetParamsCount(IParams);
@@ -41,7 +40,6 @@ end
             Tt = T==t;
             et = ones(size(xTest{t}, 1), 1);
             Ht = Kernel([xTest{t}, et], X, opts.kernel);
-%             Ht = Kernel(xTest{t}, X, opts.kernel);
             y0 = predict(Ht, Y, Alpha);
             yt = predict(Ht(:,Tt), Y(Tt,:), Alpha(Tt,:));
             y = sign(mu*y0 + nu*yt);
@@ -49,7 +47,7 @@ end
             yTest{t} = y;
         end
         
-        Rate = mean(Alpha == 0 | Alpha == 1);
+        Rate = mean(abs(Alpha)<1e-7 | abs(Alpha-1)<1e-7);
         
             function [ y ] = predict(H, Y, Alpha)
                 svi = Alpha~=0;
@@ -71,7 +69,7 @@ end
         P = chol(H2, 'upper');
         LL = (H1+H2)*Alpha1/2;
         RL = sqrt(sum(P.*P, 1))';
-        RR = RL*norm(P'\(H1*Alpha1)+P*Alpha1);
+        RR = RL*(norm((P'\(H1*Alpha1)+P*Alpha1)));
         Alpha2 = Inf(size(Alpha1));
         Alpha2(LL - RR > 1) = 0;
         Alpha2(LL + RR < 1) = 1;
