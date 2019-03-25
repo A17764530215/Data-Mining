@@ -1,4 +1,4 @@
-function [ yTest, Time ] = DMTSVM( xTrain, yTrain, xTest, opts )
+function [ yTest, Time, Rate ] = DMTSVM( xTrain, yTrain, xTest, opts )
 %DMTSVM 此处显示有关此函数的摘要
 % Multi-Task Twin Support Vector Machine
 %   此处显示详细说明
@@ -66,6 +66,7 @@ for t = 1 : TaskNum
     V{t} = v + FFEc{t}*(1/lambda*CGamma{t});
 end
 Time = toc;
+Rate = mean([Alpha==0|Alpha==C1; Gamma==0|Gamma==C2]);
     
 %% Predict
 TaskNum = length(xTest);
