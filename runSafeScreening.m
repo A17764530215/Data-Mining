@@ -23,15 +23,15 @@ IParams = SParams;
 
 % 数据集
 DataSetIndices = [ 2:9 1 28:54 ];
-ParamIndices = [ 3:5 ];
+ParamIndices = [ 3:4 ];
 
 %% 实验设置 RMTL
 solver = struct('Display', 'off');
 opts = InitOptions('clf', 0, solver, 0, 3);
 fd = fopen(['./log/log-', datestr(now, 'yyyymmddHHMM'), '.txt'], 'w');
 
-profile clear;
-profile on;
+% profile clear;
+% profile on;
 % 实验开始
 fprintf('runGridSearch\n');
 for i = DataSetIndices
@@ -63,6 +63,6 @@ for i = DataSetIndices
     end
 end
 fclose(fd);
-profile viewer;
-p = profile('info');
-profsave(p, 'profile_results');
+% profile viewer;
+% p = profile('info');
+% profsave(p, 'profile_results');
