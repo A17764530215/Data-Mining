@@ -1,13 +1,11 @@
-function [ BestParam, Accuracy, Result, L, R ] = GetBestParam(CParams, CVStat, x, y)
+function [ BestParam, Accuracy, Result, L, R ] = GetBestParam(CParams, Result, Stat, INDICES, x, y)
 %GETBESTPARAM 此处显示有关此函数的摘要
 % 得到最佳参数
 %   此处显示详细说明
 
 %%
-INDICES = {'Accuracy', 'Precision', 'Recall', 'F1'};
-Stat = mean(CVStat, 3);
 for i = 1:length(Result)
-    for j = 1: 4
+    for j = 1: length(INDICES)
         Result(i).(INDICES{j}) = Stat(i, j);
     end
 end
@@ -20,7 +18,7 @@ Ny = length(Y);
 count = Nx*Ny;
 L = floor(IDX(1)/count)*count+1;
 R = ceil(IDX(1)/count)*count;
-Z = reshape([Result(L:R).Accuracy]', Ny, Nx);
+Z = reshape([Result(L:R).(INDICES{1})]', Ny, Nx);
 surf(X, Y, Z);
 BestParam = Result(IDX(1));
 end

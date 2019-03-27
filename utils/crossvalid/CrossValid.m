@@ -3,7 +3,7 @@ function [ OStat, TStat ] = CrossValid( Learner, X, Y, TaskNum, Kfold, ValInd, P
 % 多任务交叉验证
 %   此处显示详细说明
 
-    CVStat = zeros(Kfold, opts.IndexCount, TaskNum);
+    CVStat = zeros(Kfold, 2*opts.IndexCount, TaskNum);
     CVTime = zeros(Kfold, 1);
     for j = 1 : Kfold
         fprintf('CrossValid: %d\n', j);

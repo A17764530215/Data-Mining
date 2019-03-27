@@ -16,13 +16,13 @@ load('MTL_UCI5.mat');
 load('MLC5.mat');
 
 DataSets = [MTL_UCI5; Caltech5; MLC5];
-IParams = CreateParams(CParams{4});
+IParams = CreateParams(CParams{15});
 Params = struct2cell(IParams)';
 Result = cell(54, 1);
 State = zeros(54, 9);
 Error = zeros(54, 8);
-I = [ 1:1728 ];
-for i = [ 2:9 1 28:54 ]
+I = [ 1:852 ];
+for i = [ 2:9 ]
     D = DataSets(i);
     A = load(['IRMTL-', D.Name,'.mat']);
     B = load(['SSR_IRMTL-', D.Name,'.mat']);

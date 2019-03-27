@@ -23,7 +23,7 @@ IParams = CParams;
 
 % 数据集
 DataSetIndices = [ 2:9 1 28:54 ];
-ParamIndices = [ 1:2 ];
+ParamIndices = [ 15:16 ];
 
 %% 实验设置 RMTL
 solver = struct('Display', 'off');

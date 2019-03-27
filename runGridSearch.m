@@ -1,3 +1,10 @@
+% 添加搜索路径
+addpath(genpath('./datasets'));
+addpath(genpath('./params'));
+addpath(genpath('./model'));
+addpath(genpath('./utils'));
+
+%% 加载数据集和网格搜索参数
 clc
 clear
 
@@ -6,13 +13,6 @@ if exist(Path, 'dir') == 0
     mkdir(Path);
 end
 
-% 添加搜索路径
-addpath(genpath('./datasets'));
-addpath(genpath('./params'));
-addpath(genpath('./model'));
-addpath(genpath('./utils'));
-
-%% 加载数据集和网格搜索参数
 load('MTL_UCI5.mat');
 load('LabCParams.mat');
 
@@ -20,7 +20,7 @@ DataSets = MTL_UCI5;
 IParams = CParams;
 
 % 数据集
-DataSetIndices = [10:17];
+DataSetIndices = [ 2:9 1 ];
 ParamIndices = [ 9 ];
 
 %% 实验设置
