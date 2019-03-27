@@ -20,8 +20,7 @@ for i = 1 : n
         [ Alpha{i} ] = IRMTL(H2, Params);
     else
         % solve the rest problem
-%         [ Alpha{i} ] = SSR1(H1, H2, Alpha{i-1});
-        [ Alpha{i} ] = SSR2(H2, Alpha{i-1}, Params, LastParams);
+        [ Alpha{i} ] = SSR_C(H2, Alpha{i-1}, Params, LastParams);
         [ Alpha{i}, CVRate(i,1) ] = Reduced_IRMTL(H2, Alpha{i}, Params);
     end
     CVTime(i, 1) = toc;
@@ -76,7 +75,7 @@ end
     end
 
 %% SSR for $C$
-    function [ Alpha2 ] = SSR2(H2, Alpha1, Params, LastParams)
+    function [ Alpha2 ] = SSR_C(H2, Alpha1, Params, LastParams)
         C = Params.C;
         C0 = LastParams.C;
         k1 = (C+C0)/(2*C0);

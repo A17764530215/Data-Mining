@@ -7,10 +7,10 @@ addpath(genpath('./params'));
 addpath(genpath('./utils'));
 
 % 实验设置
-opts = InitOptions('clf', 1, [], 0, 2);
+opts = InitOptions('clf', 1, [], 0, 3);
 % 核函数
 types = {'classify', 'regression', 'ssr'};
-type = types{1};
+type = types{3};
 kernel = 'RBF';
 switch(kernel)
     case 'Poly'
@@ -20,7 +20,7 @@ switch(kernel)
     otherwise
         Src = ['./data/', type, '/rbf/'];
         Dst = ['./lab/', type, '/rbf/'];
-        load('LabCParams.mat');
+        load('LabSParams.mat');
 end
 
 Path = ['./results/', type, '/'];
@@ -32,7 +32,7 @@ end
 datasets = {'Caltech5', 'MTL_UCI5', 'MLC5'};
 for i = 1 : length(datasets)
     load(datasets{i});
-    [ MyStat, MyTime, MyRank ] = MyStatistics(eval(datasets{i}), CParams, Src, Dst, opts);
+    [ MyStat, MyTime, MyRank ] = MyStatistics(eval(datasets{i}), SParams, Src, Dst, opts);
     path = [Path, 'MyStat-', datasets{i}, '-', kernel, '.mat'];
     save(path, 'MyStat', 'MyTime', 'MyRank');
     fprintf(['save: ', path, '\n']);

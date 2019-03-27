@@ -4,10 +4,10 @@ kernel = 'RBF';
 switch(kernel)
     case 'Poly'
         Src = ['./data/ssr/poly/'];
-        load('LabCParams-Poly.mat');
+        load('LabSParams-Poly.mat');
     otherwise
         Src = ['./data/ssr/rbf/'];
-        load('LabCParams.mat');
+        load('LabSParams.mat');
 end
 addpath(genpath(Src));
 
@@ -16,16 +16,16 @@ load('MTL_UCI5.mat');
 load('MLC5.mat');
 
 DataSets = [MTL_UCI5; Caltech5; MLC5];
-IParams = CreateParams(CParams{15});
+IParams = CreateParams(SParams{5});
 Params = struct2cell(IParams)';
 Result = cell(54, 1);
 State = zeros(54, 9);
 Error = zeros(54, 8);
-I = [ 1:852 ];
-for i = [ 2:9 ]
+I = [ 1:1296 ];
+for i = [ 2:9 1 28:40 ]
     D = DataSets(i);
     A = load(['IRMTL-', D.Name,'.mat']);
-    B = load(['SSR_IRMTL-', D.Name,'.mat']);
+    B = load(['SSRC_IRMTL-', D.Name,'.mat']);
     T = mean(A.CVTime(I,:)-B.CVTime(I,:), 1)/mean(A.CVTime(I,1));
     C = permute(A.CVStat(I,1,:)==B.CVStat(I,1,:), [1 3 2]);
     % Result

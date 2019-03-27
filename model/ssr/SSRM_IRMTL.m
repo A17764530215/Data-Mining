@@ -20,9 +20,10 @@ for i = 1 : n
         [ Alpha{i} ] = IRMTL(H2, Params);
     else
         % solve the rest problem
-        [ Alpha{i} ] = SSR1(H1, H2, Alpha{i-1});
+        [ Alpha{i} ] = SSR_MU(H1, H2, Alpha{i-1}, Params);
         [ Alpha{i}, CVRate(i,1) ] = Reduced_IRMTL(H2, Alpha{i}, Params);
     end
+    H1 = H2;
     CVTime(i, 1) = toc;
     [ y_hat, CVRate(i, 2) ] = Predict(X, Y, xTest, Alpha{i}, Params);
     CVStat(i,:,:) = MTLStatistics(TaskNum, y_hat, yTest, opts);
@@ -36,7 +37,7 @@ end
         if strcmp(k1.kernel, 'rbf') && strcmp(k2.kernel, 'rbf')
             b = k1.p1 == k2.p1 && p1.C == p2.C;
         else
-            b = p1.mu == p2.mu;
+            b = p1.C == p2.C;
         end
     end
 
@@ -75,15 +76,15 @@ end
     end
 
 %% SSR for $\mu$
-    function [ Alpha2 ] = SSR1(H1, H2, Alpha1)
-        % safe screening rules for $\mu$, $p$
+    function [ Alpha2 ] = SSR_MU(H1, H2, Alpha1, Params)
+        % safe screening rules for $\mu$
         P = chol(H2, 'upper');
-        LL = (H1+H2)*Alpha1/2;
+        LL = (H1+H2)*Alpha1;
         RL = sqrt(sum(P.*P, 1))';
-        RR = RL*norm(P'\(H1*Alpha1)+P*Alpha1)/2;
+        RR = RL*norm(P'\(H1*Alpha1)+P*Alpha1);
         Alpha2 = Inf(size(Alpha1));
-        Alpha2(LL - RR > 1) = 0;
-        Alpha2(LL + RR < 1) = 1;
+        Alpha2(LL - RR > 2) = 0;
+        Alpha2(LL + RR < 2) = Params.C;
     end
 
 %% Reduced-RMTL

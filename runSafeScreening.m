@@ -16,14 +16,14 @@ addpath(genpath('./utils'));
 load('Caltech5.mat');
 load('MTL_UCI5.mat');
 load('MLC5.mat');
-load('LabCParams.mat');
+load('LabSParams.mat');
 
 DataSets = [MTL_UCI5; Caltech5; MLC5];
-IParams = CParams;
+IParams = SParams;
 
 % 数据集
 DataSetIndices = [ 2:9 1 28:54 ];
-ParamIndices = [ 15:16 ];
+ParamIndices = [ 3:5 ];
 
 %% 实验设置 RMTL
 solver = struct('Display', 'off');
