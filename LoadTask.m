@@ -1,5 +1,8 @@
+addpath(genpath(Src));
+%%
 clear
 clc
+
 kernel = 'RBF';
 switch(kernel)
     case 'Poly'
@@ -9,45 +12,33 @@ switch(kernel)
         Src = ['./data/ssr/rbf/'];
         load('LabSParams.mat');
 end
-addpath(genpath(Src));
 
 load('Caltech5.mat');
 load('MTL_UCI5.mat');
 load('MLC5.mat');
 
 DataSets = [MTL_UCI5; Caltech5; MLC5];
-IParams = CreateParams(SParams{5});
+IParams = CreateParams(SParams{4});
 Params = struct2cell(IParams)';
-Result = cell(54, 1);
-State = zeros(54, 9);
-Error = zeros(54, 8);
-I = [ 1:1681 ];
-for i = [ 2:9 1 ]
-    D = DataSets(i);
-    A = load(['IRMTL-', D.Name,'.mat']);
-    B = load(['SSRC_IRMTL-', D.Name,'.mat']);
-    T = mean(A.CVTime(I,:)-B.CVTime(I,:), 1)/mean(A.CVTime(I,1));
-    C = permute(A.CVStat(I,1,:)==B.CVStat(I,1,:), [1 3 2]);
-    % Result
-    IDX = B.CVRate(I,:)>0;
-    cnt = sum(IDX, 1);
-    avg0 = mean(B.CVRate(I,:), 1);
-    avg1 = sum(B.CVRate(I,:), 1)./cnt;
-    avg2 = mean(B.CVRate(IDX(:,2),1)./B.CVRate(IDX(:,2),2));
-    a = mean([A.CVStat(I,1,:), B.CVStat(I,1,:)], 3);
-    b = mean([A.CVStat(I,1,:) - B.CVStat(I,1,:)], 3);
-    Result{i} = [a, b, a-b, B.CVRate(I,:), A.CVTime(I,1), B.CVTime(I,1)];
-    if mean(C(:)) == 1
-        fprintf('Success: %d\n', i);
-        State(i,:) = [cnt, avg0(:,1)/avg0(:,2), avg0, avg1, avg2, T(1)];
-    else
-        fprintf('Error: %d\n', i);
-        Error(i,:) = [cnt, avg0(:,1)/avg0(:,2), avg0, avg1, T(1)];
-    end
-end
+INDICES = [ 2:9 1 10:15];
+%% IRMTL_C
+[ Result, State, Error ] = Compare(DataSets, INDICES, SParams{1}, SParams{2});
+
+%% IRMTL_M
+[ Result, State, Error ] = Compare(DataSets, INDICES, SParams{3}, SParams{4});
+
 %%
-EE = Result{44,1};
-IDX = find(EE(:,2)~=EE(:,1));
-ErrorParams = IParams(IDX);
-E=EE(IDX,:);
+labels = {'Screening Rate', 'Speed Up'};
+
+plot(1:9, State([2:9 1], [8 9]));
+xlabel('Task Size');
+ylabel('Rate');
+legend(labels, 'Location', 'northwest');
+xTickLabel = {'60', '90', '120', '150', '180', '210', '240', '270', 'All'};
+set(gca, 'XTicklabel', xTickLabel, 'XTickLabelRotation', 0);
+%%
+% EE = Result{44,1};
+% IDX = find(EE(:,2)~=EE(:,1));
+% ErrorParams = IParams(IDX);
+% E=EE(IDX,:);
 % 

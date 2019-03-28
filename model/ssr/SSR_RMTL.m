@@ -29,22 +29,6 @@ for i = 1 : n
     CVStat(i,:,:) = MTLStatistics(TaskNum, y_hat, yTest, opts);
 end
 
-%% Compare
-    function [ b ] = EqualsTo(p1, p2)
-        k1 = p1.kernel;
-        k2 = p2.kernel;
-        if strcmp(k1.kernel, 'rbf') && strcmp(k2.kernel, 'rbf')
-            b1 = k1.p1 == k2.p1 && p1.lambda2 == p2.lambda2;
-            b2 = k1.p1 == k2.p1 && p1.lambda1 == p2.lambda1;
-            b3 = p1.lambda1==p2.lambda1 && p1.lambda2==p2.lambda2;
-            b = b1 | b2 | b3;
-        else
-            b1 = p1.lambda2 == p2.lambda2;
-            b2 = p1.lambda1 == p2.lambda1;
-            b = b1 | b2;
-        end
-    end
-
 %% Predict
     function [ yTest, Rate ] = Predict(X, Y, xTest, Alpha, opts)
         % extract opts
@@ -83,12 +67,12 @@ end
     function [ Alpha2 ] = SSR(H1, H2, Alpha1)
         % safe screening rules
         P = chol(H2, 'upper');
-        LL = (H1+H2)*Alpha1/2;
+        LL = (H1+H2)*Alpha1;
         RL = sqrt(sum(P.*P, 1))';
         RR = RL*(norm((P'\(H1*Alpha1)+P*Alpha1)));
         Alpha2 = Inf(size(Alpha1));
-        Alpha2(LL - RR > 1) = 0;
-        Alpha2(LL + RR < 1) = 1;
+        Alpha2(LL - RR > 2) = 0;
+        Alpha2(LL + RR < 2) = 1;
     end
 
 %% Reduced-RMTL

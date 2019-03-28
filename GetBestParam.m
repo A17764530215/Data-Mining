@@ -1,4 +1,4 @@
-function [ BestParam, Accuracy, Result, L, R ] = GetBestParam(CParams, Result, Stat, INDICES, x, y)
+function [ BestParam, Accuracy, Result, L, R, Z ] = GetBestParam(CParams, Result, Stat, INDICES, x, y)
 %GETBESTPARAM 此处显示有关此函数的摘要
 % 得到最佳参数
 %   此处显示详细说明

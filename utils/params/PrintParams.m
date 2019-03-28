@@ -18,7 +18,7 @@ function [ IParams ] = PrintParams( Path, IParams )
         tic
         GetParams(Method, 1);
         Time = toc;
-        fprintf(fd, '%s:%d params %.2fs.\n', Method.Name, nParams(i, 1), nParams(i, 1)*Time);
+        fprintf(fd, '%s:%d params %.2fs.\n', Method.ID, nParams(i, 1), nParams(i, 1)*Time);
     end
     fclose(fd);
 end
