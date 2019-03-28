@@ -1,9 +1,9 @@
 clc
 clear
 Path = './data/ssr/rbf/';
-load([Path, '\5-fold\SSRC_IRMTL-Monk-S270.mat']);
+load([Path, '\5-fold\SSRC_IRMTL-Monk-All.mat']);
 load('LabSParams.mat');
-IDX = 6;
+IDX = 2;
 Result = CreateParams(SParams{IDX});
 %% 得到参数
 Stat = mean(CVStat, 3);

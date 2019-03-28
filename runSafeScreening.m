@@ -13,16 +13,17 @@ addpath(genpath('./model'));
 addpath(genpath('./utils'));
 
 % 加载数据集和网格搜索参数
-load('Caltech5.mat');
-load('MTL_UCI5.mat');
-load('MLC5.mat');
+% load('Caltech5.mat');
+% load('MTL_UCI5.mat');
+% load('MLC5.mat');
+% load('MTL5.mat');
+load('DATA.mat');
 load('LabSParams.mat');
 
-DataSets = [MTL_UCI5; Caltech5; MLC5];
 IParams = SParams;
 
 % 数据集
-DataSetIndices = [ 2:9 1 18:27 ];
+DataSetIndices = [ 1:9 18:57 ];
 ParamIndices = [ 1:2 ];
 
 %% 实验设置 RMTL
