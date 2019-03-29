@@ -34,6 +34,15 @@ for i = 1 : n
     end
     H1 = H2;
     CVTime(i, 1) = toc;
+    % 确定没有筛错
+%     [ AlphaT ] = IRMTL(H2, Params);
+%     diff = AlphaT-Alpha{i};
+%     acc = std(diff);
+%     if acc ~= 0
+%         Error = sprintf('Error: %.2f', acc);
+%         throw(MException('SSR_IRMTL', Error));
+%     end
+    % 预测
     [ y_hat, CVRate(i, 2) ] = Predict(X, Y, xTest, Alpha{i}, Params);
     CVStat(i,:,:) = MTLStatistics(TaskNum, y_hat, yTest, opts);
     LastParams = Params;
@@ -96,9 +105,9 @@ end
         k2 = (C-C0)/(2*C0);
         % safe screening rules for $C$
         P = chol(H2, 'upper');
-        LL = H2*Alpha1*k1;
+        LL = H2*(Alpha1*k1);
         RL = sqrt(sum(P.*P, 1))';
-        RR = RL*norm(P*Alpha1*k2);
+        RR = RL*norm(P*(Alpha1*k2));
         Alpha2 = Inf(size(Alpha1));
         Alpha2(LL - RR > 1) = 0;
         Alpha2(LL + RR < 1) = C;

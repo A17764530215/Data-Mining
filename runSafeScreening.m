@@ -1,7 +1,7 @@
 clc
 clear
 
-Path = './data/ssr/poly/';
+Path = './data/ssr/linear/';
 if exist(Path, 'dir') == 0
     mkdir(Path);
 end
@@ -14,11 +14,11 @@ addpath(genpath('./utils'));
 
 % 加载数据集和网格搜索参数
 load('DATA.mat');
-load('LabSParams-Poly.mat');
+load('LabSParams-Linear.mat');
 
 % 数据集
-DataSetIndices = [ 2:9 1 18:27 43:57 ];
-ParamIndices = [ 1:2 ];
+DataSetIndices = [ 1 ];
+ParamIndices = [ 1:4 ];
 
 %% 实验设置 RMTL
 solver = struct('Display', 'off');
