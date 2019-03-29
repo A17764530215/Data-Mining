@@ -11,12 +11,16 @@ opts = InitOptions('clf', 1, [], 0, 3);
 % 核函数
 types = {'classify', 'regression', 'ssr'};
 type = types{3};
-kernel = 'RBF';
+kernel = 'Linear';
 switch(kernel)
+    case 'Linear'
+        Src = ['./data/', type, '/linear/'];
+        Dst = ['./lab/', type, '/linear/'];
+        load('LabSParams-Linear.mat');
     case 'Poly'
         Src = ['./data/', type, '/poly/'];
         Dst = ['./lab/', type, '/poly/'];
-        load('LabCParams-Poly.mat');
+        load('LabSParams-Poly.mat');
     otherwise
         Src = ['./data/', type, '/rbf/'];
         Dst = ['./lab/', type, '/rbf/'];
@@ -29,11 +33,8 @@ if exist(Path, 'dir') == 0
 end
 
 % 统计实验数据
-datasets = {'Caltech5', 'MTL_UCI5', 'MLC5'};
-for i = 1 : length(datasets)
-    load(datasets{i});
-    [ MyStat, MyTime, MyRank ] = MyStatistics(eval(datasets{i}), SParams, Src, Dst, opts);
-    path = [Path, 'MyStat-', datasets{i}, '-', kernel, '.mat'];
-    save(path, 'MyStat', 'MyTime', 'MyRank');
-    fprintf(['save: ', path, '\n']);
-end
+load('DATA.mat')
+[ MyStat, MyTime, MyRank ] = MyStatistics(DataSets, SParams, Src, Dst, opts);
+path = [Path, 'MyStat-', kernel, '.mat'];
+save(path, 'MyStat', 'MyTime', 'MyRank');
+fprintf(['save: ', path, '\n']);

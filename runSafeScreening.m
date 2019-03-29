@@ -1,7 +1,7 @@
 clc
 clear
 
-Path = './data/ssr/rbf/';
+Path = './data/ssr/poly/';
 if exist(Path, 'dir') == 0
     mkdir(Path);
 end
@@ -13,17 +13,11 @@ addpath(genpath('./model'));
 addpath(genpath('./utils'));
 
 % 加载数据集和网格搜索参数
-% load('Caltech5.mat');
-% load('MTL_UCI5.mat');
-% load('MLC5.mat');
-% load('MTL5.mat');
 load('DATA.mat');
-load('LabSParams.mat');
-
-IParams = SParams;
+load('LabSParams-Poly.mat');
 
 % 数据集
-DataSetIndices = [ 1:9 18:57 ];
+DataSetIndices = [ 2:9 1 18:27 43:57 ];
 ParamIndices = [ 1:2 ];
 
 %% 实验设置 RMTL
@@ -45,7 +39,7 @@ for i = DataSetIndices
         mkdir(StatDir);
     end
     for j = ParamIndices
-        Method = IParams{j};
+        Method = SParams{j};
         Name = [Method.ID, '-', DataSet.Name];
         StatPath = [StatDir, Name, '.mat'];
         if exist(StatPath, 'file') == 2

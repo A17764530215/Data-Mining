@@ -76,8 +76,10 @@ clear
 clc
 p1 = 2.^(3:6)'; % 核函数参数
 kernel = struct('kernel', 'rbf', 'p1', p1);
-kernel0 = struct('kernel', 'rbf', 'p1', 8);
-lambda = 2.^(0:0.05:2)';
+% non-linear case, 8 for UCI, 256 for Caltech
+% kernel0 = struct('kernel', 'rbf', 'p1', 256); 
+% linear case
+kernel0 = struct('kernel', 'poly');
 c = 2.^(0:0.05:2)';
 mu = 2.^(0:0.05:2)';
 SParams = {
@@ -95,6 +97,6 @@ SParams = {
 %     struct('ID', 'SSRM_IRMTL', 'Name', 'SSR_IRMTL', 'mu', mu, 'C', c, 'kernel', kernel0);...
 };
 % 保存参数表
-[ SParams ] = PrintParams('./params/LabSParams.txt', SParams);
-save('./params/LabSParams.mat', 'SParams');
-IParams = CreateParams(SParams{4});
+[ SParams ] = PrintParams('./params/LabSParams-Poly.txt', SParams);
+save('./params/LabSParams-Poly.mat', 'SParams');
+IParams = CreateParams(SParams{2});

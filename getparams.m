@@ -1,7 +1,9 @@
 clc
 clear
 Path = './data/ssr/rbf/';
-load([Path, '\5-fold\SSRC_IRMTL-Monk-All.mat']);
+load('DATA.mat');
+d = DataSets(57);
+load([Path, '\5-fold\SSRC_IRMTL-', d.Name, '.mat']);
 load('LabSParams.mat');
 IDX = 2;
 Result = CreateParams(SParams{IDX});

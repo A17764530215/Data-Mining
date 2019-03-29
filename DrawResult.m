@@ -2,7 +2,7 @@ function [ ] = DrawResult(Stat, Time, label, labels, xTickLabel, arc)
 %DRAWRESULT 此处显示有关此函数的摘要
 % 绘制实验结果
 %   此处显示详细说明
-    if nargin < 5
+    if nargin < 6
         arc = 0;
     end
     subplot(1, 2, 1);
