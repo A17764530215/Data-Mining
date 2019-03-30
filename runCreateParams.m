@@ -22,8 +22,8 @@ K = (3:2:13)';
 k = (1:2:7)';
 
 % 核函数
-kernel = struct('kernel', 'rbf', 'p1', P1);
-% kernel = struct('kernel', 'poly');
+kernel = struct('type', 'rbf', 'p1', P1);
+% kernel = struct('type', 'poly', 'p1', 2);
 
 %% 回归任务参数
 RParams = {
@@ -64,38 +64,45 @@ CParams = {
     struct('ID', 'MTLS_TWSVM', 'Name', 'MTLS_TWSVM', 'C1', C, 'rho', RHO, 'kernel', kernel);...
     struct('ID', 'MTvTWSVM', 'Name', 'MTvTWSVM', 'v1', MU, 'rho', RHO, 'kernel', kernel);...
     struct('ID', 'MTvTWSVM2', 'Name', 'MTvTWSVM2', 'v1', MU, 'rho', ETA, 'kernel', kernel);...
-    struct('ID', 'MTBSVM', 'Name', 'MTBSVM', 'C1', C, 'C3', C, 'rho', RHO, 'kernel', kernel);...
-    struct('ID', 'MTLS_TBSVM', 'Name', 'MTLS_TBSVM', 'C1', C, 'C3', C, 'rho', RHO, 'kernel', kernel);...
-%     struct('ID', 'VSTG_MTL', 'Name', 'VSTG_MTL', 'func', 'logistic', 'gamma1', GAMMA, 'gamma2', GAMMA, 'K', K, 'k', k);...
 };
 
 % 保存参数表
 [ CParams ] = PrintParams('./params/LabCParams.txt', CParams);
 save('./params/LabCParams.mat', 'CParams');
 
-%%
+%% 构造安全筛选的参数
+% non-linear case, p1=8 for UCI, p1=64 for Caltech
 clear
 clc
-p1 = 2.^(3:6)'; % 核函数参数
-kernel = struct('kernel', 'rbf', 'p1', p1);
-%% non-linear case, p1=8 for UCI, p1=64 for Caltech
-c = 2.^(0:0.05:2)';
-mu = 2.^(0:0.05:2)';
-kernel0 = struct('kernel', 'rbf', 'p1', 64);
-%% linear case
-c = 10.^(-2:0.05:1)';
-mu = 10.^(-2:0.05:1)';
-kernel0 = struct('kernel', 'linear');
-%%
-SParams = {
-%     C
-    struct('ID', 'IRMTL_C', 'Name', 'IRMTL', 'C', c, 'mu', mu, 'kernel', kernel0);...
-    struct('ID', 'SSRC_IRMTL', 'Name', 'SSR_IRMTL', 'C', c, 'mu', mu, 'kernel', kernel0);...
-%     MU
-    struct('ID', 'IRMTL_M', 'Name', 'IRMTL', 'mu', mu, 'C', c, 'kernel', kernel0);...
-    struct('ID', 'SSRM_IRMTL', 'Name', 'SSR_IRMTL', 'mu', mu, 'C', c, 'kernel', kernel0);...
-};
-% 保存参数表
-[ SParams ] = PrintParams('./params/LabSParams-Linear.txt', SParams);
-save('./params/LabSParams-Linear.mat', 'SParams');
+SParams = cell(3, 1);
+[ SParams{1} ] = PackSParams(10.^(0:0.02:2)', 10.^(-1:0.2:1)', 'Linear');
+[ SParams{2} ] = PackSParams(10.^(0:0.02:2)', 10.^(-1:0.2:1)', 'Poly', 8);
+[ SParams{3} ] = PackSParams(10.^(0:0.02:2)', 10.^(-1:0.2:1)', 'RBF', 8);
+SParams = cellcat(SParams, 1);
+
+% 保存参数
+[ SParams ] = PrintParams('./params/LabSParams.txt', SParams);
+Path = './params/LabSParams.mat';
+fprintf('save:%s\n', Path);
+save(Path, 'SParams');
+
+%% 得到所有参数组合
 IParams = CreateParams(SParams{2});
+
+%% 打包参数
+function [ SParams ] = PackSParams(c, mu, ker, p1)
+    switch ker
+        case 'Linear'
+            kernel = struct('type', 'linear');
+        case 'Poly'
+            kernel = struct('type', 'poly', 'p1', p1);
+        otherwise
+            kernel = struct('type', 'rbf', 'p1', p1);
+    end
+    SParams = {
+        struct('ID', 'IRMTL_C', 'Name', 'IRMTL', 'C', c, 'mu', mu, 'kernel', kernel);...
+        struct('ID', 'SSRC_IRMTL', 'Name', 'SSR_IRMTL', 'C', c, 'mu', mu, 'kernel', kernel);...
+        struct('ID', 'IRMTL_M', 'Name', 'IRMTL', 'mu', mu, 'C', c, 'kernel', kernel);...
+        struct('ID', 'SSRM_IRMTL', 'Name', 'SSR_IRMTL', 'mu', mu, 'C', c, 'kernel', kernel);...
+    };
+end

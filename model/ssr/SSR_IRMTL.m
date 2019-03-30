@@ -52,7 +52,7 @@ end
     function [ bC, bMP ] = EqualsTo(p1, p2)
         k1 = p1.kernel;
         k2 = p2.kernel;
-        if strcmp(k1.kernel, 'rbf') && strcmp(k2.kernel, 'rbf')
+        if strcmp(k1.type, 'rbf') && strcmp(k2.type, 'rbf')
             bC = k1.p1 == k2.p1 && p1.mu == p2.mu;
             bM = k1.p1 == k2.p1 && p1.C == p2.C;
             bP = p1.C == p2.C && p1.mu == p2.mu;
@@ -119,7 +119,7 @@ end
         P = chol(H2, 'upper');
         LL = (H1+H2)*Alpha1;
         RL = sqrt(sum(P.*P, 1))';
-        RR = RL*norm(P'\(H1*Alpha1)+P*Alpha1);
+        RR = RL*norm(P'\((H1*H2)*Alpha1));
         Alpha2 = Inf(size(Alpha1));
         Alpha2(LL - RR > 2) = 0;
         Alpha2(LL + RR < 2) = Params.C;

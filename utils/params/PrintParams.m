@@ -15,10 +15,13 @@ function [ IParams ] = PrintParams( Path, IParams )
     fd = fopen(Path, 'w');
     for i = 1 : n
         Method = IParams{i};
+        kernel = Method.kernel;
         tic
         GetParams(Method, 1);
         Time = toc;
-        fprintf(fd, '%s:%d params %.2fs.\n', Method.ID, nParams(i, 1), nParams(i, 1)*Time);
+        info = sprintf('%-12s%-16s%-5d\t%.2f.\n', kernel.type, Method.ID, nParams(i, 1), nParams(i, 1)*Time);
+        fprintf(fd, info);
+        fprintf(info)
     end
     fclose(fd);
 end

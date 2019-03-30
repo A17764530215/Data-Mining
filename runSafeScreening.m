@@ -1,10 +1,7 @@
 clc
 clear
 
-Path = './data/ssr/linear/';
-if exist(Path, 'dir') == 0
-    mkdir(Path);
-end
+Path = './data/ssr';
 
 % 添加搜索路径
 addpath(genpath('./datasets'));
@@ -14,11 +11,11 @@ addpath(genpath('./utils'));
 
 % 加载数据集和网格搜索参数
 load('DATA.mat');
-load('LabSParams-Linear.mat');
+load('LabSParams.mat');
 
 % 数据集
-DataSetIndices = [ 1 ];
-ParamIndices = [ 1:4 ];
+DataSetIndices = [ 28 ];
+ParamIndices = [ 1:2 5:6 9:10 ];
 
 %% 实验设置 RMTL
 solver = struct('Display', 'off');
@@ -34,14 +31,14 @@ for i = DataSetIndices
     fprintf('DataSet: %s\n', DataSet.Name);
     [ X, Y, ValInd ] = GetMultiTask(DataSet);
     [ X ] = Normalize(X);
-    StatDir = [ Path, int2str(DataSet.Kfold) '-fold/' ];
-    if exist(StatDir, 'dir') == 0
-        mkdir(StatDir);
-    end
     for j = ParamIndices
         Method = SParams{j};
         Name = [Method.ID, '-', DataSet.Name];
-        StatPath = [StatDir, Name, '.mat'];
+        SavePath = sprintf('%s/%s/%d-fold/', Path, Method.kernel.type, DataSet.Kfold);
+        if exist(SavePath, 'dir') == 0
+            mkdir(SavePath);
+        end
+        StatPath = [SavePath, Name, '.mat'];
         if exist(StatPath, 'file') == 2
             fprintf(fd, 'skip: %s\n', StatPath);
             continue;
