@@ -1,36 +1,55 @@
 clear
 clc
-%% Classify
+%%
 MyStat = MyStat*100;
 MyTime = MyTime*1000;
-[ d ] = Classify(MyStat);
-[ STL_Summary ] = Pack(d.Stat, d.Titles, d.xLabels, d.yLabels, d.Legends, d.XTicklabel, d.IDX, d.STL, 1);
-[ MTL_Summary ] = Pack(d.Stat, d.Titles, d.xLabels, d.yLabels, d.Legends, d.XTicklabel, d.IDX, d.MTL, 1);
+%% Classify
+[ d ] = Classify();
+[ m, n, k ] = size(MyStat);
+Data = mat2cell(MyStat, m, d.IDX, k);
+[ STL_Summary ] = Transform(Data, d, 1);
+[ MTL_Summary ] = Transform(Data, d, 1);
 BatchDraw(MTL_Summary)
 
 %% SafeScreening
-[ d ] = SafeScreening(State);
+[ d ] = SafeScreening();
+Data = mat2cell(Summary.State', length(d.Legends), d.IDX);
+[ SSR_Summary ] = Transform(Data, d, 1);
+BatchDraw(SSR_Summary);
 
-%%
-[ SSRSummary ] = PackState(d.State, d.Titles, d.xLabels, d.yLabels, d.Legends, d.XTicklabel, d.IDX, d.STL, [1 2]);
-  
-function [ ] = BatchDraw(MTL_Summary)
-    figure();
-    i = 1;
-    for p = [ 1, 5:8 ]
-        subplot(2, 3, i);
-        s = MTL_Summary(p);
-        DrawResult(s.Stat, s.Title, s.XLabels, s.XTicklabels, s.YLabel, s.Legends);
-        hold on
-        i = i + 1;
+% 转换格式
+function [ Summary ] = Transform(Data, d, k)
+    xTickLabels = mat2cell(d.XTicklabel', d.IDX);
+    Summary = [ ];
+    for i = 1 : length(d.Titles)
+        data = Data{i};
+        s.Draw = d.Draws{i};
+        s.Title = d.Titles{i};
+        s.XLabel = d.xLabels{i};
+        s.YLabel = d.yLabels{k};
+        s.XTicklabels = xTickLabels{i};
+        s.Legends = d.Legends(d.STL);
+        s.Arc = d.Arcs(i);
+        s.Stat = data(d.STL,:,k);
+        Summary = cat(1, Summary, s);
     end
 end
 
-function [ d ] = Classify(MyStat)
-    d.Stat = MyStat;
-    d.yLabels = {'Accuracy', 'Precision', 'Recall', 'F1'};
+% 配置
+function [ d ] = Classify()
+    d.Arcs = [0,0,0,0,45,45,0,0];
+    d.Draws = {@bar, @bar, @bar, @bar, @bar, @bar,@bar, @bar,@bar };
     d.IDX = [ 9, 8, 5, 5, 5, 10, 6, 6 ];
-    d.Titles = {'Monk', 'Isolet', 'Letter_1', 'Letter_2', 'Caltech_{101}', 'Caltech_{256}', 'Flags', 'Emotions'};
+    d.IndexCount = 8;
+    d.Legends = {
+        'SVM','PSVM','LS-SVM',...
+        'TWSVM','LS-TWSVM','\nu-TWSVM','ITWSVM',...
+        'MTPSVM','MTLS-SVM','MTL-aLS-SVM',...
+        'DMTSVM','MCTSVM','MTLS_TWSVM','MT-\nu-TWSVM I','MT-\nu-TWSVM II'
+    };
+    d.MTL = [8:12 14 15];
+    d.STL = [1 2 3 4 5 6 14 15];
+    d.Titles = {'Monk', 'Isolet', 'Letter_1', 'Letter_2', 'Caltech 101', 'Caltech 256', 'Flags', 'Emotions'};
     d.xLabels = { 'Task Size', 'Dataset Index', '#Task', 'Dataset Index', 'Category', 'Category',  'Task Size', 'Task Size'};
     d.XTicklabel = {
         'All', '60', '90', '120', '150', '180', '210', '240', '270', ...
@@ -42,23 +61,20 @@ function [ d ] = Classify(MyStat)
         '100', '120', '140', '160', '180', '191',...
         '100', '120', '140', '160', '180', '200'
     };
-    d.Legends = {
-        'SVM','PSVM','LS-SVM',...
-        'TWSVM','LS-TWSVM','\nu-TWSVM','ITWSVM',...
-        'MTPSVM','MTLS-SVM','MTL-aLS-SVM',...
-        'DMTSVM','MCTSVM','MTLS_TWSVM','MT-\nu-TWSVM I','MT-\nu-TWSVM II'
-    };
-    d.STL = [1 2 3 4 5 6 14 15];
-    d.MTL = [8:12 14 15];
-    d.IndexCount = 8;
+    d.yLabels = {'Accuracy', 'Precision', 'Recall', 'F1'};
 end
 
-function [ d ] = SafeScreening(State)
-    d.State = State;
-    d.yLabels = {'Screening Rate', 'Speed Up'};
+function [ d ] = SafeScreening()
+    d.Arcs = [0,0,0,0,45,45,0,0,0];
+    d.Draws = {@plot, @bar, @plot, @bar, @bar, @bar,@plot, @plot,@bar };
     d.IDX = [ 9, 8, 5, 5, 5, 10, 6, 6, 3 ];
-    d.Titles = {'Monk', 'Isolet', 'Letter_1', 'Letter_2', 'Caltech_{101}', 'Caltech_{256}', 'Flags', 'Emotions', 'MTL'};
-    d.xLabels = { 'Task Size', 'Dataset Index', '#Task', 'Dataset Index', 'Category', 'Category',  'Task Size', 'Task Size'};
+    d.IndexCount = 7;
+    d.Legends = {
+        'Count1', 'Count2', 'avg2/avg1', 'avg0', 'avg2', 'Screening Rate', 'Speed Up'
+    };
+    d.STL = [6 7];
+    d.Titles = {'Monk', 'Isolet', 'Letter_1', 'Letter_2', 'Caltech 101', 'Caltech 256', 'Flags', 'Emotions', 'MTL'};
+    d.xLabels = { 'Task Size', 'Dataset Index', '#Task', 'Dataset Index', 'Category', 'Category',  'Task Size', 'Task Size', 'Dataset'};
     d.XTicklabel = {
         'All', '60', '90', '120', '150', '180', '210', '240', '270', ...
         'ab', 'cd', 'ef', 'gh', 'ij', 'kl','mn','op',...
@@ -70,70 +86,29 @@ function [ d ] = SafeScreening(State)
         '100', '120', '140', '160', '180', '200',...
         'Letter', 'Spam_{3}', 'Spam_{15}'
     };
-    d.Legends = {
-        'IRMTL-C', 'SSR-IRMTL-C',...
-        'IRMTL-\mu', 'SSR-IRMTL-\mu',...
-    };
-    d.STL = [1 2];
-    d.MTL = [3 4];
-    d.IndexCount = 2;
+    d.yLabels = {'Rate'};
 end
 
-function [ Summary ] = PackState(State, Titles, xLabels, yLabels, Legends, XTicklabel, IDX, STL, k)
-    [ ~, n ] = size(State);
-    State = mat2cell(State, IDX, n);
-    xTickLabels = mat2cell(XTicklabel', IDX);
-    Summary = [ ];
-    for i = 1 : length(Titles)
-        data = State{i};
-        [ s ] = PackSummary(Titles{i}, data(STL,:,k), xLabels{i}, yLabels{k}, xTickLabels{i}, Legends(STL));
-        Summary = cat(1, Summary, s);
+% draw
+function [ ] = BatchDraw(Summary)
+    figure();
+    i = 1;
+    for p = 1 : 8
+        subplot(3, 3, i);
+        DrawResult(Summary(p));
+        hold on
+        i = i + 1;
     end
 end
 
-function [ Summary ] = Pack(Stat, Titles, xLabels, yLabels, Legends, XTicklabel, IDX, STL, k)
-    n = length(Legends);
-    Data = mat2cell(Stat, n, IDX, 8);
-    xTickLabels = mat2cell(XTicklabel', IDX);
-    Summary = [ ];
-    for i = 1 : length(Titles)
-        data = Data{i};
-        [ s ] = PackSummary(Titles{i}, data(STL,:,k), xLabels{i}, yLabels{k}, xTickLabels{i}, Legends(STL));
-        Summary = cat(1, Summary, s);
-    end
-end
-
-function [ d ] = PackSummary(Title, Stat, XLabels, YLabel, XTicklabels, Legends)
-    d.Title = Title;
-    d.XLabels = XLabels;
-    d.YLabel = YLabel;
-    d.XTicklabels = XTicklabels;
-    d.Legends = Legends;
-    d.Stat = Stat';
-end
-
-function [ ] = Curve(Title, X, Y, labels, xTickLabel, arc)
-    if nargin < 6
-        arc = 0;
-    end
-    plot(X, Y*100);grid on;
-    title(Title);
-    xlabel('Task Size');
-    ylabel('Rate (%)');
-    legend(labels, 'Location', 'northeast');
-    set(gca, 'XTicklabel', xTickLabel, 'XTickLabelRotation', arc);
-    hold on;
-end
-
-function [ ] = Bar(Title, X, Y, labels, xTickLabel, arc)
-    if nargin < 6
-        arc = 0;
-    end
-    bar(X, Y*100);grid on;
-    title(Title);
-    xlabel('Task Size');
-    ylabel('Rate (%)');
-    legend(labels, 'Location', 'northeast');
-    set(gca, 'XTicklabel', xTickLabel, 'XTickLabelRotation', arc);
-    hold on;
+function [ ] = DrawResult(s)
+%DRAWRESULT 此处显示有关此函数的摘要
+% 绘制实验结果
+%   此处显示详细说明
+    s.Draw(s.Stat');
+    title(s.Title)
+    xlabel(s.XLabel);
+    ylabel(s.YLabel);
+    legend(s.Legends, 'Location', 'northwest');
+    set(gca, 'XTicklabel', s.XTicklabels, 'XTickLabelRotation', s.Arc);
 end
