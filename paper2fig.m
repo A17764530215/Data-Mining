@@ -1,59 +1,139 @@
-h = figure();
-%%
+clear
+clc
+%% Classify
 MyStat = MyStat*100;
 MyTime = MyTime*1000;
+[ d ] = Classify(MyStat);
+[ STL_Summary ] = Pack(d.Stat, d.Titles, d.xLabels, d.yLabels, d.Legends, d.XTicklabel, d.IDX, d.STL, 1);
+[ MTL_Summary ] = Pack(d.Stat, d.Titles, d.xLabels, d.yLabels, d.Legends, d.XTicklabel, d.IDX, d.MTL, 1);
+BatchDraw(MTL_Summary)
+
+%% SafeScreening
+[ d ] = SafeScreening(State);
+
 %%
-load('DATA5.mat');
-load('LabCParams.mat');
-labels = {
-    'SVM','PSVM','LS-SVM','TWSVM','LS-TWSVM','\nu-TWSVM','ITWSVM',...
-    'MTPSVM','MTLS-SVM''MTL-aLS-SVM','DMTSVM','MCTSVM','MT-\nu-TWSVM I','MT-\nu-TWSVM II'};
-% 单任务学习
-STL_IDX = [1 2 3 4 5 6 14 15];
-% 多任务学习
-MTL_IDX = [8:12 14 15];
-CUR_IDX = MTL_IDX;
-IDX = 1;
-%% Monk
-xLabels = {'60', '90', '120', '150', '180', '210', '240', '270', 'All'};
-DrawResult(MyStat(CUR_IDX,[2:9,1],IDX)', MyTime(CUR_IDX,[2:9 1])', 'Task size', labels(CUR_IDX), xLabels);
+[ SSRSummary ] = PackState(d.State, d.Titles, d.xLabels, d.yLabels, d.Legends, d.XTicklabel, d.IDX, d.STL, [1 2]);
+  
+function [ ] = BatchDraw(MTL_Summary)
+    figure();
+    i = 1;
+    for p = [ 1, 5:8 ]
+        subplot(2, 3, i);
+        s = MTL_Summary(p);
+        DrawResult(s.Stat, s.Title, s.XLabels, s.XTicklabels, s.YLabel, s.Legends);
+        hold on
+        i = i + 1;
+    end
+end
 
-%% ISOLET
-xLabels = {'ab', 'cd', 'ef', 'gh', 'ij', 'kl','mn','op'};
-DrawResult(MyStat(CUR_IDX,10:17,IDX)', MyTime(CUR_IDX,10:17)', 'Category', labels(CUR_IDX), xLabels);
+function [ d ] = Classify(MyStat)
+    d.Stat = MyStat;
+    d.yLabels = {'Accuracy', 'Precision', 'Recall', 'F1'};
+    d.IDX = [ 9, 8, 5, 5, 5, 10, 6, 6 ];
+    d.Titles = {'Monk', 'Isolet', 'Letter_1', 'Letter_2', 'Caltech_{101}', 'Caltech_{256}', 'Flags', 'Emotions'};
+    d.xLabels = { 'Task Size', 'Dataset Index', '#Task', 'Dataset Index', 'Category', 'Category',  'Task Size', 'Task Size'};
+    d.XTicklabel = {
+        'All', '60', '90', '120', '150', '180', '210', '240', '270', ...
+        'ab', 'cd', 'ef', 'gh', 'ij', 'kl','mn','op',...
+        '3', '5', '7', '9', '11',...
+        'T1', 'T2', 'T3', 'T4', 'T5',...
+        'Birds','Insects','Flowers','Mammals','Instruments',...
+        'Aircrafts','Balls','Bikes', 'Birds','Boats','Flowers', 'Instruments','Plants','Mammals', 'Vehicles',...
+        '100', '120', '140', '160', '180', '191',...
+        '100', '120', '140', '160', '180', '200'
+    };
+    d.Legends = {
+        'SVM','PSVM','LS-SVM',...
+        'TWSVM','LS-TWSVM','\nu-TWSVM','ITWSVM',...
+        'MTPSVM','MTLS-SVM','MTL-aLS-SVM',...
+        'DMTSVM','MCTSVM','MTLS_TWSVM','MT-\nu-TWSVM I','MT-\nu-TWSVM II'
+    };
+    d.STL = [1 2 3 4 5 6 14 15];
+    d.MTL = [8:12 14 15];
+    d.IndexCount = 8;
+end
 
-%% Letter1
-xLabels = {'3', '5', '7', '9', '11'};
-DrawResult(MyStat(CUR_IDX,18:22,IDX)', MyTime(CUR_IDX,18:23)', 'Category', labels(CUR_IDX), xLabels);
+function [ d ] = SafeScreening(State)
+    d.State = State;
+    d.yLabels = {'Screening Rate', 'Speed Up'};
+    d.IDX = [ 9, 8, 5, 5, 5, 10, 6, 6, 3 ];
+    d.Titles = {'Monk', 'Isolet', 'Letter_1', 'Letter_2', 'Caltech_{101}', 'Caltech_{256}', 'Flags', 'Emotions', 'MTL'};
+    d.xLabels = { 'Task Size', 'Dataset Index', '#Task', 'Dataset Index', 'Category', 'Category',  'Task Size', 'Task Size'};
+    d.XTicklabel = {
+        'All', '60', '90', '120', '150', '180', '210', '240', '270', ...
+        'ab', 'cd', 'ef', 'gh', 'ij', 'kl','mn','op',...
+        '3', '5', '7', '9', '11',...
+        'T1', 'T2', 'T3', 'T4', 'T5',...
+        'Birds','Insects','Flowers','Mammals','Instruments',...
+        'Aircrafts','Balls','Bikes', 'Birds','Boats','Flowers', 'Instruments','Plants','Mammals', 'Vehicles',...
+        '100', '120', '140', '160', '180', '191',...
+        '100', '120', '140', '160', '180', '200',...
+        'Letter', 'Spam_{3}', 'Spam_{15}'
+    };
+    d.Legends = {
+        'IRMTL-C', 'SSR-IRMTL-C',...
+        'IRMTL-\mu', 'SSR-IRMTL-\mu',...
+    };
+    d.STL = [1 2];
+    d.MTL = [3 4];
+    d.IndexCount = 2;
+end
 
-%% Letter2
-xLabels = {'T1', 'T2', 'T3', 'T4', 'T5'};
-DrawResult(MyStat(CUR_IDX,23:27,IDX)', MyTime(CUR_IDX,23:27)', 'Category', labels(CUR_IDX), xLabels);
+function [ Summary ] = PackState(State, Titles, xLabels, yLabels, Legends, XTicklabel, IDX, STL, k)
+    [ ~, n ] = size(State);
+    State = mat2cell(State, IDX, n);
+    xTickLabels = mat2cell(XTicklabel', IDX);
+    Summary = [ ];
+    for i = 1 : length(Titles)
+        data = State{i};
+        [ s ] = PackSummary(Titles{i}, data(STL,:,k), xLabels{i}, yLabels{k}, xTickLabels{i}, Legends(STL));
+        Summary = cat(1, Summary, s);
+    end
+end
 
-%% Caltech
-xLabels = {'Birds_1','Insects_1','Flowers_1','Mammals_1','Instruments_1','Aircrafts','Balls','Bikes','Birds','Boats','Flowers','Instruments','Plants','Mammals','Vehicles'};
-DrawResult(MyStat(CUR_IDX,:,IDX)', MyTime(CUR_IDX,:)', 'Category', labels(CUR_IDX), xLabels, 45);
+function [ Summary ] = Pack(Stat, Titles, xLabels, yLabels, Legends, XTicklabel, IDX, STL, k)
+    n = length(Legends);
+    Data = mat2cell(Stat, n, IDX, 8);
+    xTickLabels = mat2cell(XTicklabel', IDX);
+    Summary = [ ];
+    for i = 1 : length(Titles)
+        data = Data{i};
+        [ s ] = PackSummary(Titles{i}, data(STL,:,k), xLabels{i}, yLabels{k}, xTickLabels{i}, Legends(STL));
+        Summary = cat(1, Summary, s);
+    end
+end
 
-%% Caltech101
-xLabels = {'Birds','Insects','Flowers','Mammals','Instruments'};
-DrawResult(MyStat(CUR_IDX,1:5,IDX)', MyTime(CUR_IDX,1:5)', 'Category', labels(CUR_IDX), xLabels, 45);
+function [ d ] = PackSummary(Title, Stat, XLabels, YLabel, XTicklabels, Legends)
+    d.Title = Title;
+    d.XLabels = XLabels;
+    d.YLabel = YLabel;
+    d.XTicklabels = XTicklabels;
+    d.Legends = Legends;
+    d.Stat = Stat';
+end
 
-%% Caltech256
-xLabels = {'Aircrafts','Balls','Bikes', 'Birds','Boats','Flowers', 'Instruments','Plants','Mammals', 'Vehicles'};
-DrawResult(MyStat(CUR_IDX,6:15,IDX)', MyTime(CUR_IDX,6:15)', 'Category', labels(CUR_IDX), xLabels, 45);
+function [ ] = Curve(Title, X, Y, labels, xTickLabel, arc)
+    if nargin < 6
+        arc = 0;
+    end
+    plot(X, Y*100);grid on;
+    title(Title);
+    xlabel('Task Size');
+    ylabel('Rate (%)');
+    legend(labels, 'Location', 'northeast');
+    set(gca, 'XTicklabel', xTickLabel, 'XTickLabelRotation', arc);
+    hold on;
+end
 
-%% Flags
-xLabels = {'100', '120', '140', '160', '180', '191'};
-DrawResult(MyStat(CUR_IDX,1:6,IDX)', MyTime(CUR_IDX,1:6)', 'Task size', labels(CUR_IDX), xLabels);
-
-%% Emotions
-xLabels = {'100', '120', '140', '160', '180', '200'};
-DrawResult(MyStat(CUR_IDX,7:12,IDX)', MyTime(CUR_IDX,7:12)', 'Task size', labels(CUR_IDX), xLabels);
-
-%% Flags-Each
-xLabels = {'1', '2', '3', '4', '5', '6', '7'};
-DrawResult(MyStat(CUR_IDX,1:7,IDX)', MyTime(CUR_IDX,1), 'Task index', labels(CUR_IDX), xLabels);
-
-%% Emotions-Each
-xLabels = {'1', '2', '3', '4', '5', '6'};
-DrawResult(MyStat(CUR_IDX,1:6,IDX)', MyTime(CUR_IDX,1), labels(CUR_IDX), xLabels);
+function [ ] = Bar(Title, X, Y, labels, xTickLabel, arc)
+    if nargin < 6
+        arc = 0;
+    end
+    bar(X, Y*100);grid on;
+    title(Title);
+    xlabel('Task Size');
+    ylabel('Rate (%)');
+    legend(labels, 'Location', 'northeast');
+    set(gca, 'XTicklabel', xTickLabel, 'XTickLabelRotation', arc);
+    hold on;
+end

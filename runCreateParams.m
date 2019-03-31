@@ -3,10 +3,7 @@ clear
 
 addpath(genpath('./utils/'));
 
-% 核函数参数
-P1 = 2.^(-3:8)';
-
-% 分类器网格搜索参数
+% 网格搜索参数
 C = 2.^(-3:1:8)';
 C3 = 1e-7;% cond 矫正
 EPS = [0.01;0.02;0.05;0.1];
@@ -21,42 +18,39 @@ P = (0.5:0.5:2.0)';
 K = (3:2:13)';
 k = (1:2:7)';
 
-%% 构造核函数参数
+%% 核函数参数
+P1 = 2.^(-3:8)'; % 核函数参数
 [ linear ] = PackKernel('Linear');
 [ poly ] = PackKernel('Poly', 2);
 [ rbf ] = PackKernel('RBF', P1);
 
-%% 构造回归器参数
+%% 回归器参数
 RParams = cell(3, 1);
 [ RParams{1} ] = PackRParams(C, EPS, RHO, linear);
 [ RParams{2} ] = PackRParams(C, EPS, RHO, poly);
 [ RParams{3} ] = PackRParams(C, EPS, RHO, rbf);
 RParams = cellcat(RParams, 1);
 [ RParams ] = PrintParams('./params/LabRParams.txt', RParams);
-%% 保存参数
 save('./params/LabRParams.mat', 'RParams');
 
-%% 构造分类器参数
-[ linear ] = PackKernel('Linear');
-[ rbf ] = PackKernel('RBF', P1);
+%% 分类器参数
 CParams = cell(3, 1);
 [ CParams{1} ] = PackCParams(C, RHO, MU, ETA, P, RATE, linear);
 [ CParams{2} ] = PackCParams(C, RHO, MU, ETA, P, RATE, poly);
 [ CParams{3} ] = PackCParams(C, RHO, MU, ETA, P, RATE, rbf);
 CParams = cellcat(CParams, 1);
 [ CParams ] = PrintParams('./params/LabCParams.txt', CParams);
-%% 保存参数
 save('./params/LabCParams.mat', 'CParams');
 
-%% 构造安全筛选的参数
+%% 安全筛选参数
 [ linear0 ] = PackKernel('Linear');
+[ poly0 ] = PackKernel('Poly', 2);
 [ rbf0 ] = PackKernel('RBF', 8);
-SParams = cell(2, 1);
-[ SParams{1} ] = PackSParams(10.^(-1:0.04:1)', 10.^(-1:0.4:1)', linear0);
-[ SParams{2} ] = PackSParams(10.^(-1:0.04:1)', 10.^(-1:0.4:1)', rbf0);
+SParams = cell(3, 1);
+[ SParams{1} ] = PackSParams(10.^(0:0.02:1)', 10.^(-1:0.2:1)', linear0);
+[ SParams{2} ] = PackSParams(10.^(0:0.02:1)', 10.^(-1:0.2:1)', poly0);
+[ SParams{3} ] = PackSParams(10.^(0:0.02:1)', 10.^(-1:0.2:1)', rbf0);
 SParams = cellcat(SParams, 1);
-IParams = CreateParams(SParams{2});
-%% 保存参数
 [ SParams ] = PrintParams('./params/LabSParams.txt', SParams);
 save( './params/LabSParams.mat', 'SParams');
 

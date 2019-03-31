@@ -23,7 +23,7 @@ function [ LabStat, LabTime, HasStat ] = LabStatistics(Path, DataSet, IParams, o
             load(StatPath);
             [ ~, ~, n ] = size(CVStat);
             if n~= DataSet.TaskNum
-                ME = MException('LabStatistics', 'TaskNum miss match in %s\n', Method.Name);
+                ME = MException('LabStatistics', ['TaskNum miss match in ', Method.Name]);
                 throw(ME);
             else
                 % Íø¸ñËÑË÷½á¹û

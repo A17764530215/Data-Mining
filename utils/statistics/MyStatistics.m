@@ -3,8 +3,8 @@ function [ MyStat, MyTime, MyRank, MyName ] = MyStatistics(DataSets, IParams, Ty
 %   此处显示详细说明
 
     % 创建文件夹
-    Src = ['./data/', Type ];
-    Dst = ['./lab/', Type ];
+    Src = ['./data/', lower(Type) ];
+    Dst = ['./lab/', lower(Type) ];
     if exist(Src, 'dir') == 0
         mkdir(Src);
     end
