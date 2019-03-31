@@ -27,24 +27,25 @@ k = (1:2:7)';
 [ rbf ] = PackKernel('RBF', P1);
 
 %% 构造回归器参数
-RParams = cell(2, 1);
+RParams = cell(3, 1);
 [ RParams{1} ] = PackRParams(C, EPS, RHO, linear);
 [ RParams{2} ] = PackRParams(C, EPS, RHO, poly);
 [ RParams{3} ] = PackRParams(C, EPS, RHO, rbf);
 RParams = cellcat(RParams, 1);
-%% 保存参数
 [ RParams ] = PrintParams('./params/LabRParams.txt', RParams);
+%% 保存参数
 save('./params/LabRParams.mat', 'RParams');
 
 %% 构造分类器参数
 [ linear ] = PackKernel('Linear');
 [ rbf ] = PackKernel('RBF', P1);
-CParams = cell(2, 1);
+CParams = cell(3, 1);
 [ CParams{1} ] = PackCParams(C, RHO, MU, ETA, P, RATE, linear);
-[ CParams{2} ] = PackCParams(C, RHO, MU, ETA, P, RATE, rbf);
+[ CParams{2} ] = PackCParams(C, RHO, MU, ETA, P, RATE, poly);
+[ CParams{3} ] = PackCParams(C, RHO, MU, ETA, P, RATE, rbf);
 CParams = cellcat(CParams, 1);
-%% 保存参数
 [ CParams ] = PrintParams('./params/LabCParams.txt', CParams);
+%% 保存参数
 save('./params/LabCParams.mat', 'CParams');
 
 %% 构造安全筛选的参数
@@ -90,7 +91,7 @@ function [ RParams ] = PackRParams(C, EPS, RHO, kernel)
         struct('Name', 'MTLS_TWSVR_Xu', 'C1', C, 'eps1', EPS, 'rho', RHO, 'kernel', kernel)...
     };
     for  i = 1 : length(RParams)
-        RParams(i).ID = RParams(i).Name;
+        RParams{i}.ID = RParams{i}.Name;
     end
 end
 
@@ -114,7 +115,7 @@ function [ CParams ] = PackCParams(C, RHO, MU, ETA, P, RATE, kernel)
         struct('Name', 'MTvTWSVM2', 'v1', MU, 'rho', ETA, 'kernel', kernel);...
     };
     for  i = 1 : length(CParams)
-        CParams(i).ID = CParams(i).Name;
+        CParams{i}.ID = CParams{i}.Name;
     end
 end
 

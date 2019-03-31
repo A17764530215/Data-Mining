@@ -7,9 +7,8 @@ addpath(genpath('./params'));
 addpath(genpath('./utils'));
 
 % 实验设置
-opts = InitOptions('clf', 1, [], 0, 3);
+opts = InitOptions('clf', 1, [], 0, 2);
 % 核函数
-kernel = 'linear';
 Src = './data/classify';
 Dst = './lab/classify';
 Path = './results/classify';
@@ -21,6 +20,6 @@ end
 load('DATA.mat')
 load('LabCParams.mat');
 [ MyStat, MyTime, MyRank ] = MyStatistics(DataSets, CParams, Src, Dst, opts);
-path = [Path, '/MyStat-', kernel, '.mat'];
+path = [Path, '/MyStat.mat'];
 save(path, 'MyStat', 'MyTime', 'MyRank');
 fprintf(['save: ', path, '\n']);
