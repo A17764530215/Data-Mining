@@ -15,7 +15,7 @@ load('LabSParams.mat');
 % 将三种核函数的实验分开
 Kernels = {'Linear', 'Poly', 'RBF'};
 RParams = mat2cell(RParams, [14, 14, 14]);
-CParams = mat2cell(CParams, [15, 15, 15]);
+CParams = mat2cell(CParams, [16, 16, 16]);
 SParams = mat2cell(SParams, [4, 4, 4]);
 
 %% 统计数据

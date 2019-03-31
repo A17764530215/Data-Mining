@@ -47,11 +47,15 @@ save('./params/LabCParams.mat', 'CParams');
 [ poly0 ] = PackKernel('Poly', 2);
 [ rbf0 ] = PackKernel('RBF', 8);
 SParams = cell(3, 1);
-[ SParams{1} ] = PackSParams(10.^(0:0.02:1)', 10.^(-1:0.2:1)', linear0);
-[ SParams{2} ] = PackSParams(10.^(0:0.02:1)', 10.^(-1:0.2:1)', poly0);
-[ SParams{3} ] = PackSParams(10.^(0:0.02:1)', 10.^(-1:0.2:1)', rbf0);
+% [ SParams{1} ] = PackSParams(10.^(0:0.02:1)', 10.^(-1:0.2:1)', linear0);
+% [ SParams{2} ] = PackSParams(10.^(0:0.02:1)', 10.^(-1:0.2:1)', poly0);
+% [ SParams{3} ] = PackSParams(10.^(0:0.02:1)', 10.^(-1:0.2:1)', rbf0);
+[ SParams{1} ] = PackSParams(2.^(-3:0.05:2)', 2.^(-3:0.5:3)', linear0);
+[ SParams{2} ] = PackSParams(2.^(-3:0.05:2)', 2.^(-3:0.5:3)', poly0);
+[ SParams{3} ] = PackSParams(2.^(-3:0.05:2)', 2.^(-3:0.5:3)', rbf0);
 SParams = cellcat(SParams, 1);
 [ SParams ] = PrintParams('./params/LabSParams.txt', SParams);
+[ IParams ] = CreateParams(SParams{2});
 save( './params/LabSParams.mat', 'SParams');
 
 %% ºË²ÎÊý
@@ -99,6 +103,7 @@ function [ CParams ] = PackCParams(C, RHO, MU, ETA, P, RATE, kernel)
         struct('Name', 'LSTWSVM', 'C1', C, 'kernel', kernel);...
         struct('Name', 'vTWSVM', 'v1', MU, 'kernel', kernel);...
         struct('Name', 'ITWSVM', 'C1', C, 'C3', C, 'kernel', kernel);...
+        struct('Name', 'RMTL', 'lambda1', RHO, 'lambda2', RHO, 'kernel', kernel);...
         struct('Name', 'MTPSVM', 'lambda', RHO, 'nu', RHO, 'kernel', kernel);...
         struct('Name', 'MTLS_SVM', 'lambda', RHO, 'gamma', RHO, 'kernel', kernel);...
         struct('Name', 'MTL_aLS_SVM', 'C1', C, 'C2', C, 'rho', RATE, 'kernel', kernel);...

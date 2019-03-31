@@ -13,7 +13,7 @@ ylabel('\nu_1(\nu_2)');
 
 %% SSRC_IRMTL
 BestParams = [];
-for i =[ 1:20 22:27 43:57 ]
+for i =[ 57 ]
     Path = sprintf('./data/ssr/rbf/5-fold/SSRC_IRMTL-%s.mat', DataSets(i).Name);
     load(Path);
     INDICES = {'Selected'};

@@ -1,27 +1,19 @@
 clc
 clear
 
-Path = './data/ssr';
-
-% 添加搜索路径
-addpath(genpath('./datasets'));
-addpath(genpath('./params'));
-addpath(genpath('./model'));
-addpath(genpath('./utils'));
-
 % 加载数据集和网格搜索参数
 load('DATA5.mat');
 load('LabSParams.mat');
 
-% 数据集
 DataSetIndices = [ 1:57 ];
-ParamIndices = [ 1:2 5:6 ];
-ForceWrite = false;
+ParamIndices = [ 1:2 7:8 ];
+ForceWrite = true;
 
 %% 实验设置 RMTL
 solver = struct('Display', 'off');
 opts = InitOptions('clf', 0, solver, 0, 3);
 fd = fopen(['./log/log-', datestr(now, 'yyyymmddHHMM'), '.txt'], 'w');
+Path = './data/ssr';
 
 % 实验开始
 fprintf('runGridSearch\n');

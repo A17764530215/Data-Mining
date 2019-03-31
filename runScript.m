@@ -25,3 +25,9 @@ load('Caltech.mat');
 DataSets = {MTL_UCI;Caltech};
 DataSets = cellcat(DataSets, 1);
 save DATA3.mat DataSets;
+
+%% Ìí¼ÓËÑË÷Â·¾¶
+addpath(genpath('./datasets'));
+addpath(genpath('./params'));
+addpath(genpath('./model'));
+addpath(genpath('./utils'));

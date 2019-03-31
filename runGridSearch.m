@@ -1,14 +1,8 @@
-% 添加搜索路径
-addpath(genpath('./datasets'));
-addpath(genpath('./params'));
-addpath(genpath('./model'));
-addpath(genpath('./utils'));
-
 %% 加载数据集和网格搜索参数
 clc
 clear
 
-Path = './data/classify/rbf/';
+Path = './data/classify';
 if exist(Path, 'dir') == 0
     mkdir(Path);
 end
@@ -17,15 +11,17 @@ load('MTL_UCI5.mat');
 load('LabCParams.mat');
 
 DataSets = MTL_UCI5;
-IParams = CParams;
+CParams = mat2cell(CParams, [16, 16, 16]);
+IParams = CParams{3};
 
 % 数据集
-DataSetIndices = [ 2:9 1 ];
-ParamIndices = [ 9 ];
+DataSetIndices = [ 2:9 ];
+ParamIndices = [ 8 ];
+ForceWrite = false;
 
 %% 实验设置
-solver = [];%struct('parallel', false);
-opts = InitOptions('clf', 0, solver, 0, 2);
+solver = struct('Display', 'off');
+opts = InitOptions('clf', 0, solver, 0, 3);
 fd = fopen(['./log/log-', datestr(now, 'yyyymmddHHMM'), '.txt'], 'w');
 
 % 实验开始
@@ -35,15 +31,15 @@ for i = DataSetIndices
     fprintf('DataSet: %s\n', DataSet.Name);
     [ X, Y, ValInd ] = GetMultiTask(DataSet);
     [ X ] = Normalize(X);
-    StatDir = [ Path, int2str(DataSet.Kfold) '-fold/' ];
-    if exist(StatDir, 'dir') == 0
-        mkdir(StatDir);
-    end
     for j = ParamIndices
-        Method = IParams{j};
-        Name = [Method.Name, '-', DataSet.Name];
-        StatPath = [StatDir, Name, '.mat'];
-        if exist(StatPath, 'file') == 2
+        Method = CParams{j};
+        Name = [Method.ID, '-', DataSet.Name];
+        SavePath = sprintf('%s/%s/%d-fold/', Path, Method.kernel.type, DataSet.Kfold);
+        if exist(SavePath, 'dir') == 0
+            mkdir(SavePath);
+        end
+        StatPath = [SavePath, Name, '.mat'];
+        if exist(StatPath, 'file') == 2 && ForceWrite == false
             fprintf(fd, 'skip: %s\n', StatPath);
             continue;
         else

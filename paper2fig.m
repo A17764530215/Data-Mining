@@ -15,7 +15,7 @@ BatchDraw(MTL_Summary)
 [ d ] = SafeScreening();
 Data = mat2cell(Summary.State', length(d.Legends), d.IDX);
 [ SSR_Summary ] = Transform(Data, d, 1);
-BatchDraw(SSR_Summary);
+BatchDraw(SSR_Summary, [1:9]);
 
 % ×ª»»¸ñÊ½
 function [ Summary ] = Transform(Data, d, k)
@@ -44,15 +44,15 @@ function [ d ] = Classify()
     d.Legends = {
         'SVM','PSVM','LS-SVM',...
         'TWSVM','LS-TWSVM','\nu-TWSVM','ITWSVM',...
-        'MTPSVM','MTLS-SVM','MTL-aLS-SVM',...
+        'RMTL','MTPSVM','MTLS-SVM','MTL-aLS-SVM',...
         'DMTSVM','MCTSVM','MTLS_TWSVM','MT-\nu-TWSVM I','MT-\nu-TWSVM II'
     };
-    d.MTL = [8:12 14 15];
-    d.STL = [1 2 3 4 5 6 14 15];
+    d.MTL = [8:13 15 16];
+    d.STL = [1:6 15 16];
     d.Titles = {'Monk', 'Isolet', 'Letter_1', 'Letter_2', 'Caltech 101', 'Caltech 256', 'Flags', 'Emotions'};
     d.xLabels = { 'Task Size', 'Dataset Index', '#Task', 'Dataset Index', 'Category', 'Category',  'Task Size', 'Task Size'};
     d.XTicklabel = {
-        'All', '60', '90', '120', '150', '180', '210', '240', '270', ...
+        '60', '90', '120', '150', '180', '210', '240', '270', 'All',...
         'ab', 'cd', 'ef', 'gh', 'ij', 'kl','mn','op',...
         '3', '5', '7', '9', '11',...
         'T1', 'T2', 'T3', 'T4', 'T5',...
@@ -76,7 +76,7 @@ function [ d ] = SafeScreening()
     d.Titles = {'Monk', 'Isolet', 'Letter_1', 'Letter_2', 'Caltech 101', 'Caltech 256', 'Flags', 'Emotions', 'MTL'};
     d.xLabels = { 'Task Size', 'Dataset Index', '#Task', 'Dataset Index', 'Category', 'Category',  'Task Size', 'Task Size', 'Dataset'};
     d.XTicklabel = {
-        'All', '60', '90', '120', '150', '180', '210', '240', '270', ...
+        '60', '90', '120', '150', '180', '210', '240', '270', 'All',...
         'ab', 'cd', 'ef', 'gh', 'ij', 'kl','mn','op',...
         '3', '5', '7', '9', '11',...
         'T1', 'T2', 'T3', 'T4', 'T5',...
@@ -90,10 +90,10 @@ function [ d ] = SafeScreening()
 end
 
 % draw
-function [ ] = BatchDraw(Summary)
+function [ ] = BatchDraw(Summary, IDX)
     figure();
     i = 1;
-    for p = 1 : 8
+    for p = IDX
         subplot(3, 3, i);
         DrawResult(Summary(p));
         hold on
