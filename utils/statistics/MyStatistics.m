@@ -1,8 +1,10 @@
-function [ MyStat, MyTime, MyRank ] = MyStatistics(DataSets, IParams, Src, Dst, opts)
+function [ MyStat, MyTime, MyRank, MyName ] = MyStatistics(DataSets, IParams, Type, opts)
 %MYSTATISTICS 此处显示有关此函数的摘要
 %   此处显示详细说明
 
     % 创建文件夹
+    Src = ['./data/', Type ];
+    Dst = ['./lab/', Type ];
     if exist(Src, 'dir') == 0
         mkdir(Src);
     end
@@ -11,9 +13,10 @@ function [ MyStat, MyTime, MyRank ] = MyStatistics(DataSets, IParams, Src, Dst, 
     end
     
     % 统计每个数据集上的多任务实验数据
-    MyStat = [ ];
-    MyTime = [ ];
-    MyRank = [ ];
+    MyStat = [];
+    MyTime = [];
+    MyRank = [];
+    MyName = {};
     n = length(DataSets);
     for j = 1 : n
         DataSet = DataSets(j);
@@ -26,6 +29,7 @@ function [ MyStat, MyTime, MyRank ] = MyStatistics(DataSets, IParams, Src, Dst, 
                    MyTime = cat(2, MyTime, LabTime(:,1));
                    [ ~, IDX ] = sort(LabStat(:,1,1));
                    MyRank = cat(2, MyRank, IDX);
+                   MyName = cat(1, MyName, DataSet.Name);
                end
             end
         catch MException

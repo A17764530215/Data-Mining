@@ -3,15 +3,15 @@ h = figure();
 MyStat = MyStat*100;
 MyTime = MyTime*1000;
 %%
-load('MTL_UCI5.mat');
-load('Caltech5.mat');
-load('MLC5.mat');
+load('DATA5.mat');
 load('LabCParams.mat');
-labels = {'\nu-TWSVM','SVM','PSVM','LS-SVM','TWSVM','LS-TWSVM','MT-\nu-TWSVM II','MT-\nu-TWSVM I','MTPSVM','MTLS-SVM','DMTSVM','MTL-aLS-SVM','MCTSVM'};
+labels = {
+    'SVM','PSVM','LS-SVM','TWSVM','LS-TWSVM','\nu-TWSVM','ITWSVM',...
+    'MTPSVM','MTLS-SVM''MTL-aLS-SVM','DMTSVM','MCTSVM','MT-\nu-TWSVM I','MT-\nu-TWSVM II'};
 % 单任务学习
-STL_IDX = [2 3 4 5 6 1 8 7];
+STL_IDX = [1 2 3 4 5 6 14 15];
 % 多任务学习
-MTL_IDX = [9 10 12 11 13 8 7 ];
+MTL_IDX = [8:12 14 15];
 CUR_IDX = MTL_IDX;
 IDX = 1;
 %% Monk

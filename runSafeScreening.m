@@ -10,14 +10,7 @@ addpath(genpath('./model'));
 addpath(genpath('./utils'));
 
 % 加载数据集和网格搜索参数
-% load('MLC5.mat');
-% load('Caltech.mat');
-% load('MTL5.mat');
-% load('MTL_UCI5.mat');
-% DataSets = {MTL_UCI5;Caltech;MLC5;MTL5};
-% DataSets = cellcat(DataSets, 1);
-
-load('DATA.mat');
+load('DATA5.mat');
 load('LabSParams.mat');
 
 % 数据集
