@@ -4,12 +4,12 @@ function [  ] = SaveStatistics( Path, DataSet, LabStat, LabTime, opts )
 %   此处显示详细说明
 
     % 交叉验证文件夹
-    Dir = [Path, int2str(DataSet.Kfold), '-fold/'];
+    Dir = sprintf('%s/%d-fold/', Path, DataSet.Kfold);
     if exist(Dir, 'dir') == 0
         mkdir(Dir);
     end
     % 统计数据文件夹
-    StatDir = [Dir, 'statistics/'];
+    StatDir = [Dir, '/statistics/'];
     if exist(StatDir, 'dir') == 0
         mkdir(StatDir);
     end    

@@ -10,20 +10,26 @@ addpath(genpath('./model'));
 addpath(genpath('./utils'));
 
 % 加载数据集和网格搜索参数
+% load('MLC5.mat');
+% load('Caltech.mat');
+% load('MTL5.mat');
+% load('MTL_UCI5.mat');
+% DataSets = {MTL_UCI5;Caltech;MLC5;MTL5};
+% DataSets = cellcat(DataSets, 1);
+
 load('DATA.mat');
 load('LabSParams.mat');
 
 % 数据集
-DataSetIndices = [ 28 ];
-ParamIndices = [ 1:2 5:6 9:10 ];
+DataSetIndices = [ 1:57 ];
+ParamIndices = [ 1:2 5:6 ];
+ForceWrite = false;
 
 %% 实验设置 RMTL
 solver = struct('Display', 'off');
 opts = InitOptions('clf', 0, solver, 0, 3);
 fd = fopen(['./log/log-', datestr(now, 'yyyymmddHHMM'), '.txt'], 'w');
 
-% profile clear;
-% profile on;
 % 实验开始
 fprintf('runGridSearch\n');
 for i = DataSetIndices
@@ -39,7 +45,7 @@ for i = DataSetIndices
             mkdir(SavePath);
         end
         StatPath = [SavePath, Name, '.mat'];
-        if exist(StatPath, 'file') == 2
+        if exist(StatPath, 'file') == 2 && ForceWrite == false
             fprintf(fd, 'skip: %s\n', StatPath);
             continue;
         else
@@ -55,6 +61,4 @@ for i = DataSetIndices
     end
 end
 fclose(fd);
-% profile viewer;
-% p = profile('info');
-% profsave(p, 'profile_results');
+IParams = CreateParams(Method);

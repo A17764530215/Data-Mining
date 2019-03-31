@@ -19,8 +19,14 @@ Ny = length(Y);
 count = Nx*Ny;
 L = floor(IDX(1)/count)*count+1;
 R = ceil(IDX(1)/count)*count;
-Z = reshape([Result(L:R).(INDICES{1})]', Ny, Nx);
-surf(X, Y, Z);
+try
+    Z = reshape([Result(L:R).(INDICES{1})]', Ny, Nx);
+    surf(X, Y, Z);
+    xlabel(['\', x]);
+    ylabel(y);
+catch
+    fprintf(['error:', CParams.ID]);
+end
 %% 最优参数
 BestParam = Result(IDX(1));
 end
