@@ -5,8 +5,8 @@ clear
 load('DATA5.mat');
 load('LabSParams.mat');
 
-DataSetIndices = [ 1:57 ];
-ParamIndices = [ 1:2 7:8 ];
+DataSetIndices = [ 1:9 ]; % low related
+ParamIndices = [ 1:2 ];
 ForceWrite = true;
 
 %%  µ—È…Ë÷√ RMTL

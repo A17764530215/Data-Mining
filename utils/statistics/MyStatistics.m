@@ -1,4 +1,4 @@
-function [ MyStat, MyTime, MyRank, MyName ] = MyStatistics(DataSets, IParams, Type, opts)
+function [ d ] = MyStatistics(DataSets, IParams, Type, opts)
 %MYSTATISTICS 此处显示有关此函数的摘要
 %   此处显示详细说明
 
@@ -13,10 +13,7 @@ function [ MyStat, MyTime, MyRank, MyName ] = MyStatistics(DataSets, IParams, Ty
     end
     
     % 统计每个数据集上的多任务实验数据
-    MyStat = [];
-    MyTime = [];
-    MyRank = [];
-    MyName = {};
+    Name = {}; Time = []; Rank = []; Data = []; 
     n = length(DataSets);
     for j = 1 : n
         DataSet = DataSets(j);
@@ -25,15 +22,17 @@ function [ MyStat, MyTime, MyRank, MyName ] = MyStatistics(DataSets, IParams, Ty
             if HasStat == 1
                SaveStatistics(Dst, DataSet, LabStat, LabTime, opts);
                if opts.Mean == 1
-                   MyStat = cat(2, MyStat, LabStat(:,1,:));
-                   MyTime = cat(2, MyTime, LabTime(:,1));
+                   Data = cat(2, Data, LabStat(:,1,:));
+                   Time = cat(2, Time, LabTime(:,1));
                    [ ~, IDX ] = sort(LabStat(:,1,1));
-                   MyRank = cat(2, MyRank, IDX);
-                   MyName = cat(1, MyName, DataSet.Name);
+                   Rank = cat(2, Rank, IDX);
+                   Name = cat(1, Name, DataSet.Name);
                end
             end
         catch MException
             fprintf(['Exception in: ', DataSet.Name, '\n']);
         end
     end
+    d.Name = Name; d.Time = Time;
+    d.Rank = Rank; d.Data = Data;
 end

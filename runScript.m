@@ -31,3 +31,8 @@ addpath(genpath('./datasets'));
 addpath(genpath('./params'));
 addpath(genpath('./model'));
 addpath(genpath('./utils'));
+
+%% ´´½¨Ä¿Â¼
+mkdir('./results/paper1/');
+mkdir('./results/paper2/');
+mkdir('./results/paper3/');

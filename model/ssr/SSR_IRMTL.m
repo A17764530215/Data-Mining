@@ -82,10 +82,10 @@ end
         
         Rate = mean(abs(Alpha)<1e-7 | abs(Alpha-C)<1e-7);
         
-            function [ y ] = predict(H, Y, Alpha)
-                svi = Alpha~=0;
-                y = H(:,svi)*(Y(svi,:).*Alpha(svi,:));
-            end
+        function [ y ] = predict(H, Y, Alpha)
+            svi = Alpha~=0;
+            y = H(:,svi)*(Y(svi,:).*Alpha(svi,:));
+        end
     end
 
 %% RMTL
@@ -101,16 +101,16 @@ end
     function [ Alpha2 ] = SSR_C(H2, Alpha1, Params, LastParams)
         C = Params.C;
         C0 = LastParams.C;
-        k1 = (C+C0)/(2*C0);
-        k2 = (C-C0)/(2*C0);
+        k1 = (C+C0)/C0;
+        k2 = (C-C0)/C0;
         % safe screening rules for $C$
         P = chol(H2, 'upper');
         LL = H2*(Alpha1*k1);
         RL = sqrt(sum(P.*P, 1))';
-        RR = RL*norm(P*(Alpha1*k2));
+        RR = RL*norm(P*Alpha1*k2);
         Alpha2 = Inf(size(Alpha1));
-        Alpha2(LL - RR > 1) = 0;
-        Alpha2(LL + RR < 1) = C;
+        Alpha2(LL - RR > 2) = 0;
+        Alpha2(LL + RR < 2) = C;
     end
 
 %% SSR for $\mu$, $p$

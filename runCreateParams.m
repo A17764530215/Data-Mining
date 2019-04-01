@@ -45,14 +45,23 @@ save('./params/LabCParams.mat', 'CParams');
 %% 安全筛选参数
 [ linear0 ] = PackKernel('Linear');
 [ poly0 ] = PackKernel('Poly', 2);
-[ rbf0 ] = PackKernel('RBF', 8);
+[ rbf0 ] = PackKernel('RBF', 256);
 SParams = cell(3, 1);
 % [ SParams{1} ] = PackSParams(10.^(0:0.02:1)', 10.^(-1:0.2:1)', linear0);
 % [ SParams{2} ] = PackSParams(10.^(0:0.02:1)', 10.^(-1:0.2:1)', poly0);
 % [ SParams{3} ] = PackSParams(10.^(0:0.02:1)', 10.^(-1:0.2:1)', rbf0);
-[ SParams{1} ] = PackSParams(2.^(-3:0.05:2)', 2.^(-3:0.5:3)', linear0);
-[ SParams{2} ] = PackSParams(2.^(-3:0.05:2)', 2.^(-3:0.5:3)', poly0);
-[ SParams{3} ] = PackSParams(2.^(-3:0.05:2)', 2.^(-3:0.5:3)', rbf0);
+% for all datasets
+% [ SParams{1} ] = PackSParams(10.^(0:0.015:1)', 10.^(-1:0.2:1)', linear0);
+% [ SParams{2} ] = PackSParams(10.^(0:0.015:1)', 10.^(-1:0.2:1)', poly0);
+% [ SParams{3} ] = PackSParams(10.^(0:0.015:1)', 10.^(-1:0.2:1)', rbf0);
+% for Monk, Letters, Flags, Emotions, Spams, low related
+[ SParams{1} ] = PackSParams(2.^(-1:0.04:3)', 2.^(-3:0.5:3)', linear0);
+[ SParams{2} ] = PackSParams(2.^(-1:0.04:3)', 2.^(-3:0.5:3)', poly0);
+[ SParams{3} ] = PackSParams(2.^(-1:0.04:3)', 2.^(-3:0.5:3)', rbf0);
+% % for Isolet, Caltech, high related
+% [ SParams{1} ] = PackSParams(10.^(0:0.015:1)', 10.^(-1:0.1:0)', linear0);
+% [ SParams{2} ] = PackSParams(10.^(0:0.015:1)', 10.^(-1:0.1:0)', poly0);
+% [ SParams{3} ] = PackSParams(10.^(0:0.015:1)', 10.^(-1:0.1:0)', rbf0);
 SParams = cellcat(SParams, 1);
 [ SParams ] = PrintParams('./params/LabSParams.txt', SParams);
 [ IParams ] = CreateParams(SParams{2});

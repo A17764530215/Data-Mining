@@ -15,7 +15,7 @@ BatchDraw(MTL_Summary)
 [ d ] = SafeScreening();
 Data = mat2cell(Summary.State', length(d.Legends), d.IDX);
 [ SSR_Summary ] = Transform(Data, d, 1);
-BatchDraw(SSR_Summary, [1:9]);
+BatchDraw(SSR_Summary, [1 7 8 2 3 4 5 6 9]);
 
 % ×ª»»¸ñÊ½
 function [ Summary ] = Transform(Data, d, k)
