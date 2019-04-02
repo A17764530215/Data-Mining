@@ -4,7 +4,7 @@ function [ yTest, Time ] = LS_SVR(xTrain, yTrain, xTest, opts)
 %   此处显示详细说明
 
 %% Parse opts
-gamma = opts.gamma;
+C = opts.C;
 kernel = opts.kernel;
 
 %% Fit
@@ -13,11 +13,11 @@ X = xTrain;
 Y = yTrain;
 Q = Kernel(X, X, kernel);
 I = speye(size(Q));
-H = Q + 1/gamma*I;
+H = Q + I/C;
 E = ones(size(Y));
 Alphab = [H E;E' 0]\[Y; 0];
 Alpha = Alphab(1:end-1);
-svi = (Alpha>0)&(Alpha<gamma);
+svi = Alpha~=0;
 b = Alphab(end);
 Time = toc;
 

@@ -4,7 +4,7 @@ function  [ yTest, Time ] = PSVM( xTrain, yTrain, xTest, opts )
 %   此处显示详细说明
 
 %% Parse opts
-nu = opts.nu;
+C = opts.C;
 kernel = opts.kernel;
 
 %% Fit
@@ -15,7 +15,7 @@ H = Kernel(X, X, kernel);
 Q = Y.*(H + 1).*Y';
 I = speye(size(H));
 e = ones(size(Y));
-Alpha = Cond(Q + 1/nu*I)\e;
+Alpha = Cond(Q + I/C)\e;
 svi = Alpha~=0;
 b = Y(svi,:)'*Alpha(svi,:);
 Time = toc;

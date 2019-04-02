@@ -7,8 +7,8 @@ function [ d ] = Compare(Path, DataSets, INDICES, MethodA, MethodB)
     Result = cell(n, 1);
     ErrorParams = cell(n, 1);
     ErrorResult = cell(n, 1);
-    State = zeros(n, 7);
-    Error = zeros(n, 6);
+    State = zeros(n, 8);
+    Error = zeros(n, 7);
     for i = INDICES
         D = DataSets(i);
         try
@@ -24,16 +24,17 @@ function [ d ] = Compare(Path, DataSets, INDICES, MethodA, MethodB)
         IDX = B.CVRate>0;
         cnt = sum(IDX, 1);
         avg0 = mean(B.CVRate, 1);
+        avg1 = mean(B.CVRate(:,1)./B.CVRate(:,2));
         avg2 = mean(B.CVRate(IDX(:,2),1)./B.CVRate(IDX(:,2),2));
         a = mean([A.CVStat(:,1,:), B.CVStat(:,1,:)], 3);
         b = mean(A.CVStat(:,1,:) - B.CVStat(:,1,:), 3);
         Result{i} = [a, b, a-b, B.CVRate, A.CVTime(:,1), B.CVTime(:,1)];
         if mean(C(:)) == 1
 %             fprintf('Success: %d\n', i);
-            State(i,:) = [cnt, avg0(:,1)/avg0(:,2), avg0, avg2, T(1)];
+            State(i,:) = [cnt, avg0(:,1)/avg0(:,2), avg0, avg1, avg2, T(1)];
         else
             fprintf('Error: %d\n', i);
-            Error(i,:) = [cnt, avg0(:,1)/avg0(:,2), avg0, T(1)];
+            Error(i,:) = [cnt, avg0(:,1)/avg0(:,2), avg0, avg1, T(1)];
         end
         
         % record errors

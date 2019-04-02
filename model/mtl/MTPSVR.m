@@ -5,10 +5,10 @@ function [ yTest, Time ] = MTPSVR( xTrain, yTrain, xTest, opts )
 %   此处显示详细说明
 
 %% Parse opts
-TaskNum = length(xTrain);
+C = opts.C;
 lambda = opts.lambda;
-nu = opts.nu;
 kernel = opts.kernel;
+TaskNum = length(xTrain);
 
 %% Fit
 tic;
@@ -20,7 +20,7 @@ for t = 1 : TaskNum
     P = blkdiag(P, Q(Tt,Tt) + 1);
 end
 I = speye(size(Q));
-Alpha = Cond(Q + TaskNum/lambda*P + 1/nu*I)\Y;
+Alpha = Cond(Q + TaskNum/lambda*P + I/C)\Y;
 Time = toc;
 
 %% Predict
@@ -36,7 +36,7 @@ for t = 1 : TaskNum
 end
 
     function [ y ] = Predict(H, Alpha)
-        svi = Alpha>0;
+        svi = Alpha~=0;
         y = H(:,svi)*Alpha(svi,:);
     end
 end

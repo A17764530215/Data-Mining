@@ -15,19 +15,53 @@ clear
 load('DATA5.mat');
 load('LabSParams.mat');
 Path = './data/ssr/rbf/5-fold';
-[ Result ] = GetParams(Path, DataSets, SParams{10}, [57],  {'Selected'});
-BestParams = [Result.Result.BestParam];
+[ Result1 ] = GetBestAccuracy(Path, DataSets, SParams{10}, [1:34],  {'Accuracy'});
+BestParams1 = [Result1.Result.BestParam];
+[ Result2 ] = GetBestRate(Path, DataSets, SParams{10}, [1:34],  {'Selected'});
+BestParams2 = [Result2.Result.BestParam];
+DrawAccuracyRate(Result1, Result2, 'rbf', [1 : 34]);
+%%
+function [ ] = DrawAccuracyRate(Result1, Result2, Kernel, IDX)
+    figure();
+    for i  = IDX
+        clf;
+        subplot(1, 2, 1);
+        title('Accuracy');
+        surf(Result1.Result(i).Z)
+        hold on;
+        subplot(1, 2, 2);
+        title('Selected');
+        surf(Result2.Result(i).Z);
+        path = sprintf('./figures/paper3/index/pic_%s-%d.png', Kernel,  i);
+        saveas(gcf, path);
+    end
+end
 %%
 % file = sprintf('./results/paper3/RES_RBF_%s.mat', datestr(now, 'mmddHHMM'));
 % save(file, 'Result');
 %% 
-function [ r ] = GetParams(Path, DataSets, SParams, IDX, INDICES)
+function [ r ] = GetBestAccuracy(Path, DataSets, SParams, IDX, INDICES)
+    Result = [];
+    for i = IDX
+        File = sprintf('%s/SSRC_IRMTL-%s.mat', Path, DataSets(i).Name);
+        d = load(File);
+        Data = mean(d.CVStat, 3);
+        [ s ] = GetBestParam(SParams, Data, INDICES, 'mu', 'C', false);
+        s.DataSet = DataSets(i).Name;
+        Result = cat(1, Result, s);
+    end
+    r.Result = Result;
+    r.SParams = SParams;
+end
+
+%% 
+function [ r ] = GetBestRate(Path, DataSets, SParams, IDX, INDICES)
     Result = [];
     for i = IDX
         File = sprintf('%s/SSRC_IRMTL-%s.mat', Path, DataSets(i).Name);
         d = load(File);
         Data = d.CVRate(:,1)./d.CVRate(:,2);
-        [ s ] = GetBestParam(SParams, Data, INDICES, 'mu', 'C', true);
+        [ s ] = GetBestParam(SParams, Data, INDICES, 'mu', 'C', false);
         s.DataSet = DataSets(i).Name;
         Result = cat(1, Result, s);
     end

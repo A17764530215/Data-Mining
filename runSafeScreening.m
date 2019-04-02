@@ -5,9 +5,11 @@ clear
 load('DATA5.mat');
 load('LabSParams.mat');
 
-DataSetIndices = [ 1:9 ]; % low related
-ParamIndices = [ 1:2 ];
-ForceWrite = true;
+% DataSetIndices = [ 1:9 18:27 43:56 ]; % low related
+% DataSetIndices = [ 10:17 28:42 ]; % high related
+DataSetIndices = 1 : 57;
+ParamIndices = [ 1:2 9:10 ];
+OverWrite = true;
 
 %%  µ—È…Ë÷√ RMTL
 solver = struct('Display', 'off');
@@ -30,7 +32,7 @@ for i = DataSetIndices
             mkdir(SavePath);
         end
         StatPath = [SavePath, Name, '.mat'];
-        if exist(StatPath, 'file') == 2 && ForceWrite == false
+        if exist(StatPath, 'file') == 2 && OverWrite == false
             fprintf(fd, 'skip: %s\n', StatPath);
             continue;
         else
