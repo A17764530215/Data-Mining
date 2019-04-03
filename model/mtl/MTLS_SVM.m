@@ -5,8 +5,8 @@ function  [ yTest, Time ] = MTLS_SVM(xTrain, yTrain, xTest, opts)
 %   此处显示详细说明
 
 %% Parse opts
+C = opts.C;
 lambda = opts.lambda;
-gamma = opts.gamma;
 kernel = opts.kernel;
 TaskNum = length(xTrain);
 
@@ -25,7 +25,7 @@ o = zeros(TaskNum, 1);
 O = speye(TaskNum)*0;
 I = speye(size(Q));
 E = ones(size(Y));
-H = Q + TaskNum/lambda*P + 1/gamma*I;
+H = Q + TaskNum/lambda*P + I/C;
 bAlpha = [O A';A H]\[o; E];
 b = bAlpha(1:TaskNum,:);
 Alpha = bAlpha(TaskNum+1:end,:);

@@ -11,7 +11,7 @@ load('LabSParams.mat');
 Kernels = {'Linear', 'Poly', 'RBF'};
 RParams = mat2cell(RParams, [14, 14, 14]);
 CParams = mat2cell(CParams, [16, 16, 16]);
-SParams = mat2cell(SParams, [4, 4, 4]);
+SParams = mat2cell(SParams, [9, 9, 9]);
 
 %% 统计数据
 opts = InitOptions('clf', 1, [], 0, 3);

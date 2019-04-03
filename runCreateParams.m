@@ -45,7 +45,7 @@ save('./params/LabCParams.mat', 'CParams');
 %% 安全筛选参数
 [ linear0 ] = PackKernel('Linear');
 [ poly0 ] = PackKernel('Poly', 2);
-[ rbf0 ] = PackKernel('RBF', 256);
+[ rbf0 ] = PackKernel('RBF', 64);
 SParams = cell(3, 1);
 % [ SParams{1} ] = PackSParams(10.^(0:0.02:1)', 10.^(-1:0.2:1)', linear0);
 % [ SParams{2} ] = PackSParams(10.^(0:0.02:1)', 10.^(-1:0.2:1)', poly0);
@@ -58,10 +58,10 @@ SParams = cell(3, 1);
 % [ SParams{1} ] = PackSParams(2.^(2:0.05:7)', 2.^(-6:6)', linear0);
 % [ SParams{2} ] = PackSParams(2.^(2:0.05:7)', 2.^(-6:6)', poly0);
 % [ SParams{3} ] = PackSParams(2.^(2:0.05:7)', 2.^(-6:6)', rbf0);
-% % % for Isolet, Caltech, high related
-[ SParams{1} ] = PackSParams(2.^(0:0.03:5)', 2.^(-5:5)', linear0);
-[ SParams{2} ] = PackSParams(2.^(0:0.03:5)', 2.^(-5:5)', poly0);
-[ SParams{3} ] = PackSParams(2.^(0:0.03:5)', 2.^(-5:5)', rbf0);
+% 2019年4月2日23:04:28
+[ SParams{1} ] = PackSParams(2.^(0:0.03:5)', 2.^(-4:4)', linear0);
+[ SParams{2} ] = PackSParams(2.^(0:0.03:5)', 2.^(-4:4)', poly0);
+[ SParams{3} ] = PackSParams(2.^(0:0.03:5)', 2.^(-4:4)', rbf0);
 SParams = cellcat(SParams, 1);
 [ SParams ] = PrintParams('./params/LabSParams.txt', SParams);
 [ IParams ] = CreateParams(SParams{2});
@@ -144,6 +144,6 @@ function [ SParams ] = PackSParams(C, MU, kernel)
         struct('ID', 'PSVM', 'Name', 'PSVM', 'C', C, 'kernel', kernel);...
         struct('ID', 'LS_SVM', 'Name', 'LS_SVM', 'C', C, 'kernel', kernel);...
         struct('ID', 'MTPSVM', 'Name', 'MTPSVM', 'C', C, 'lambda', MU, 'kernel', kernel);...
-        struct('ID', 'MTPSVM', 'Name', 'MTLS_SVM', 'C', C, 'lambda', MU, 'kernel', kernel);...
+        struct('ID', 'MTLS_SVM', 'Name', 'MTLS_SVM', 'C', C, 'lambda', MU, 'kernel', kernel);...
     };
 end
