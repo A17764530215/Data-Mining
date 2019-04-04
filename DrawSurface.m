@@ -15,9 +15,9 @@ clear
 load('DATA5.mat');
 load('LabSParams.mat');
 Path = './data/ssr/linear/5-fold';
-[ Result1 ] = GetBestAccuracy(Path, DataSets, SParams{10}, [1:57],  {'Accuracy'});
+[ Result1 ] = GetBestAccuracy(Path, DataSets, SParams{6}, [1:57],  {'Accuracy'});
 BestParams1 = [Result1.Result.BestParam];
-[ Result2 ] = GetBestRate(Path, DataSets, SParams{10}, [1:57],  {'Selected'});
+[ Result2 ] = GetBestRate(Path, DataSets, SParams{6}, [1:57],  {'Selected'});
 BestParams2 = [Result2.Result.BestParam];
 DrawAccuracyRate(Result1, Result2, 'linear', [1 : 57]);
 %%

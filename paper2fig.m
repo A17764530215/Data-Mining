@@ -1,15 +1,23 @@
 clear
 clc
 %%
-MyStat = MyStat*100;
-MyTime = MyTime*1000;
-%% Classify
+Summary.Data = Summary.Data*100;
+Summary.Time = Summary.Time*1000;
+%% Classify Accuracy
 [ d ] = Classify();
-[ m, n, k ] = size(MyStat);
-Data = mat2cell(MyStat, m, d.IDX, k);
-[ STL_Summary ] = Transform(Data, d, 1);
-[ MTL_Summary ] = Transform(Data, d, 1);
-BatchDraw(MTL_Summary)
+[ d ] = SetPaper3(d);
+[ m, ~, k ] = size(Summary.Data);
+Data = mat2cell(Summary.Data, m, d.Counts, k);
+[ Summary ] = Transform(Data, d, 1);
+BatchDraw(Summary, [1 7 8 2 3 4 5 6 9]);
+
+%% Classify Time
+[ d ] = Classify();
+[ d ] = SetPaper3(d);
+[ m, n, k ] = size(Summary.Time);
+Data = mat2cell(Summary.Time, m, d.Counts, k);
+[ Summary ] = Transform(Data, d, 1);
+BatchDraw(Summary, [1 7 8 2 3 4 5 6 9]);
 
 %% SafeScreening
 [ d ] = SafeScreening();
@@ -48,12 +56,18 @@ function [ Summary ] = Transform(Data, d, k)
 end
 
 % ≈‰÷√
-function [ d ] = Classify()
-    d.Arcs = [0,0,0,0,45,45,0,0];
-    d.Counts = [ 9, 8, 5, 5, 5, 10, 6, 6 ];
-    d.Draws = {@bar, @bar, @bar, @bar, @bar, @bar, @bar, @bar,@bar };
-    d.Grids = {'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off'};
-    d.IndexCount = 8;
+function [ d ] = SetPaper1(d)
+    d.Legends = {
+        'SVM','PSVM','LS-SVM',...
+        'TWSVM','LS-TWSVM','\nu-TWSVM','ITWSVM',...
+        'RMTL','MTPSVM','MTLS-SVM','MTL-aLS-SVM',...
+        'DMTSVM','MCTSVM','MTLS_TWSVM','MT-\nu-TWSVM I','MT-\nu-TWSVM II'
+    };
+    d.MTL = [8:14];
+    d.STL = [1:6 14];
+end
+
+function [ d ] = SetPaper2(d)
     d.Legends = {
         'SVM','PSVM','LS-SVM',...
         'TWSVM','LS-TWSVM','\nu-TWSVM','ITWSVM',...
@@ -62,8 +76,26 @@ function [ d ] = Classify()
     };
     d.MTL = [8:13 15 16];
     d.STL = [1:6 15 16];
-    d.Titles = {'Monk', 'Isolet', 'Letter_1', 'Letter_2', 'Caltech 101', 'Caltech 256', 'Flags', 'Emotions'};
-    d.xLabels = { 'Task Size', 'Dataset Index', '#Task', 'Dataset Index', 'Category', 'Category',  'Task Size', 'Task Size'};
+end
+
+function [ d ] = SetPaper3(d)
+    d.Legends = {
+        'IRMTL', 'SSR-IRMTL', 'IRMTL-M', 'SSRM-IRMTL',...
+        'CRMTL', 'SSR-CRMTL', 'CRMTL-M', 'SSRM-CRMTL',...
+        'SVM','PSVM','LS-SVM','MTPSVM','MTLS-SVM'
+    };
+    d.STL = [ 9:13 1 2 5 6 ];
+end
+
+% ≈‰÷√
+function [ d ] = Classify()
+    d.Arcs = [0,0,0,0,45,45,0,0,0];
+    d.Counts = [ 9, 8, 5, 5, 5, 10, 6, 6, 3, ];
+    d.Draws = {@bar, @bar, @bar, @bar, @bar, @bar, @bar, @bar,@bar };
+    d.Grids = {'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off'};
+    d.IndexCount = 8;
+    d.Titles = {'Monk', 'Isolet', 'Letter_1', 'Letter_2', 'Caltech 101', 'Caltech 256', 'Flags', 'Emotions', 'MTL'};
+    d.xLabels = { 'Task Size', 'Dataset Index', '#Task', 'Dataset Index', 'Category', 'Category',  'Task Size', 'Task Size', 'Dataset Index'};
     d.XTicklabel = {
         '60', '90', '120', '150', '180', '210', '240', '270', 'All',...
         'ab', 'cd', 'ef', 'gh', 'ij', 'kl','mn','op',...
@@ -72,7 +104,8 @@ function [ d ] = Classify()
         'Birds','Insects','Flowers','Mammals','Instruments',...
         'Aircrafts','Balls','Bikes', 'Birds','Boats','Flowers', 'Instruments','Plants','Mammals', 'Vehicles',...
         '100', '120', '140', '160', '180', '191',...
-        '100', '120', '140', '160', '180', '200'
+        '100', '120', '140', '160', '180', '200',...
+        'Letter', 'Spam_{3}', 'Spam_{15}'
     };
     d.yLabels = {'Accuracy', 'Precision', 'Recall', 'F1'};
 end
@@ -84,9 +117,9 @@ function [ d ] = SafeScreening()
     d.Grids = {'on', 'off', 'on', 'off', 'off', 'off', 'on', 'on', 'off'};
     d.IndexCount = 7;
     d.Legends = {
-        'Count1', 'Count2', 'avg2/avg1', 'avg0', 'avg1', 'avg2', 'Screening', 'Speedup'
+        'Count1', 'Count2', 'avg2/avg1', 'Screening', 'Inactive', 'Screening_2', 'Speedup'
     };
-    d.STL = [7 8];
+    d.STL = [5 4];
     d.Titles = {'Monk', 'Isolet', 'Letter_1', 'Letter_2', 'Caltech 101', 'Caltech 256', 'Flags', 'Emotions', 'MTL'};
     d.xLabels = { 'Task Size', 'Dataset Index', '#Task', 'Dataset Index', 'Category', 'Category',  'Task Size', 'Task Size', 'Dataset'};
     d.XTicklabel = {
