@@ -6,8 +6,8 @@ load('DATA5.mat');
 load('LabSParams.mat');
 % DataSetIndices = [ 1:9 18:27 43:56 ]; % low related
 % DataSetIndices = [ 10:17 28:42 ]; % high related
-DataSetIndices = [ 1 : 6];
-ParamIndices = [ 1:9 19:27 ];
+DataSetIndices = [ 1:57 ];
+ParamIndices = [ 1:7 15:21 ];
 OverWrite = false;
 
 %%  µ—È…Ë÷√ RMTL

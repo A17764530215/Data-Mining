@@ -10,6 +10,7 @@ kernel = opts.kernel;
 TaskNum = length(xTrain);
 symmetric = @(H) (H+H')/2;
 
+
 %% Prepare
 tic;
 % 得到所有的样本和标签以及任务编号

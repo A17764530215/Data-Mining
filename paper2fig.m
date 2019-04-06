@@ -8,22 +8,22 @@ Summary.Time = Summary.Time*1000;
 [ d ] = SetPaper3(d);
 [ m, ~, k ] = size(Summary.Data);
 Data = mat2cell(Summary.Data, m, d.Counts, k);
-[ Summary ] = Transform(Data, d, 1);
-BatchDraw(Summary, [1 7 8 2 3 4 5 6 9]);
+[ Info ] = Transform(Data, d, 1);
+BatchDraw(Info, [1 7 8 5 6 9]);
 
 %% Classify Time
 [ d ] = Classify();
 [ d ] = SetPaper3(d);
 [ m, n, k ] = size(Summary.Time);
 Data = mat2cell(Summary.Time, m, d.Counts, k);
-[ Summary ] = Transform(Data, d, 1);
-BatchDraw(Summary, [1 7 8 2 3 4 5 6 9]);
+[ Info ] = Transform(Data, d, 1);
+BatchDraw(Info, [1 7 8 5 6 9]);
 
 %% SafeScreening
 [ d ] = SafeScreening();
 Data = mat2cell(Summary.State', length(d.Legends), d.Counts);
-[ SSR_Summary ] = Transform(Data, d, 1);
-BatchDraw(SSR_Summary, [1 7 8 2 3 4 5 6 9]);
+[ Info ] = Transform(Data, d, 1);
+BatchDraw(Info, [1 7 8 2 3 4 5 6 9]);
 
 %%  ‰≥ˆ…∏—°«˙œﬂ
 load('./results/paper3/MyStat-SSR-Linear.mat');
@@ -80,11 +80,13 @@ end
 
 function [ d ] = SetPaper3(d)
     d.Legends = {
-        'IRMTL', 'SSR-IRMTL', 'IRMTL-M', 'SSRM-IRMTL',...
-        'CRMTL', 'SSR-CRMTL', 'CRMTL-M', 'SSRM-CRMTL',...
-        'SVM','PSVM','LS-SVM','MTPSVM','MTLS-SVM'
+%         'IRMTL', 'SSR-IRMTL', 'IRMTL-M', 'SSRM-IRMTL',...
+%         'CRMTL-M', 'SSRM-CRMTL',...
+        'SVM','PSVM','LS-SVM',...
+        'MTPSVM','MTLS-SVM','IRMTL', 'SSR-IRMTL'
+%         'CRMTL','SSR-CRMTL','TWSVM','DMTSVM',...
     };
-    d.STL = [ 9:13 1 2 5 6 ];
+    d.STL = [ 1 4:7 ];
 end
 
 % ≈‰÷√
