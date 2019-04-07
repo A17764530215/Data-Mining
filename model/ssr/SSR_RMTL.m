@@ -9,7 +9,7 @@ X = [X, ones(size(Y))];
 n = GetParamsCount(IParams);
 CVStat = zeros(n, opts.IndexCount, TaskNum);
 CVTime = zeros(n, 2);
-CVRate = zeros(n, 2);
+CVRate = zeros(n, 4);
 Alpha = cell(n, 1);
 for i = 1 : n
     Params = GetParams(IParams, i);
@@ -22,10 +22,10 @@ for i = 1 : n
     else
         % solve the rest problem
         [ Alpha{i} ] = SSR(H1, H2, Alpha{i-1});
-        [ H1, Alpha{i}, CVRate(i,1) ] = Reduced_RMTL(H2, Alpha{i});
+        [ H1, Alpha{i}, CVRate(i,1:2) ] = Reduced_RMTL(H2, Alpha{i});
     end
     CVTime(i, 1) = toc;
-    [ y_hat, CVRate(i, 2) ] = Predict(X, Y, xTest, Alpha{i}, Params);
+    [ y_hat, CVRate(i, 3:4) ] = Predict(X, Y, xTest, Alpha{i}, Params);
     CVStat(i,:,:) = MTLStatistics(TaskNum, y_hat, yTest, opts);
 end
 
@@ -47,7 +47,8 @@ end
             yTest{t} = y;
         end
         
-        Rate = mean(abs(Alpha)<1e-7 | abs(Alpha-1)<1e-7);
+        Rate(:,1) = mean(abs(Alpha)<1e-7);
+        Rate(:,2) = mean(abs(Alpha-1)<1e-7);
         
             function [ y ] = predict(H, Y, Alpha)
                 svi = Alpha~=0;
@@ -79,9 +80,11 @@ end
     function [ H2, Alpha2, Rate ] = Reduced_RMTL(H2, Alpha2)
         % reduced problem
         R = Alpha2 == Inf;
-        S = Alpha2 ~= Inf;
-        Rate = mean(S);
-        if Rate < 1
+        S0 = Alpha2 == 0;
+        SC = Alpha2 == 1;
+        Rate = mean([S0, SC]);
+        if mean(R) > 0
+            S = S0 | SC;
             f = H2(R,S)*Alpha2(S)-1;
             lb = zeros(size(f));
             ub = ones(size(f));

@@ -8,8 +8,6 @@ C = opts.C;
 mu = opts.mu;
 kernel = opts.kernel;
 TaskNum = length(xTrain);
-symmetric = @(H) (H+H')/2;
-
 
 %% Prepare
 tic;
@@ -25,7 +23,7 @@ end
 e = ones(size(Y));
 lb = zeros(size(Y));
 H = Cond(Q + TaskNum/mu*P);
-[ Alpha ] = quadprog(symmetric(H), -e, [], [], [], [], lb, C*e, [], []);
+[ Alpha ] = quadprog(H, -e, [], [], [], [], lb, C*e, [], []);
 % Í£Ö¹¼ÆÊ±
 Time = toc;
 
@@ -33,7 +31,7 @@ Time = toc;
 TaskNum = length(xTest);
 yTest = cell(TaskNum, 1);
 for t = 1 : TaskNum
-    Tt = find(T==t);
+    Tt = T==t;
     Ht = Kernel(xTest{t}, X, kernel);
     y0 = predict(Ht, Y, Alpha);
     yt = predict(Ht(:,Tt), Y(Tt,:), Alpha(Tt,:));

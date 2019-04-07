@@ -9,7 +9,6 @@ C2 = opts.C1;
 rho = opts.rho;
 lambda = opts.rho;
 kernel = opts.kernel;
-solver = opts.solver;
 TaskNum = length(xTrain);
 symmetric = @(H) (H+H')/2;
     
@@ -49,11 +48,11 @@ end
 %% Fit
 % DMTSVM1
 H1 = Q + 1/rho*P;
-Alpha = quadprog(symmetric(H1),-e2,[],[],[],[],zeros(m2, 1),C1*e2,[],solver);
+Alpha = quadprog(symmetric(H1),-e2,[],[],[],[],zeros(m2, 1),C1*e2,[],[]);
 CAlpha = mat2cell(Alpha, N(2,:));
 % DMTSVM2
 H2 = R + 1/lambda*S;
-Gamma = quadprog(symmetric(H2),-e1,[],[],[],[],zeros(m1, 1),C2*e1,[],solver);
+Gamma = quadprog(symmetric(H2),-e1,[],[],[],[],zeros(m1, 1),C2*e1,[],[]);
 CGamma = mat2cell(Gamma, N(1,:));
 
 %% GetWeight
@@ -66,12 +65,7 @@ for t = 1 : TaskNum
     V{t} = v + FFEc{t}*(1/lambda*CGamma{t});
 end
 Time = toc;
-AlphaS = abs(Alpha)<1e-7|abs(Alpha-C1)<1e-7;
-GammaS = abs(Gamma)<1e-7|abs(Gamma-C2)<1e-7;
-Rate = mean([AlphaS; GammaS]);
-fd = fopen('rate.txt', 'a+');
-fprintf(fd, '%.7f\n', Rate);
-fclose(fd);
+
 %% Predict
 TaskNum = length(xTest);
 yTest = cell(TaskNum, 1);

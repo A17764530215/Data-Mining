@@ -21,25 +21,27 @@ function [ d ] = Compare(Path, DataSets, INDICES, MethodA, MethodB)
         T = mean((A.CVTime-B.CVTime)./A.CVTime);
         C = permute(A.CVStat(:,1,:)==B.CVStat(:,1,:), [1 3 2]);
         % Result
-        IDX = B.CVRate>0;
-        cnt = sum(IDX, 1);
-        avg0 = mean(B.CVRate, 1);
-        Screening = mean(B.CVRate(:,1)./B.CVRate(:,2));
         a = mean([A.CVStat(:,1,:), B.CVStat(:,1,:)], 3);
         b = mean(A.CVStat(:,1,:) - B.CVStat(:,1,:), 3);
-        Result{i} = [a, b, a-b, B.CVRate, A.CVTime(:,1), B.CVTime(:,1)];
+        % rate
+        IDX = B.CVRate>0;
+        cnt = sum(IDX, 1);
+        avg = mean(B.CVRate, 1);
+        Inactive = avg(3)+avg(4);
+        Screening = avg(1)+avg(2);
+        % Record
+        Result{i} = [a, b, B.CVRate, A.CVTime(:,1), B.CVTime(:,1)];
         if mean(C(:)) == 1
-%             fprintf('Success: %d\n', i);
-            State(i,:) = [cnt, avg0(:,1)/avg0(:,2), avg0, Screening, T(1)];
+            State(i,:) = [cnt, Inactive, Screening, T(1)];
         else
             fprintf('Error: %d\n', i);
-            Error(i,:) = [cnt, avg0(:,1)/avg0(:,2), avg0, Screening, T(1)];
+            Error(i,:) = [cnt, Inactive, Screening, T(1)];
         end
         
         % record errors
         IParams = CreateParams(MethodB);
         R = Result{i};
-        ERROR_ID = find(R(:,2)~=R(:,1));
+        ERROR_ID = find(R(:,3)~=0);
         ErrorParams{i} = IParams(ERROR_ID);
         ErrorResult{i} = R(ERROR_ID,:);
     end

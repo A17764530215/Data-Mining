@@ -8,7 +8,7 @@ function [  CVStat, CVTime, CVRate ] = SSR_IRMTL( xTrain, yTrain, xTest, yTest, 
 n = GetParamsCount(IParams);
 CVStat = zeros(n, opts.IndexCount, TaskNum);
 CVTime = zeros(n, 2);
-CVRate = zeros(n, 2);
+CVRate = zeros(n, 4);
 Alpha = cell(n, 1);
 for i = 1 : n
     Params = GetParams(IParams, i);
@@ -20,10 +20,10 @@ for i = 1 : n
         [ bC, bMP ] = EqualsTo(Params, LastParams);
         if bC
             [ Alpha{i} ] = SSR_C(H2, Alpha{i-1}, Params, LastParams);
-            [ Alpha{i}, CVRate(i,1) ] = Reduced_IRMTL(H2, Alpha{i}, Params);
+            [ Alpha{i}, CVRate(i,1:2) ] = Reduced_IRMTL(H2, Alpha{i}, Params);
         elseif bMP
             [ Alpha{i} ] = SSR_MU_P(H1, H2, Alpha{i-1}, Params);
-            [ Alpha{i}, CVRate(i,1) ] = Reduced_IRMTL(H2, Alpha{i}, Params);
+            [ Alpha{i}, CVRate(i,1:2) ] = Reduced_IRMTL(H2, Alpha{i}, Params);
         else
             % solve the first problem
             [ Alpha{i} ] = IRMTL(H2, Params);
@@ -34,16 +34,8 @@ for i = 1 : n
     end
     H1 = H2;
     CVTime(i, 1) = toc;
-    % 确定没有筛错
-%     [ AlphaT ] = IRMTL(H2, Params);
-%     diff = AlphaT-Alpha{i};
-%     acc = std(diff);
-%     if acc ~= 0
-%         Error = sprintf('Error: %.2f', acc);
-%         throw(MException('SSR_IRMTL', Error));
-%     end
     % 预测
-    [ y_hat, CVRate(i, 2) ] = Predict(X, Y, xTest, Alpha{i}, Params);
+    [ y_hat, CVRate(i, 3:4) ] = Predict(X, Y, xTest, Alpha{i}, Params);
     CVStat(i,:,:) = MTLStatistics(TaskNum, y_hat, yTest, opts);
     LastParams = Params;
 end
@@ -80,7 +72,8 @@ end
             yTest{t} = y;
         end
         
-        Rate = mean(abs(Alpha)<1e-7 | abs(Alpha-C)<1e-7);
+        Rate(:,1) = mean(abs(Alpha)<1e-7);
+        Rate(:,2) = mean(abs(Alpha-C)<1e-7);
         
         function [ y ] = predict(H, Y, Alpha)
             svi = Alpha~=0;
@@ -129,9 +122,11 @@ end
     function [ Alpha2, Rate ] = Reduced_IRMTL(H2, Alpha2, Params)
         % reduced problem
         R = Alpha2 == Inf;
-        S = Alpha2 ~= Inf;
-        Rate = mean(S);
-        if Rate < 1
+        S0 = Alpha2 == 0;
+        SC = Alpha2 == Params.C;
+        Rate = mean([S0, SC]);
+        if mean(R) > 0
+            S = S0 | SC;
             f = H2(R,S)*Alpha2(S)-1;
             lb = zeros(size(f));
             ub = Params.C*ones(size(f));
@@ -141,7 +136,7 @@ end
 
 %% Get Hessian
     function [ H ] = GetHessian(X, Y, TaskNum, opts)
-        symmetric = @(H) (H+H')/2;
+%         symmetric = @(H) (H+H')/2;
         % construct hessian matrix
         Q = Y.*Kernel(X, X, opts.kernel).*Y';
         P = sparse(0, 0);
@@ -150,6 +145,5 @@ end
             P = blkdiag(P, Q(Tt,Tt));
         end
         H = Cond(Q/opts.mu + P);
-        H = symmetric(H);
     end
 end

@@ -24,7 +24,7 @@ end
 e = ones(size(Y));
 lb = zeros(size(Y));
 H = Cond(Q/mu + P);
-[ Alpha ] = quadprog(symmetric(H), -e, [], [], [], [], lb, C*e, [], []);
+[ Alpha ] = quadprog(H, -e, [], [], [], [], lb, C*e, [], []);
 % Í£Ö¹¼ÆÊ±
 Time = toc;
 
@@ -32,7 +32,7 @@ Time = toc;
 TaskNum = length(xTest);
 yTest = cell(TaskNum, 1);
 for t = 1 : TaskNum
-    Tt = find(T==t);
+    Tt = T==t;
     Ht = Kernel(xTest{t}, X, kernel);
     y0 = predict(Ht, Y, Alpha);
     yt = predict(Ht(:,Tt), Y(Tt,:), Alpha(Tt,:));

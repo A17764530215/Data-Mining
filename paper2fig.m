@@ -9,7 +9,7 @@ Summary.Time = Summary.Time*1000;
 [ m, ~, k ] = size(Summary.Data);
 Data = mat2cell(Summary.Data, m, d.Counts, k);
 [ Info ] = Transform(Data, d, 1);
-BatchDraw(Info, [1 7 8 5 6 9]);
+BatchDraw(Info, [1 7 8 2 3 4 5 6 9]);
 
 %% Classify Time
 [ d ] = Classify();
@@ -19,7 +19,7 @@ Data = mat2cell(Summary.Time, m, d.Counts, k);
 [ Info ] = Transform(Data, d, 1);
 BatchDraw(Info, [1 7 8 5 6 9]);
 
-%% SafeScreening
+%% Safe Screening
 [ d ] = SafeScreening();
 Data = mat2cell(Summary.State', length(d.Legends), d.Counts);
 [ Info ] = Transform(Data, d, 1);
@@ -82,11 +82,11 @@ function [ d ] = SetPaper3(d)
     d.Legends = {
 %         'IRMTL', 'SSR-IRMTL', 'IRMTL-M', 'SSRM-IRMTL',...
 %         'CRMTL-M', 'SSRM-CRMTL',...
-        'SVM','PSVM','LS-SVM',...
+        'SVM','PSVM','LS-SVM','TWSVM','DMTSVM',...
         'MTPSVM','MTLS-SVM','IRMTL', 'SSR-IRMTL'
-%         'CRMTL','SSR-CRMTL','TWSVM','DMTSVM',...
+%         'TWSVM','DMTSVM',...
     };
-    d.STL = [ 1 4:7 ];
+    d.STL = [ 1 2 3 4 5 6 7 8 9 ];
 end
 
 % ≈‰÷√
@@ -119,9 +119,9 @@ function [ d ] = SafeScreening()
     d.Grids = {'on', 'off', 'on', 'off', 'off', 'off', 'on', 'on', 'off'};
     d.IndexCount = 7;
     d.Legends = {
-        'Count1', 'Count2', 'avg2/avg1', 'Screening', 'Inactive', 'Screening_2', 'Speedup'
+        'S0', 'SC', 'C0', 'CC', 'Inactive', 'Screening', 'Speedup'
     };
-    d.STL = [5 4];
+    d.STL = [5 6];
     d.Titles = {'Monk', 'Isolet', 'Letter_1', 'Letter_2', 'Caltech 101', 'Caltech 256', 'Flags', 'Emotions', 'MTL'};
     d.xLabels = { 'Task Size', 'Dataset Index', '#Task', 'Dataset Index', 'Category', 'Category',  'Task Size', 'Task Size', 'Dataset'};
     d.XTicklabel = {
