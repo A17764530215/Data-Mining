@@ -14,11 +14,10 @@ kernel = opts.kernel;
 solver = opts.solver;
 TaskNum = length(xTrain);
 symmetric = @(H) (H+H')/2;
+[ X, Y, ~, N ] = GetAllData(xTrain, yTrain, TaskNum);
 
 %% Prepare
 tic;
-% 得到所有的样本和标签以及任务编号
-[ X, Y, T, N ] = GetAllData(xTrain, yTrain, TaskNum);
 % 分割正负类点
 Yp = Y==1;
 Yn = Y==-1;
@@ -36,17 +35,16 @@ I = speye(size(E, 2));
 EE = E'*E; FF = F'*F;
 EEF = (EE+C3*I)\F';
 FFE = (FF+C4*I)\E';
-Q = F*EEF;
-R = E*FFE;
+Q = F*EEF; R = E*FFE;
 % 得到P,S矩阵
-P = sparse(0, 0);
-S = sparse(0, 0);
 Ec = mat2cell(E, N(1,:));
 Fc = mat2cell(F, N(2,:));
 EEc = mat2cell(EE, N(1,:), N(1,:));
 FFc = mat2cell(FF, N(2,:), N(2,:));
 EEFc = cell(TaskNum, 1);
 FFEc = cell(TaskNum, 1);
+P = sparse(0, 0);
+S = sparse(0, 0);
 for t = 1 : TaskNum
     It = speye(size(Ec{t}, 2));
     EEFc{t} = (rho/TaskNum*EEc{t,t}+C3/TaskNum*It)\(Fc{t}');
