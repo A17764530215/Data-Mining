@@ -29,21 +29,23 @@ F = [Kernel(B, X, kernel) e2];
 % 得到Q,R矩阵
 EEF = Cond(E'*E)\F';
 FFE = Cond(F'*F)\E';
-Q = F*EEF;
-R = E*FFE;
-% 构造P,S对角阵
-EEFc = cell(TaskNum, 1);
-FFEc = cell(TaskNum, 1);
+Q = F*EEF; R = E*FFE;
+% 得到P,S矩阵
 Ec = mat2cell(E, N(1,:));
 Fc = mat2cell(F, N(2,:));
-P = sparse(0, 0);
-S = sparse(0, 0);
+EEFc = cell(TaskNum, 1);
+FFEc = cell(TaskNum, 1);
+P = cell(TaskNum, 1);
+S = cell(TaskNum, 1);
 for t = 1 : TaskNum
-    EEFc{t} = Cond(Ec{t}'*Ec{t})\(Fc{t}');
-    FFEc{t} = Cond(Fc{t}'*Fc{t})\(Ec{t}');
-    P = blkdiag(P, Fc{t}*EEFc{t});
-    S = blkdiag(S, Ec{t}*FFEc{t});
+    Et = Ec{t}; Ft = Fc{t};
+    EEFc{t} = Cond(Et'*Et)\(Ft');
+    FFEc{t} = Cond(Ft'*Ft)\(Et');
+    P{t} = Ft*EEFc{t};
+    S{t} = Et*FFEc{t};
 end
+P = spblkdiag(P{:});
+S = spblkdiag(S{:});
 
 %% Fit
 % MTVTWSVM1

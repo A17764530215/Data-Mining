@@ -24,7 +24,7 @@ end
 %% 统计 CRMTL 安全筛选
 for i = 1 : 3
     Src = sprintf('./data/ssr/%s/5-fold/', lower(Kernels{i}));
-    [ Summary ] = Compare(Src, DataSets, 1:9, SParams{6,i}, SParams{7,i});
+    [ Summary ] = Compare(Src, DataSets, 1:13, SParams{7,i}, SParams{8,i});
     Path = ['./results/paper3/MyStat-SSRC-', Kernels{i}, '.mat'];
     save(Path, 'Summary');
 end

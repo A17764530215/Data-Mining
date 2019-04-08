@@ -47,18 +47,7 @@ save('./params/LabCParams.mat', 'CParams');
 [ poly0 ] = PackKernel('Poly', 2);
 [ rbf0 ] = PackKernel('RBF', 64);
 SParams = cell(3, 1);
-% [ SParams{1} ] = PackSParams(10.^(0:0.02:1)', 10.^(-1:0.2:1)', linear0);
-% [ SParams{2} ] = PackSParams(10.^(0:0.02:1)', 10.^(-1:0.2:1)', poly0);
-% [ SParams{3} ] = PackSParams(10.^(0:0.02:1)', 10.^(-1:0.2:1)', rbf0);
-% for all datasets
-% [ SParams{1} ] = PackSParams(10.^(0:0.015:1)', 10.^(-1:0.2:1)', linear0);
-% [ SParams{2} ] = PackSParams(10.^(0:0.015:1)', 10.^(-1:0.2:1)', poly0);
-% [ SParams{3} ] = PackSParams(10.^(0:0.015:1)', 10.^(-1:0.2:1)', rbf0);
-% 2019年4月2日09:17:16
-% [ SParams{1} ] = PackSParams(2.^(2:0.05:7)', 2.^(-6:6)', linear0);
-% [ SParams{2} ] = PackSParams(2.^(2:0.05:7)', 2.^(-6:6)', poly0);
-% [ SParams{3} ] = PackSParams(2.^(2:0.05:7)', 2.^(-6:6)', rbf0);
-% 2019年4月2日23:04:28
+% 2019年4月8日15:42:01
 [ SParams{1} ] = PackSParams(2.^(0:0.03:5)', 2.^(-5:5)', linear0);
 [ SParams{2} ] = PackSParams(2.^(0:0.03:5)', 2.^(-5:5)', poly0);
 [ SParams{3} ] = PackSParams(2.^(0:0.03:5)', 2.^(-5:5)', rbf0);
@@ -139,8 +128,8 @@ function [ SParams ] = PackSParams(C, MU, kernel)
         struct('ID', 'MTPSVM', 'Name', 'MTPSVM', 'C', C, 'lambda', MU, 'kernel', kernel);...
         struct('ID', 'MTLS_SVM', 'Name', 'MTLS_SVM', 'C', C, 'lambda', MU, 'kernel', kernel);...
 %         CRMTL
-        struct('ID', 'CRMTL_C', 'Name', 'CRMTL', 'C', C, 'mu', MU, 'kernel', kernel);...
-        struct('ID', 'SSRC_CRMTL', 'Name', 'SSR_CRMTL', 'C', C, 'mu', MU, 'kernel', kernel);...
+%         struct('ID', 'CRMTL_C', 'Name', 'CRMTL', 'C', C, 'mu', MU, 'kernel', kernel);...
+%         struct('ID', 'SSRC_CRMTL', 'Name', 'SSR_CRMTL', 'C', C, 'mu', MU, 'kernel', kernel);...
 %         IRMTL
         struct('ID', 'IRMTL_C', 'Name', 'IRMTL', 'C', C, 'mu', MU, 'kernel', kernel);...
         struct('ID', 'SSRC_IRMTL', 'Name', 'SSR_IRMTL', 'C', C, 'mu', MU, 'kernel', kernel);...

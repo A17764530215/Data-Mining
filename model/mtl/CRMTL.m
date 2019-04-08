@@ -9,7 +9,6 @@ mu = opts.mu;
 kernel = opts.kernel;
 TaskNum = length(xTrain);
 [ X, Y, T, ~ ] = GetAllData(xTrain, yTrain, TaskNum);
-X = [X, ones(size(Y))];
 
 %% Prepare
 tic;
@@ -23,7 +22,7 @@ end
 e = ones(size(Y));
 lb = zeros(size(Y));
 H = Cond(Q + TaskNum/mu*P);
-[ Alpha ] = quadprog(H, -e, [], [], [], [], lb, C*e, [], []);
+[ Alpha ] = quadprog(H,-e,[],[],[],[],lb,C*e,[],opts.solver);
 % Í£Ö¹¼ÆÊ±
 Time = toc;
 
@@ -32,8 +31,7 @@ TaskNum = length(xTest);
 yTest = cell(TaskNum, 1);
 for t = 1 : TaskNum
     Tt = T==t;
-    et = ones(size(xTest{t}, 1), 1);
-    Ht = Kernel([xTest{t}, et], X, kernel);
+    Ht = Kernel(xTest{t}, X, kernel);
     y0 = predict(Ht, Y, Alpha);
     yt = predict(Ht(:,Tt), Y(Tt,:), Alpha(Tt,:));
     y = sign(y0 + TaskNum/mu*yt);

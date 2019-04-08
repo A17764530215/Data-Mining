@@ -76,25 +76,29 @@ end
         E = [Kernel(A, X, opts.kernel) e1];
         F = [Kernel(B, X, opts.kernel) e2];
         % 得到Q,R矩阵
-        EE = Cond(E'*E); FF = Cond(F'*F);
-        EEF = EE\F'; FFE = FF\E';
-        Q = F*EEF; R = E*FFE;
+        EEF = Cond(E'*E)\F';
+        FFE = Cond(F'*F)\E';
+        Q = F*EEF;
+        R = E*FFE;
         % 得到P,S矩阵
         Ec = mat2cell(E, N(1,:));
         Fc = mat2cell(F, N(2,:));
         EEFc = cell(TaskNum, 1);
         FFEc = cell(TaskNum, 1);
-        P = sparse(0, 0);
-        S = sparse(0, 0);
+        P = cell(TaskNum, 1);
+        S = cell(TaskNum, 1);
         for t = 1 : TaskNum
             Et = Ec{t}; Ft = Fc{t};
             EEFc{t} = Cond(Et'*Et)\(Fc{t}');
             FFEc{t} = Cond(Ft'*Ft)\(Ec{t}');
-            P = blkdiag(P, Fc{t}*EEFc{t});
-            S = blkdiag(S, Ec{t}*FFEc{t});
+            P{t} = Fc{t}*EEFc{t};
+            S{t} = Ec{t}*FFEc{t};
         end
-        H1 = Cond(Q + 1/opts.rho*P);
-        H2 = Cond(R + 1/opts.rho*S);
+        P = spblkdiag(P{:});
+        S = spblkdiag(S{:});
+        Sym = @(H) (H+H')/2 + 1e-5*speye(size(H));
+        H1 = Sym(Q + TaskNum/opts.rho*P);
+        H2 = Sym(R + TaskNum/opts.rho*S);
     end
 
     function [ Alpha ] = Primal(H, f, lb, ub)
@@ -132,8 +136,8 @@ end
         U = cell(TaskNum, 1);
         V = cell(TaskNum, 1);
         for t = 1 : TaskNum
-            U{t} = u - EEFc{t}*(1/opts.rho*CAlpha{t});
-            V{t} = v + FFEc{t}*(1/opts.rho*CGamma{t});
+            U{t} = u - EEFc{t}*(TaskNum/opts.rho*CAlpha{t});
+            V{t} = v + FFEc{t}*(TaskNum/opts.rho*CGamma{t});
         end
     end
 

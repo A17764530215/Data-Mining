@@ -38,16 +38,18 @@ Ec = mat2cell(E, N(1,:));
 Fc = mat2cell(F, N(2,:));
 EEFt = cell(TaskNum, 1);
 FFEt = cell(TaskNum, 1);
-P = sparse(0, 0);
-S = sparse(0, 0);
+P = cell(TaskNum, 1);
+S = cell(TaskNum, 1);
 for t = 1 : TaskNum
     Et = Ec{t}; Ft = Fc{t};
     It = speye(size(Et, 2));
     EEFt{t} = (rho/TaskNum*(Et'*Et)+C3/TaskNum*It)\(Ft');
     FFEt{t} = (lambda/TaskNum*(Ft'*Ft)+C4/TaskNum*It)\(Et');
-    P = blkdiag(P, Ft*EEFt{t});
-    S = blkdiag(S, Et*FFEt{t});
+    P{t} = Ft*EEFt{t};
+    S{t} = Et*FFEt{t};
 end
+P = spblkdiag(P{:});
+S = spblkdiag(S{:});
 
 %% Fit
 % MTLS_TBSVM1

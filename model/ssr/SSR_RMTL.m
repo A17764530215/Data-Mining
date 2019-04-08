@@ -34,12 +34,12 @@ end
         nu = TaskNum/(2*opts.lambda1);
         % construct hessian matrix
         Q = Y.*Kernel(X, X, opts.kernel).*Y';
-        P = sparse(0, 0);
+        P = cell(TaskNum, 1);
         for t = 1 : TaskNum
             Tt = T==t;
-            P = blkdiag(P, Q(Tt,Tt));
+            P{t} = Q(Tt,Tt);
         end
-        H = Cond(mu*Q + nu*P);
+        H = Cond(mu*Q + nu*spblkdiag(P{:}));
         H = symmetric(H);
     end
 
