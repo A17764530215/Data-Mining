@@ -12,11 +12,10 @@ kernel = opts.kernel;
 solver = opts.solver;
 TaskNum = length(xTrain);
 symmetric = @(H) (H+H')/2;
+[ X, Y, ~, N ] = GetAllData(xTrain, yTrain, TaskNum);
     
 %% Prepare
 tic;
-% 得到所有的样本和标签以及任务编号
-[ X, Y, ~, N ] = GetAllData(xTrain, yTrain, TaskNum);
 % 分割正负类点
 A = X(Y==1,:);
 B = X(Y==-1,:);

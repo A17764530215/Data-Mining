@@ -45,7 +45,7 @@ save('./params/LabCParams.mat', 'CParams');
 %% 安全筛选参数
 [ linear0 ] = PackKernel('Linear');
 [ poly0 ] = PackKernel('Poly', 2);
-[ rbf0 ] = PackKernel('RBF', 16);
+[ rbf0 ] = PackKernel('RBF', 64);
 SParams = cell(3, 1);
 % [ SParams{1} ] = PackSParams(10.^(0:0.02:1)', 10.^(-1:0.2:1)', linear0);
 % [ SParams{2} ] = PackSParams(10.^(0:0.02:1)', 10.^(-1:0.2:1)', poly0);

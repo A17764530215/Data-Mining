@@ -10,12 +10,10 @@ rho = opts.rho;
 lambda = opts.rho;
 kernel = opts.kernel;
 TaskNum = length(xTrain);
-symmetric = @(H) (H+H')/2;
+[ X, Y, ~, N ] = GetAllData(xTrain, yTrain, TaskNum);
     
 %% Prepare
 tic;
-% 得到所有的样本和标签以及任务编号
-[ X, Y, ~, N ] = GetAllData(xTrain, yTrain, TaskNum);
 % 分割正负类点
 A = X(Y==1,:);
 B = X(Y==-1,:);
@@ -27,20 +25,21 @@ e2 = ones(m2, 1);
 E = [Kernel(A, X, kernel) e1];
 F = [Kernel(B, X, kernel) e2];
 % 得到Q,R矩阵
-EEF = Cond(E'*E)\F';
-FFE = Cond(F'*F)\E';
-Q = F*EEF;
-R = E*FFE;
+EE = Cond(E'*E); FF = Cond(F'*F);
+EEF = EE\F'; FFE = FF\E';
+Q = F*EEF; R = E*FFE;
 % 得到P,S矩阵
-EEFc = cell(TaskNum, 1);
-FFEc = cell(TaskNum, 1);
 Ec = mat2cell(E, N(1,:));
 Fc = mat2cell(F, N(2,:));
+EEc = mat2cell(EE, N(1,:), N(1,:));
+FFc = mat2cell(FF, N(2,:), N(2,:));
+EEFc = cell(TaskNum, 1);
+FFEc = cell(TaskNum, 1);
 P = sparse(0, 0);
 S = sparse(0, 0);
 for t = 1 : TaskNum
-    EEFc{t} = Cond(Ec{t}'*Ec{t})\(Fc{t}');
-    FFEc{t} = Cond(Fc{t}'*Fc{t})\(Ec{t}');
+    EEFc{t} = EEc{t,t}\(Fc{t}');
+    FFEc{t} = FFc{t,t}\(Ec{t}');
     P = blkdiag(P, Fc{t}*EEFc{t});
     S = blkdiag(S, Ec{t}*FFEc{t});
 end
@@ -48,11 +47,11 @@ end
 %% Fit
 % DMTSVM1
 H1 = Q + 1/rho*P;
-Alpha = quadprog(symmetric(H1),-e2,[],[],[],[],zeros(m2, 1),C1*e2,[],[]);
+Alpha = quadprog((Cond(H1)),-e2,[],[],[],[],zeros(m2, 1),C1*e2,[],[]);
 CAlpha = mat2cell(Alpha, N(2,:));
 % DMTSVM2
 H2 = R + 1/lambda*S;
-Gamma = quadprog(symmetric(H2),-e1,[],[],[],[],zeros(m1, 1),C2*e1,[],[]);
+Gamma = quadprog((Cond(H2)),-e1,[],[],[],[],zeros(m1, 1),C2*e1,[],[]);
 CGamma = mat2cell(Gamma, N(1,:));
 
 %% GetWeight

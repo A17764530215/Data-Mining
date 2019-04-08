@@ -10,70 +10,69 @@ rho = opts.rho;
 lambda = opts.rho;
 kernel = opts.kernel;
 TaskNum = length(xTrain);
+[ X, Y, ~, N ] = GetAllData(xTrain, yTrain, TaskNum);
 
 %% Prepare
 tic;
-% 得到所有的样本和标签以及任务编号
-[ C, Y, T ] = GetAllData(xTrain, yTrain, TaskNum);
 % 分割正负类点
-Yp = Y==1;
-Yn = Y==-1;
-A = C(Yp,:);
-B = C(Yn,:);
+A = X(Y==1,:);
+B = X(Y==-1,:);
 [m1, ~] = size(A);
 [m2, ~] = size(B);
 % 核函数
 e1 = ones(m1, 1);
 e2 = ones(m2, 1);
-A = [Kernel(A, C, kernel) e1];
-B = [Kernel(B, C, kernel) e2];
+E = [Kernel(A, X, kernel) e1];
+F = [Kernel(B, X, kernel) e2];
+% 得到Q,R矩阵
+EE = Cond(E'*E); FF = Cond(F'*F);
+EEF = EE\F'; FFE = FF\E';
+Q = F*EEF; R = E*FFE;
 % 得到P矩阵
+Ec = mat2cell(E, N(1,:));
+Fc = mat2cell(F, N(2,:));
+EEc = mat2cell(EE, N(1,:), N(1,:));
+FFc = mat2cell(FF, N(2,:), N(2,:));
+EEFc = cell(TaskNum, 1);
+FFEc = cell(TaskNum, 1);
 P = sparse(0, 0);
 S = sparse(0, 0);
-AABt = cell(TaskNum, 1);
-BBAt = cell(TaskNum, 1);
 for t = 1 : TaskNum
-    At = A(T(Yp)==t,:);
-    Bt = B(T(Yn)==t,:);
-    AABt{t} = Cond(At'*At)\(Bt');
-    BBAt{t} = Cond(Bt'*Bt)\(At');
-    P = blkdiag(P, Bt*AABt{t});
-    S = blkdiag(S, At*BBAt{t});
+    EEFc{t} = EEc{t,t}\(Fc{t}');
+    FFEc{t} = FFc{t,t}\(Ec{t}');
+    P = blkdiag(P, Fc{t}*EEFc{t});
+    S = blkdiag(S, Ec{t}*FFEc{t});
 end
 
 %% Fit
 % MTL-LS-TWSVM1
-AAB = Cond(A'*A)\B';
-Q = B*AAB;
 I = speye(size(Q));
 Alpha = Cond(Q + TaskNum/rho*P + 1/C1*I)\e2;
+CAlpha = mat2cell(Alpha, N(2,:));
 % MTL-LS-TWSVM2
-BBA = Cond(B'*B)\A';
-R = A*BBA;
 I = speye(size(R));
 Gamma = Cond(R + TaskNum/lambda*S + 1/C2*I)\e1;
+CGamma = mat2cell(Gamma, N(1,:));
 
 %% GetWeight
-u = -AAB*Alpha;
-v = BBA*Gamma;
+u = -EEF*Alpha;
+v = FFE*Gamma;
 U = cell(TaskNum, 1);
 V = cell(TaskNum, 1);
 for t = 1 : TaskNum
-    pt = T(Yp)==t;
-    nt = T(Yn)==t;
-    U{t} = u-TaskNum/rho*AABt{t}*Alpha(nt,:);
-    V{t} = v+TaskNum/lambda*BBAt{t}*Gamma(pt,:);
+    U{t} = u - EEFc{t}*(TaskNum/rho*CAlpha{t});
+    V{t} = v + FFEc{t}*(TaskNum/lambda*CGamma{t});
 end
 Time = toc;
 
 %% Predict
-[ TaskNum, ~ ] = size(xTest);
+TaskNum = length(xTest);
 yTest = cell(TaskNum, 1);
-parfor t = 1 : TaskNum
+for t = 1 : TaskNum
     At = xTest{t};
     [m, ~] = size(At);
     et = ones(m, 1);
-    KAt = [Kernel(At, C, kernel) et];
+    KAt = [Kernel(At, X, kernel) et];
     D1 = abs(KAt * U{t})/norm(U{t}(1:end-1));
     D2 = abs(KAt * V{t})/norm(V{t}(1:end-1));
     yt = sign(D2-D1);

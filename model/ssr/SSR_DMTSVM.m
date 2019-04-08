@@ -5,13 +5,10 @@ function [ CVStat, CVTime, CVRate ] = SSR_DMTSVM( xTrain, yTrain, xTest, yTest, 
 
 %% Fit
 [ X, Y, ~, N ] = GetAllData(xTrain, yTrain, TaskNum);
-solver = opts.solver;
 n = GetParamsCount(IParams);
 CVStat = zeros(n, opts.IndexCount, TaskNum);
 CVTime = zeros(n, 2);
 CVRate = zeros(n, 4);
-Alpha = cell(n, 1);
-Gamma = cell(n, 1);
 for i = 1 : n
     Params = GetParams(IParams, i);
     tic;
@@ -22,38 +19,37 @@ for i = 1 : n
         % solve the rest problem
         [ bC, bMP ] = EqualsTo(Params, LastParams);
         if bC
-            [ Alpha{i} ] = SSR_C(H3, Alpha{i-1}, C1, C0);
-            [ Gamma{i} ] = SSR_C(H4, Gamma{i-1}, C1, C0);
-            [ CVRate(i,1:2) ] = GetRate([ Alpha{i}; Gamma{i} ], C1);
-            [ Alpha{i} ] = Reduced(H3, Alpha{i-1}, C1);
-            [ Gamma{i} ] = Reduced(H4, Gamma{i-1}, C1);
+            [ Alpha1 ] = SSR_C(H3, Alpha0, C1, C0);
+            [ Gamma1 ] = SSR_C(H4, Gamma0, C1, C0);
+            [ CVRate(i,1:2) ] = GetRate([ Alpha1; Gamma1 ], C1);
+            [ Alpha0 ] = Reduced(H3, Alpha1, C1);
+            [ Gamma0 ] = Reduced(H4, Gamma1, C1);
         elseif bMP
-            [ Alpha{i} ] = SSR_MU_P(H1, H3, Alpha{i-1}, C1);
-            [ Gamma{i} ] = SSR_MU_P(H2, H4, Gamma{i-1}, C1);
-            [ CVRate(i,1:2) ] = GetRate([ Alpha{i}; Gamma{i} ], C1);
-            [ Alpha{i} ] = Reduced(H3, Alpha{i-1}, C1);
-            [ Gamma{i} ] = Reduced(H4, Gamma{i-1}, C1);
+            [ Alpha1 ] = SSR_MU_P(H1, H3, Alpha0, C1);
+            [ Gamma1 ] = SSR_MU_P(H2, H4, Gamma0, C1);
+            [ CVRate(i,1:2) ] = GetRate([ Alpha1; Gamma1 ], C1);
+            [ Alpha0 ] = Reduced(H3, Alpha1, C1);
+            [ Gamma0 ] = Reduced(H4, Gamma1, C1);
         else
             % solve the first problem
-            [ Alpha{i} ] = Primal(H3, -e2, zeros(m2, 1), C1*e2);
-            [ Gamma{i} ] = Primal(H4, -e1, zeros(m1, 1), C1*e1);
+            [ Alpha0 ] = Primal(H3, -e2, zeros(m2, 1), C1*e2);
+            [ Gamma0 ] = Primal(H4, -e1, zeros(m1, 1), C1*e1);
         end
     else
         % solve the first problem
-        [ Alpha{i} ] = Primal(H3, -e2, zeros(m2, 1), C1*e2);
-        [ Gamma{i} ] = Primal(H4, -e1, zeros(m1, 1), C1*e1);
+        [ Alpha0 ] = Primal(H3, -e2, zeros(m2, 1), C1*e2);
+        [ Gamma0 ] = Primal(H4, -e1, zeros(m1, 1), C1*e1);
     end
     H1 = H3; H2 = H4;
-    [ U, V ] = GetWeight(EEF, FFE, EEFc, FFEc, Alpha, Gamma, N, TaskNum, opts);
     [ CVTime(i, 1) ] = toc;
     % 预测
-    [ y_hat ] = Predict(xTest, X, TaskNum, U, V, opts);
-    [ CVRate(i,3:4) ] = GetTotalRate([ Alpha{i}; Gamma{i} ], C);
+    [ U, V ] = GetWeight(EEF, FFE, EEFc, FFEc, Alpha0, Gamma0, N, TaskNum, Params);
+    [ y_hat ] = Predict(xTest, X, TaskNum, U, V, Params);
+    [ CVRate(i,3:4) ] = GetTotalRate([ Alpha0; Gamma0 ], C1);
     [ CVStat(i,:,:) ] = MTLStatistics(TaskNum, y_hat, yTest, opts);
     LastParams = Params;
 end
 
-%% Compare
     function [ bC, bMP ] = EqualsTo(p1, p2)
         k1 = p1.kernel;
         k2 = p2.kernel;
@@ -68,7 +64,6 @@ end
         end
     end
 
-%% Prepare
     function [ H1, H2, EEF, FFE, EEFc, FFEc, e1, e2, m1, m2 ] = Prepare(X, Y, N, TaskNum, opts)
         % 分割正负类点
         A = X(Y==1,:);
@@ -81,59 +76,57 @@ end
         E = [Kernel(A, X, opts.kernel) e1];
         F = [Kernel(B, X, opts.kernel) e2];
         % 得到Q,R矩阵
-        EEF = Cond(E'*E)\F';
-        FFE = Cond(F'*F)\E';
-        Q = F*EEF;
-        R = E*FFE;
+        EE = Cond(E'*E); FF = Cond(F'*F);
+        EEF = EE\F'; FFE = FF\E';
+        Q = F*EEF; R = E*FFE;
         % 得到P,S矩阵
-        EEFc = cell(TaskNum, 1);
-        FFEc = cell(TaskNum, 1);
         Ec = mat2cell(E, N(1,:));
         Fc = mat2cell(F, N(2,:));
+        EEc = mat2cell(EE, N(1,:), N(1,:));
+        FFc = mat2cell(FF, N(2,:), N(2,:));
+        EEFc = cell(TaskNum, 1);
+        FFEc = cell(TaskNum, 1);
         P = sparse(0, 0);
         S = sparse(0, 0);
         for t = 1 : TaskNum
-            EEFc{t} = Cond(Ec{t}'*Ec{t})\(Fc{t}');
-            FFEc{t} = Cond(Fc{t}'*Fc{t})\(Ec{t}');
+            EEFc{t} = EEc{t,t}\(Fc{t}');
+            FFEc{t} = FFc{t,t}\(Ec{t}');
             P = blkdiag(P, Fc{t}*EEFc{t});
             S = blkdiag(S, Ec{t}*FFEc{t});
         end
-        H1 = symmetric(Q + 1/opts.rho*P);
-        H2 = symmetric(R + 1/opts.lambda*S);
+        H1 = Cond(Q + 1/opts.rho*P);
+        H2 = Cond(R + 1/opts.rho*S);
     end
 
-%% Primal problem
     function [ Alpha ] = Primal(H, f, lb, ub)
         Alpha = quadprog(H,f,[],[],[],[],lb,ub,[],[]);
     end
 
-    function [ Rate ] = GetTotalRate(Alpha, C)
+    function [ Alpha ] = Reduced(H, Alpha, C1)
+        % reduced problem
+        [ ~, R, S ] = GetRate(Alpha, C1);
+        if mean(R) > 0
+            f = H(R,S)*Alpha(S)-1;
+            lb = zeros(size(f));
+            ub = C1*ones(size(f));
+            Alpha(R) = quadprog(H(R,R),f,[],[],[],[],lb,ub,[],[]);
+        end
+    end
+
+    function [ Rate ] = GetTotalRate(Alpha, C1)
         S0 = abs(Alpha)<1e-7;
-        SC = abs(Alpha-C)<1e-7;
+        SC = abs(Alpha-C1)<1e-7;
         Rate = mean([S0, SC]);
     end
 
-%% Reduced problem
-    function [ Rate, R, S ] = GetRate(Alpha, C)
+    function [ Rate, R, S ] = GetRate(Alpha, C1)
         R = Alpha == Inf;
         S0 = Alpha == 0;
-        SC = Alpha == C;
+        SC = Alpha == C1;
         S = S0 | SC;
         Rate = mean([S0, SC]);
     end
 
-    function [ Alpha ] = Reduced(H, Alpha, C)
-        % reduced problem
-        [ ~, R, S ] = GetRate(Alpha, C);
-        if mean(R) > 0
-            f = H(R,S)*Alpha(S)-1;
-            lb = zeros(size(f));
-            ub = C*ones(size(f));
-            [ Alpha(R) ] = Primal(H(R,R), f, lb, ub);
-        end
-    end
-
-%% Predict
     function [ U, V ] = GetWeight(EEF, FFE, EEFc, FFEc, Alpha, Gamma, N, TaskNum, opts)
         CAlpha = mat2cell(Alpha, N(2,:));
         CGamma = mat2cell(Gamma, N(1,:));
@@ -143,7 +136,7 @@ end
         V = cell(TaskNum, 1);
         for t = 1 : TaskNum
             U{t} = u - EEFc{t}*(1/opts.rho*CAlpha{t});
-            V{t} = v + FFEc{t}*(1/opts.lambda*CGamma{t});
+            V{t} = v + FFEc{t}*(1/opts.rho*CGamma{t});
         end
     end
 
@@ -162,7 +155,6 @@ end
         end
     end
 
-%% SSR for $\mu$, $p$, $C$
     function [ Alpha2 ] = SSR_MU_P(H1, H2, Alpha1, C1)
         % safe screening rules for $\mu$, $p$
         P = chol(H2, 'upper');

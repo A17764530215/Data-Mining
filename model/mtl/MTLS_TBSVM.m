@@ -12,11 +12,10 @@ rho = opts.rho;
 lambda = opts.rho;
 kernel = opts.kernel;
 TaskNum = length(xTrain);
+[ X, Y, T ] = GetAllData(xTrain, yTrain, TaskNum);
 
 %% Prepare
 tic;
-% 得到所有的样本和标签以及任务编号
-[ X, Y, T ] = GetAllData(xTrain, yTrain, TaskNum);
 % 分割正负类点
 Yp = Y==1;
 Yn = Y==-1;

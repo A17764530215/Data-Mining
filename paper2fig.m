@@ -17,7 +17,7 @@ BatchDraw(Info, [1 7 8 2 3 4 5 6 9]);
 [ m, n, k ] = size(Summary.Time);
 Data = mat2cell(Summary.Time, m, d.Counts, k);
 [ Info ] = Transform(Data, d, 1);
-BatchDraw(Info, [1 7 8 5 6 9]);
+BatchDraw(Info, [1 7 8 2 3 4 5 6 9]);
 
 %% Safe Screening
 [ d ] = SafeScreening();
@@ -80,11 +80,9 @@ end
 
 function [ d ] = SetPaper3(d)
     d.Legends = {
-%         'IRMTL', 'SSR-IRMTL', 'IRMTL-M', 'SSRM-IRMTL',...
-%         'CRMTL-M', 'SSRM-CRMTL',...
-        'SVM','PSVM','LS-SVM','TWSVM','DMTSVM',...
-        'MTPSVM','MTLS-SVM','IRMTL', 'SSR-IRMTL'
-%         'TWSVM','DMTSVM',...
+        'SVM','PSVM','LS-SVM','TWSVM',...
+        'MTPSVM','MTLS-SVM','IRMTL', 'SSR-IRMTL',...
+        'DMTSVM','SSR_DMTSVM'
     };
     d.STL = [ 1 2 3 4 5 6 7 8 9 ];
 end

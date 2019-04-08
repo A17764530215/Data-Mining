@@ -14,10 +14,10 @@ lambda = opts.rho;
 kernel = opts.kernel;
 solver = opts.solver;
 TaskNum = length(xTrain);
+[ A, Y, T ] = GetAllData( xTrain, yTrain, TaskNum );
     
 %% Prepare
 tic;
-[ A, Y, T ] = GetAllData( xTrain, yTrain, TaskNum );
 [m, ~] = size(A);
 e = ones(m, 1);
 C = A;

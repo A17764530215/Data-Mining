@@ -8,11 +8,10 @@ C = opts.C;
 mu = opts.mu;
 kernel = opts.kernel;
 TaskNum = length(xTrain);
+[ X, Y, T, ~ ] = GetAllData(xTrain, yTrain, TaskNum);
 
 %% Prepare
 tic;
-% 得到所有的样本和标签以及任务编号
-[ X, Y, T, ~ ] = GetAllData(xTrain, yTrain, TaskNum);
 Q = Y.*Kernel(X, X, kernel).*Y';
 P = sparse(0, 0);
 for t = 1 : TaskNum

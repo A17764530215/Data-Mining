@@ -10,10 +10,10 @@ rho = opts.rho;
 kernel = opts.kernel;
 solver = opts.solver;
 TaskNum = length(xTrain);
+[ X, Y, T ] = GetAllData( xTrain, yTrain, TaskNum );
 
 %% Fit
 tic;
-[ X, Y, T ] = GetAllData( xTrain, yTrain, TaskNum );
 XX = Kernel(X, X, kernel);
 Q = Y.*XX.*Y';
 P = sparse(0, 0);

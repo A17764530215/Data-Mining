@@ -18,7 +18,7 @@ symmetric = @(H) (H+H')/2;
 %% Prepare
 tic;
 % 得到所有的样本和标签以及任务编号
-[ X, Y, T ] = GetAllData(xTrain, yTrain, TaskNum);
+[ X, Y, T, N ] = GetAllData(xTrain, yTrain, TaskNum);
 % 分割正负类点
 Yp = Y==1;
 Yn = Y==-1;
@@ -33,31 +33,35 @@ E = [Kernel(A, X, kernel) e1];
 F = [Kernel(B, X, kernel) e2];
 % 得到Q,R矩阵
 I = speye(size(E, 2));
-EEF = (E'*E+C3*I)\F';
-FFE = (F'*F+C4*I)\E';
+EE = E'*E; FF = F'*F;
+EEF = (EE+C3*I)\F';
+FFE = (FF+C4*I)\E';
 Q = F*EEF;
 R = E*FFE;
 % 得到P,S矩阵
 P = sparse(0, 0);
 S = sparse(0, 0);
-EEFt = cell(TaskNum, 1);
-FFEt = cell(TaskNum, 1);
+Ec = mat2cell(E, N(1,:));
+Fc = mat2cell(F, N(2,:));
+EEc = mat2cell(EE, N(1,:), N(1,:));
+FFc = mat2cell(FF, N(2,:), N(2,:));
+EEFc = cell(TaskNum, 1);
+FFEc = cell(TaskNum, 1);
 for t = 1 : TaskNum
-    Et = E(T(Yp)==t,:);
-    Ft = F(T(Yn)==t,:);
-    It = speye(size(Et, 2));
-    EEFt{t} = (rho/TaskNum*(Et'*Et)+C3/TaskNum*It)\(Ft');
-    FFEt{t} = (lambda/TaskNum*(Ft'*Ft)+C4/TaskNum*It)\(Et');
-    P = blkdiag(P, Ft*EEFt{t});
-    S = blkdiag(S, Et*FFEt{t});
+    It = speye(size(Ec{t}, 2));
+    EEFc{t} = (rho/TaskNum*EEc{t,t}+C3/TaskNum*It)\(Fc{t}');
+    FFEc{t} = (lambda/TaskNum*FFc{t,t}+C4/TaskNum*It)\(Ec{t}');
+    P = blkdiag(P, Fc{t}*EEFc{t});
+    S = blkdiag(S, Ec{t}*FFEc{t});
 end
 
 %% Fit
-% 求解两个二次规划
 % MTBSVM1
 Alpha = quadprog(symmetric(Q + P),-e2,[],[],[],[],zeros(m2, 1),C1*e2,[],solver);
+CAlpha = mat2cell(Alpha, N(2,:));
 % MTBSVM2
 Gamma = quadprog(symmetric(R + S),-e1,[],[],[],[],zeros(m1, 1),C2*e1,[],solver);
+CGamma = mat2cell(Gamma, N(1,:));
 
 %% GetWeight
 u = -EEF*Alpha;
@@ -65,8 +69,8 @@ v = FFE*Gamma;
 U = cell(TaskNum, 1);
 V = cell(TaskNum, 1);
 for t = 1 : TaskNum
-    U{t} = u - EEFt{t}*Alpha(T(Yn)==t,:);
-    V{t} = v + FFEt{t}*Gamma(T(Yp)==t,:);
+    U{t} = u - EEFc{t}*CAlpha{t};
+    V{t} = v + FFEc{t}*CGamma{t};
 end
 Time = toc;
 

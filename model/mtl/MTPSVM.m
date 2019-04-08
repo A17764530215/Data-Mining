@@ -9,10 +9,10 @@ C = opts.C;
 lambda = opts.lambda;
 kernel = opts.kernel;
 TaskNum = length(xTrain);
+[ X, Y, T ] = GetAllData( xTrain, yTrain, TaskNum );
 
 %% Fit
 tic;
-[ X, Y, T ] = GetAllData( xTrain, yTrain, TaskNum );
 H = Kernel(X, X, kernel);
 Q = Y.*H.*Y';
 P = sparse(0, 0);

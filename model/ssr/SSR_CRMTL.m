@@ -9,38 +9,38 @@ n = GetParamsCount(IParams);
 CVStat = zeros(n, opts.IndexCount, TaskNum);
 CVTime = zeros(n, 2);
 CVRate = zeros(n, 4);
-Alpha = cell(n, 1);
 for i = 1 : n
     Params = GetParams(IParams, i);
     Params.solver = opts.solver;
     tic;
-    [ H2 ] = GetHessian(X, Y, TaskNum, Params);
+    [ H1 ] = Prepare(X, Y, TaskNum, Params);
+    C1 = Params.C;
     if i > 1
+        C0 = LastParams.C;
         % solve the rest problem
         [ bC, bMP ] = EqualsTo(Params, LastParams);
         if bC
-            [ Alpha{i} ] = SSR_C(H2, Alpha{i-1}, Params, LastParams);
-            [ Alpha{i}, CVRate(i,1:2) ] = Reduced_IRMTL(H2, Alpha{i}, Params);
+            [ Alpha1 ] = SSR_C(H1, Alpha0, C1, C0);
+            [ Alpha0, CVRate(i,1:2) ] = Reduced(H1, Alpha1, C1);
         elseif bMP
-            [ Alpha{i} ] = SSR_MU_P(H1, H2, Alpha{i-1}, Params);
-            [ Alpha{i}, CVRate(i,1:2) ] = Reduced_IRMTL(H2, Alpha{i}, Params);
+            [ Alpha1 ] = SSR_MU_P(H0, H1, Alpha0, C1);
+            [ Alpha0, CVRate(i,1:2) ] = Reduced(H1, Alpha1, C1);
         else
             % solve the first problem
-            [ Alpha{i} ] = IRMTL(H2, Params);
+            [ Alpha0 ] = Primal(H1, C1);
         end
     else
         % solve the first problem
-        [ Alpha{i} ] = IRMTL(H2, Params);
+        [ Alpha0 ] = Primal(H1, C1);
     end
-    H1 = H2;
+    H0 = H1;
     CVTime(i, 1) = toc;
     % Ô¤²â
-    [ y_hat, CVRate(i, 3:4) ] = Predict(X, Y, xTest, Alpha{i}, Params);
+    [ y_hat, CVRate(i, 3:4) ] = Predict(X, Y, xTest, Alpha0, Params);
     CVStat(i,:,:) = MTLStatistics(TaskNum, y_hat, yTest, opts);
     LastParams = Params;
 end
 
-%% Compare
     function [ bC, bMP ] = EqualsTo(p1, p2)
         k1 = p1.kernel;
         k2 = p2.kernel;
@@ -55,7 +55,64 @@ end
         end
     end
 
-%% Predict
+    function [ H ] = Prepare(X, Y, TaskNum, opts)
+        % construct hessian matrix
+        Q = Y.*Kernel(X, X, opts.kernel).*Y';
+        P = sparse(0, 0);
+        for t = 1 : TaskNum
+            Tt = T==t;
+            P = blkdiag(P, Q(Tt,Tt));
+        end
+        H = Cond(Q + TaskNum/opts.mu*P);
+    end
+
+    function [ Alpha1 ] = Primal(H1, C1)
+        % primal problem
+        e = ones(size(H1, 1), 1);
+        lb = zeros(size(H1, 1), 1);
+        ub = C1*e;
+        [ Alpha1 ] = quadprog(H1, -e, [], [], [], [], lb, ub);
+    end
+
+    function [ Alpha1, Rate ] = Reduced(H1, Alpha1, C1)
+        % reduced problem
+        R = Alpha1 == Inf;
+        S0 = Alpha1 == 0;
+        SC = Alpha1 == C1;
+        Rate = mean([S0, SC]);
+        if mean(R) > 0
+            S = S0 | SC;
+            f = H1(R,S)*Alpha1(S)-1;
+            lb = zeros(size(f));
+            ub = C1*ones(size(f));
+            [ Alpha1(R) ] = quadprog(H1(R,R), f, [], [], [], [], lb, ub);
+        end
+    end
+
+    function [ Alpha1 ] = SSR_C(H1, Alpha0, C1, C0)
+        k1 = (C1+C0)/C0;
+        k2 = (C1-C0)/C0;
+        % safe screening rules for $C$
+        P = chol(H1, 'upper');
+        LL = H1*(Alpha0*k1);
+        RL = sqrt(sum(P.*P, 1))';
+        RR = RL*norm(P*Alpha0*k2);
+        Alpha1 = Inf(size(Alpha0));
+        Alpha1(LL - RR > 2) = 0;
+        Alpha1(LL + RR < 2) = C;
+    end
+
+    function [ Alpha1 ] = SSR_MU_P(H0, H1, Alpha0, C1)
+        % safe screening rules for $\mu$, $p$
+        P = chol(H1, 'upper');
+        LL = (H0+H1)*Alpha0;
+        RL = sqrt(sum(P.*P, 1))';
+        RR = RL*norm(P'\((H0*H1)*Alpha0));
+        Alpha1 = Inf(size(Alpha0));
+        Alpha1(LL - RR > 2) = 0;
+        Alpha1(LL + RR < 2) = C1;
+    end
+
     function [ yTest, Rate ] = Predict(X, Y, xTest, Alpha, opts)
         % extract opts
         mu = opts.mu;
@@ -81,68 +138,4 @@ end
         end
     end
 
-%% RMTL
-    function [ Alpha1 ] = IRMTL(H1, Params)
-        % primal problem
-        e = ones(size(H1, 1), 1);
-        lb = zeros(size(H1, 1), 1);
-        ub = Params.C*e;
-        [ Alpha1 ] = quadprog(H1, -e, [], [], [], [], lb, ub, [], [], Params.solver);
-    end
-
-%% SSR for $C$
-    function [ Alpha2 ] = SSR_C(H2, Alpha1, Params, LastParams)
-        C = Params.C;
-        C0 = LastParams.C;
-        k1 = (C+C0)/C0;
-        k2 = (C-C0)/C0;
-        % safe screening rules for $C$
-        P = chol(H2, 'upper');
-        LL = H2*(Alpha1*k1);
-        RL = sqrt(sum(P.*P, 1))';
-        RR = RL*norm(P*Alpha1*k2);
-        Alpha2 = Inf(size(Alpha1));
-        Alpha2(LL - RR > 2) = 0;
-        Alpha2(LL + RR < 2) = C;
-    end
-
-%% SSR for $\mu$, $p$
-    function [ Alpha2 ] = SSR_MU_P(H1, H2, Alpha1, Params)
-        % safe screening rules for $\mu$, $p$
-        P = chol(H2, 'upper');
-        LL = (H1+H2)*Alpha1;
-        RL = sqrt(sum(P.*P, 1))';
-        RR = RL*norm(P'\((H1*H2)*Alpha1));
-        Alpha2 = Inf(size(Alpha1));
-        Alpha2(LL - RR > 2) = 0;
-        Alpha2(LL + RR < 2) = Params.C;
-    end
-
-%% Reduced-RMTL
-    function [ Alpha2, Rate ] = Reduced_IRMTL(H2, Alpha2, Params)
-        % reduced problem
-        R = Alpha2 == Inf;
-        S0 = Alpha2 == 0;
-        SC = Alpha2 == Params.C;
-        Rate = mean([S0, SC]);
-        if mean(R) > 0
-            S = S0 | SC;
-            f = H2(R,S)*Alpha2(S)-1;
-            lb = zeros(size(f));
-            ub = Params.C*ones(size(f));
-            [ Alpha2(R) ] = quadprog(H2(R,R), f, [], [], [], [], lb, ub, [], []);
-        end
-    end
-
-%% Get Hessian
-    function [ H ] = GetHessian(X, Y, TaskNum, opts)
-        % construct hessian matrix
-        Q = Y.*Kernel(X, X, opts.kernel).*Y';
-        P = sparse(0, 0);
-        for t = 1 : TaskNum
-            Tt = T==t;
-            P = blkdiag(P, Q(Tt,Tt));
-        end
-        H = Cond(Q + TaskNum/opts.mu*P);
-    end
 end
