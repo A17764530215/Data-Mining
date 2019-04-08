@@ -114,9 +114,7 @@ end
     end
 
     function [ Rate ] = GetTotalRate(Alpha, C1)
-        S0 = abs(Alpha)<1e-7;
-        SC = abs(Alpha-C1)<1e-7;
-        Rate = mean([S0, SC]);
+        Rate = mean([abs(Alpha)<1e-7, abs(Alpha-C1)<1e-7]);
     end
 
     function [ Rate, R, S ] = GetRate(Alpha, C1)

@@ -9,14 +9,14 @@ lambda2 = opts.lambda2;
 kernel = opts.kernel;
 solver = opts.solver;
 TaskNum = length(xTrain);
-symmetric = @(H) (H+H')/2;
-[ X, Y, T, ~ ] = GetAllData(xTrain, yTrain, TaskNum);
 mu = 1/(2*lambda2);
 nu = TaskNum/(2*lambda1);
+symmetric = @(H) (H+H')/2;
+[ X, Y, T, ~ ] = GetAllData(xTrain, yTrain, TaskNum);
+X = [X, ones(size(Y))];
 
 %% Prepare
 tic;
-X = [X, ones(size(Y))];
 Q = Y.*Kernel(X, X, kernel).*Y';
 P = sparse(0, 0);
 for t = 1 : TaskNum
