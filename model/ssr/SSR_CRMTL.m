@@ -5,6 +5,7 @@ function [  CVStat, CVTime, CVRate ] = SSR_CRMTL( xTrain, yTrain, xTest, yTest, 
 
 %% Fit
 [ X, Y, T, ~ ] = GetAllData(xTrain, yTrain, TaskNum);
+solver = opts.solver;
 n = GetParamsCount(IParams);
 CVStat = zeros(n, opts.IndexCount, TaskNum);
 CVTime = zeros(n, 2);
@@ -71,7 +72,7 @@ end
         e = ones(size(H1, 1), 1);
         lb = zeros(size(H1, 1), 1);
         ub = C1*e;
-        [ Alpha1 ] = quadprog(H1, -e, [], [], [], [], lb, ub);
+        [ Alpha1 ] = quadprog(H1, -e, [], [], [], [], lb, ub, [], solver);
     end
 
     function [ Alpha1, Rate ] = Reduced(H1, Alpha1, C1)
@@ -85,7 +86,7 @@ end
             f = H1(R,S)*Alpha1(S)-1;
             lb = zeros(size(f));
             ub = C1*ones(size(f));
-            [ Alpha1(R) ] = quadprog(H1(R,R), f, [], [], [], [], lb, ub);
+            [ Alpha1(R) ] = quadprog(H1(R,R), f, [], [], [], [], lb, ub, [], solver);
         end
     end
 

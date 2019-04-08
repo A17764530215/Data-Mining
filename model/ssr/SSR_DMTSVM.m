@@ -5,6 +5,7 @@ function [ CVStat, CVTime, CVRate ] = SSR_DMTSVM( xTrain, yTrain, xTest, yTest, 
 
 %% Fit
 [ X, Y, ~, N ] = GetAllData(xTrain, yTrain, TaskNum);
+solver = opts.solver;
 n = GetParamsCount(IParams);
 CVStat = zeros(n, opts.IndexCount, TaskNum);
 CVTime = zeros(n, 2);
@@ -102,7 +103,7 @@ end
     end
 
     function [ Alpha ] = Primal(H, f, lb, ub)
-        Alpha = quadprog(H,f,[],[],[],[],lb,ub,[],[]);
+        Alpha = quadprog(H,f,[],[],[],[],lb,ub,[],solver);
     end
 
     function [ Alpha ] = Reduced(H, Alpha, C1)
@@ -112,7 +113,7 @@ end
             f = H(R,S)*Alpha(S)-1;
             lb = zeros(size(f));
             ub = C1*ones(size(f));
-            Alpha(R) = quadprog(H(R,R),f,[],[],[],[],lb,ub,[],[]);
+            Alpha(R) = quadprog(H(R,R),f,[],[],[],[],lb,ub,[],solver);
         end
     end
 

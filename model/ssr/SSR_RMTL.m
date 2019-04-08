@@ -5,6 +5,7 @@ function [ CVStat, CVTime, CVRate ] = SSR_RMTL( xTrain, yTrain, xTest, yTest, Ta
 
 %% Fit
 [ X, Y, T, ~ ] = GetAllData(xTrain, yTrain, TaskNum);
+solver = opts.solver;
 X = [X, ones(size(Y))];
 n = GetParamsCount(IParams);
 CVStat = zeros(n, opts.IndexCount, TaskNum);
@@ -47,7 +48,7 @@ end
         % primal problem
         e = ones(size(H1, 1), 1);
         lb = zeros(size(H1, 1), 1);
-        [ Alpha1 ] = quadprog(H1, -e, [], [], [], [], lb, e, [], []);
+        [ Alpha1 ] = quadprog(H1, -e, [], [], [], [], lb, e, [], solver);
     end
 
     function [ H2, Alpha2, Rate ] = Reduced(H2, Alpha2)
@@ -61,7 +62,7 @@ end
             f = H2(R,S)*Alpha2(S)-1;
             lb = zeros(size(f));
             ub = ones(size(f));
-            [ Alpha2(R) ] = quadprog(H2(R,R), f, [], [], [], [], lb, ub, [], []);
+            [ Alpha2(R) ] = quadprog(H2(R,R), f, [], [], [], [], lb, ub, [], solver);
         end
     end
 
