@@ -9,6 +9,7 @@ mu = opts.mu;
 kernel = opts.kernel;
 TaskNum = length(xTrain);
 [ X, Y, T, ~ ] = GetAllData(xTrain, yTrain, TaskNum);
+X = [X, ones(size(Y))];
 
 %% Prepare
 tic;
