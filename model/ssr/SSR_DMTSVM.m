@@ -82,15 +82,14 @@ end
         % µ√µΩP,Sæÿ’Û
         Ec = mat2cell(E, N(1,:));
         Fc = mat2cell(F, N(2,:));
-        EEc = mat2cell(EE, N(1,:), N(1,:));
-        FFc = mat2cell(FF, N(2,:), N(2,:));
         EEFc = cell(TaskNum, 1);
         FFEc = cell(TaskNum, 1);
         P = sparse(0, 0);
         S = sparse(0, 0);
         for t = 1 : TaskNum
-            EEFc{t} = EEc{t,t}\(Fc{t}');
-            FFEc{t} = FFc{t,t}\(Ec{t}');
+            Et = Ec{t}; Ft = Fc{t};
+            EEFc{t} = Cond(Et'*Et)\(Fc{t}');
+            FFEc{t} = Cond(Ft'*Ft)\(Ec{t}');
             P = blkdiag(P, Fc{t}*EEFc{t});
             S = blkdiag(S, Ec{t}*FFEc{t});
         end

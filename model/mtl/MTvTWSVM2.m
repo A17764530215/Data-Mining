@@ -49,13 +49,13 @@ end
 % MTVTWSVM1
 H1 = mu1*Q + TaskNum*(1-mu1)*P;
 Alpha = quadprog(symmetric(H1),[],-e2',-v1,[],[],zeros(m2, 1),e2/m2,[],solver);
-CAlpha = mat2cell(Alpha, N(2,:));
 % MTVTWSVM2
 H2 = mu2*R + TaskNum*(1-mu2)*S;
 Gamma = quadprog(symmetric(H2),[],-e1',-v2,[],[],zeros(m1, 1),e1/m1,[],solver);
-CGamma = mat2cell(Gamma, N(1,:));
 
 %% GetWeight
+CAlpha = mat2cell(Alpha, N(2,:));
+CGamma = mat2cell(Gamma, N(1,:));
 u = -EEF*(mu1*Alpha);
 v = FFE*(mu2*Gamma);
 U = cell(TaskNum, 1);
@@ -82,4 +82,3 @@ for t = 1 : TaskNum
 end
 
 end
-

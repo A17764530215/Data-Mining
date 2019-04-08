@@ -100,7 +100,7 @@ end
         RR = RL*norm(P*Alpha0*k2);
         Alpha1 = Inf(size(Alpha0));
         Alpha1(LL - RR > 2) = 0;
-        Alpha1(LL + RR < 2) = C;
+        Alpha1(LL + RR < 2) = C1;
     end
 
     function [ Alpha1 ] = SSR_MU_P(H0, H1, Alpha0, C1)

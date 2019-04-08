@@ -49,20 +49,20 @@ end
 % MTL_TWSVR1_Xie
 H1 = Q + TaskNum/mu1*P;
 Alpha = quadprog(symmetric(H1),[],-e2',-v1,[],[],zeros(m2, 1),e2/m2,[],solver);
-CAlpha = mat2cell(Alpha, N(2,:));
 % MTL_TWSVR2_Xie
 H2 = R + TaskNum/mu2*S;
 Gamma = quadprog(symmetric(H2),[],-e1',-v2,[],[],zeros(m1, 1),e1/m1,[],solver);
-CGamma = mat2cell(Gamma, N(1,:));
 
 %% GetWeight
+CAlpha = mat2cell(Alpha, N(2,:));
+CGamma = mat2cell(Gamma, N(1,:));
 u = -EEF*Alpha;
 v = FFE*Gamma;
 U = cell(TaskNum, 1);
 V = cell(TaskNum, 1);
 for t = 1 : TaskNum
-    U{t} = u - TaskNum/mu1*EEFc{t}*CAlpha{t};
-    V{t} = v + TaskNum/mu2*FFEc{t}*CGamma{t};
+    U{t} = u - EEFc{t}*(TaskNum/mu1*CAlpha{t});
+    V{t} = v + FFEc{t}*(TaskNum/mu2*CGamma{t});
 end
 Time = toc;
     
@@ -82,4 +82,3 @@ for t = 1 : TaskNum
 end
 
 end
-

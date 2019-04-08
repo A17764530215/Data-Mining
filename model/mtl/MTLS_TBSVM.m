@@ -30,46 +30,43 @@ E = [Kernel(A, X, kernel) e1];
 F = [Kernel(B, X, kernel) e2];
 % 得到Q,R矩阵
 I = speye(size(E, 2));
-EE = E'*E; FF = F'*F;
-EEF = (EE+C3*I)\F';
-FFE = (FF+C4*I)\E';
+EEF = (E'*E+C3*I)\F';
+FFE = (F'*F+C4*I)\E';
 Q = F*EEF; R = E*FFE;
 % 得到P,S矩阵
 Ec = mat2cell(E, N(1,:));
 Fc = mat2cell(F, N(2,:));
-EEc = mat2cell(EE, N(1,:), N(1,:));
-FFc = mat2cell(FF, N(2,:), N(2,:));
-EEFc = cell(TaskNum, 1);
-FFEc = cell(TaskNum, 1);
+EEFt = cell(TaskNum, 1);
+FFEt = cell(TaskNum, 1);
 P = sparse(0, 0);
 S = sparse(0, 0);
 for t = 1 : TaskNum
-    It = speye(size(Ec{t}, 2));
-    EEFc{t} = (rho/TaskNum*(EEc{t,t})+C3/TaskNum*It)\(Fc{t}');
-    FFEc{t} = (lambda/TaskNum*(FFc{t,t})+C4/TaskNum*It)\(Ec{t}');
-    P = blkdiag(P, Fc{t}*EEFc{t});
-    S = blkdiag(S, Ec{t}*FFEc{t});
+    Et = Ec{t}; Ft = Fc{t};
+    It = speye(size(Et, 2));
+    EEFt{t} = (rho/TaskNum*(Et'*Et)+C3/TaskNum*It)\(Ft');
+    FFEt{t} = (lambda/TaskNum*(Ft'*Ft)+C4/TaskNum*It)\(Et');
+    P = blkdiag(P, Ft*EEFt{t});
+    S = blkdiag(S, Et*FFEt{t});
 end
 
 %% Fit
-% 求解两个二次规划
 % MTLS_TBSVM1
 I = speye(size(Q));
 Alpha = Cond(Q + P + 1/C1*I)\e2;
-CAlpha = mat2cell(Alpha, N(2,:));
 % MTLS_TBSVM2
 I = speye(size(R));
 Gamma = Cond(R + S + 1/C2*I)\e1;
-CGamma = mat2cell(Gamma, N(1,:));
 
 %% GetWeight
+CAlpha = mat2cell(Alpha, N(2,:));
+CGamma = mat2cell(Gamma, N(1,:));
 u = -EEF*Alpha;
 v = FFE*Gamma;
 U = cell(TaskNum, 1);
 V = cell(TaskNum, 1);
 for t = 1 : TaskNum
-    U{t} = u - EEFc{t}*CAlpha{t};
-    V{t} = v + FFEc{t}*CGamma{t};
+    U{t} = u - EEFt{t}*CAlpha{t};
+    V{t} = v + FFEt{t}*CGamma{t};
 end
 Time = toc;
 
@@ -89,3 +86,4 @@ parfor t = 1 : TaskNum
 end
 
 end
+
