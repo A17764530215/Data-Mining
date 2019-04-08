@@ -93,6 +93,7 @@ end
             yTest{t} = y;
         end
         
+        Rate = zeros(size(Alpha, 1), 2);
         Rate(:,1) = mean(abs(Alpha)<1e-7);
         Rate(:,2) = mean(abs(Alpha-1)<1e-7);
         
