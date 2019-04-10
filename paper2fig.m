@@ -9,7 +9,7 @@ Summary.Time = Summary.Time*1000;
 [ m, ~, k ] = size(Summary.Data);
 Data = mat2cell(Summary.Data, m, d.Counts, k);
 [ Info ] = Transform(Data, d, 1);
-BatchDraw(Info, [1 7 8 2 3 4 5 6 9]);
+BatchDraw(Info, [1 6 7 2 3 8 4 5]);
 
 %% Classify Time
 [ d ] = Classify();
@@ -17,7 +17,7 @@ BatchDraw(Info, [1 7 8 2 3 4 5 6 9]);
 [ m, n, k ] = size(Summary.Time);
 Data = mat2cell(Summary.Time, m, d.Counts, k);
 [ Info ] = Transform(Data, d, 1);
-BatchDraw(Info, [1 7 8 2 3 4 5 6 9]);
+BatchDraw(Info, [1 6 7 2 3 8 4 5]);
 
 %% Safe Screening
 [ d ] = SafeScreening();
@@ -81,24 +81,23 @@ end
 function [ d ] = SetPaper3(d)
     d.Legends = {
         'SVM','PSVM','LS-SVM','TWSVM',...
-        'MTPSVM','MTLS-SVM','IRMTL', 'SSR-IRMTL',...
+        'MTPSVM','MTLS-SVM','IRMTL','SSR-IRMTL',...
         'DMTSVM','SSR_DMTSVM'
     };
-    d.STL = [ 1 2 3 4 5 6 7 8 9 ];
+    d.STL = [  5 6 7 8  ];
 end
 
 % ≈‰÷√
 function [ d ] = Classify()
     d.Arcs = [0,0,0,0,45,45,0,0,0];
-    d.Counts = [ 9, 8, 5, 5, 5, 10, 6, 6, 3, ];
-    d.Draws = {@bar, @bar, @bar, @bar, @bar, @bar, @bar, @bar,@bar };
-    d.Grids = {'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off'};
+    d.Counts = [ 9, 5, 5, 5, 10, 6, 6, 3, ];
+    d.Draws = {@bar, @bar, @bar, @bar, @bar, @bar, @bar,@bar };
+    d.Grids = {'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off'};
     d.IndexCount = 8;
-    d.Titles = {'Monk', 'Isolet', 'Letter_1', 'Letter_2', 'Caltech 101', 'Caltech 256', 'Flags', 'Emotions', 'MTL'};
+    d.Titles = {'Monk', 'Letter_1', 'Letter_2', 'Caltech 101', 'Caltech 256', 'Flags', 'Emotions', 'MTL'};
     d.xLabels = { 'Task Size', 'Dataset Index', '#Task', 'Dataset Index', 'Category', 'Category',  'Task Size', 'Task Size', 'Dataset Index'};
     d.XTicklabel = {
         '60', '90', '120', '150', '180', '210', '240', '270', 'All',...
-        'ab', 'cd', 'ef', 'gh', 'ij', 'kl','mn','op',...
         '3', '5', '7', '9', '11',...
         'T1', 'T2', 'T3', 'T4', 'T5',...
         'Birds','Insects','Flowers','Mammals','Instruments',...
@@ -108,6 +107,7 @@ function [ d ] = Classify()
         'Letter', 'Spam_{3}', 'Spam_{15}'
     };
     d.yLabels = {'Accuracy', 'Precision', 'Recall', 'F1'};
+    %         'ab', 'cd', 'ef', 'gh', 'ij', 'kl','mn','op',...
 end
 
 function [ d ] = SafeScreening()

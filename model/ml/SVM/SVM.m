@@ -6,7 +6,7 @@ function [ yTest, Time ] = SVM(xTrain, yTrain, xTest, opts)
 %% Parse opts
 C = opts.C;            % 参数
 kernel = opts.kernel;  % 核函数
-
+solver = opts.solver;
 %% Fit
 tic
 X = xTrain;
@@ -17,7 +17,7 @@ K = Kernel(X, X, kernel);
 I = speye(size(K));
 DY = I.*Y;
 H = Cond(DY*K*DY);
-Alpha = quadprog(H, -e, Y', 0, [], [], 0*e, C*e, [], []);
+Alpha = quadprog(H, -e, Y', 0, [], [], 0*e, C*e, [], solver);
 svi = Alpha > 0;
 b = mean(Y(svi,:)-K(svi,:)*(Y(svi,:).*Alpha(svi,:)));
 % 停止计时
