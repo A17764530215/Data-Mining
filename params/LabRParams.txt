@@ -1,14 +1,43 @@
-LSTWSVR_Huang:48 params 0.03s.
-PSVR:144 params 0.03s.
-LS_SVR:144 params 0.01s.
-SVR:576 params 0.56s.
-TWSVR:576 params 0.62s.
-TWSVR_Xu:576 params 0.04s.
-LSTWSVR_Mei:576 params 0.03s.
-LSTWSVR_Xu:576 params 0.03s.
-MTLS_SVR:1728 params 0.08s.
-MTPSVR:1728 params 0.08s.
-MTL_TWSVR:6912 params 0.33s.
-MTL_TWSVR_Xu:6912 params 0.32s.
-MTLS_TWSVR:6912 params 0.32s.
-MTLS_TWSVR_Xu:6912 params 0.32s.
+kernel      Method.ID       nParams	Time
+linear      SVR             48   	0.04
+linear      PSVR            12   	0.00
+linear      LS_SVR          12   	0.00
+linear      TWSVR           576  	0.07
+linear      TWSVR_Xu        48   	0.00
+linear      LSTWSVR_Mei     48   	0.00
+linear      LSTWSVR_Huang   4    	0.00
+linear      MTLS_SVR        144  	0.01
+linear      MTPSVR          144  	0.01
+linear      MTL_TWSVR       576  	0.05
+linear      MTL_TWSVR_Xu    576  	0.07
+linear      MTLS_TWSVR      576  	0.03
+linear      LSTWSVR_Xu      48   	0.00
+linear      MTLS_TWSVR_Xu   576  	0.05
+poly        SVR             48   	0.01
+poly        PSVR            12   	0.00
+poly        LS_SVR          12   	0.00
+poly        TWSVR           576  	0.05
+poly        TWSVR_Xu        48   	0.00
+poly        LSTWSVR_Mei     48   	0.00
+poly        LSTWSVR_Huang   4    	0.00
+poly        MTLS_SVR        144  	0.01
+poly        MTPSVR          144  	0.01
+poly        MTL_TWSVR       576  	0.03
+poly        MTL_TWSVR_Xu    576  	0.03
+poly        MTLS_TWSVR      576  	0.03
+poly        LSTWSVR_Xu      48   	0.00
+poly        MTLS_TWSVR_Xu   576  	0.03
+rbf         SVR             576  	0.05
+rbf         PSVR            144  	0.01
+rbf         LS_SVR          144  	0.01
+rbf         TWSVR           6912 	0.39
+rbf         TWSVR_Xu        576  	0.03
+rbf         LSTWSVR_Mei     576  	0.03
+rbf         LSTWSVR_Huang   48   	0.00
+rbf         MTLS_SVR        1728 	0.09
+rbf         MTPSVR          1728 	0.09
+rbf         MTL_TWSVR       6912 	0.43
+rbf         MTL_TWSVR_Xu    6912 	0.41
+rbf         MTLS_TWSVR      6912 	0.38
+rbf         LSTWSVR_Xu      576  	0.03
+rbf         MTLS_TWSVR_Xu   6912 	0.38

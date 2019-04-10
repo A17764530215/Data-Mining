@@ -1,11 +1,12 @@
 function [ CVStat, CVTime, CVRate ] = SSR(X, Y, Method, TaskNum, Kfold, ValInd, opts )
 %SAFE_SCREENING_RULES 此处显示有关此函数的摘要
+% Safe screening rules
 %   此处显示详细说明
     
 %% Safe screening flag
     persistent IsSSR;
     if isempty(IsSSR)
-        IsSSR = struct('SSR_RMTL', 1, 'SSR_IRMTL', 1);
+        IsSSR = struct('SSR_RMTL', 1, 'SSR_IRMTL', 1, 'SSR_CRMTL', 1, 'SSR_DMTSVM', 1);
     end
     
 %% Parse opts

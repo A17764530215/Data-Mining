@@ -11,25 +11,19 @@ function [ LabStat, LabTime, HasStat ] = LabStatistics(Path, DataSet, IParams, o
     else
         TaskNum = DataSet.TaskNum;
     end
-    % 实验文件夹
-    StatDir = [ Path, int2str(DataSet.Kfold) '-fold/' ];
-    if exist(StatDir, 'dir') == 0
-        LabStat = [];
-        LabTime = [];
-        HasStat = 0;
-        return;
-    end
     % 统计数据
     LabStat = zeros(nParams, TaskNum, opts.IndexCount);
     LabTime = zeros(nParams, 2);
     for k = 1 : nParams
         Method = IParams{k};
-        StatPath = [ StatDir, Method.Name, '-', DataSet.Name, '.mat'];
+        SavePath = sprintf('%s/%s/%d-fold/', Path, Method.kernel.type, DataSet.Kfold);
+        Name = [Method.ID, '-', DataSet.Name];
+        StatPath = [ SavePath, Name, '.mat'];
         if exist(StatPath, 'file') == 2
             load(StatPath);
             [ ~, ~, n ] = size(CVStat);
             if n~= DataSet.TaskNum
-                ME = MException('LabStatistics', 'TaskNum miss match in %s\n', Method.Name);
+                ME = MException('LabStatistics', ['TaskNum miss match in ', Method.Name]);
                 throw(ME);
             else
                 % 网格搜索结果

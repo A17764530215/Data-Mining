@@ -1,19 +1,14 @@
-function [ yTest, Time, Alpha ] = RMTL( xTrain, yTrain, xTest, opts )
-%RMTL 此处显示有关此函数的摘要
+function [ yTest, Time ] = IRMTL( xTrain, yTrain, xTest, opts )
+%IRMTL 此处显示有关此函数的摘要
 % Regularized MTL
 %   此处显示详细说明
 
 %% Parse opts
-lambda1 = opts.lambda1;
-lambda2 = opts.lambda2;
+C = opts.C;
+mu = opts.mu;
 kernel = opts.kernel;
-solver = opts.solver;
 TaskNum = length(xTrain);
-mu = 1/(2*lambda2);
-nu = TaskNum/(2*lambda1);
-symmetric = @(H) (H+H')/2;
 [ X, Y, T, ~ ] = GetAllData(xTrain, yTrain, TaskNum);
-X = [X, ones(size(Y))];
 
 %% Prepare
 tic;
@@ -24,10 +19,10 @@ for t = 1 : TaskNum
     P = blkdiag(P, Q(Tt,Tt));
 end
 % 二次规划求解
-lb = zeros(size(Y));
 e = ones(size(Y));
-H = Cond(mu*Q + nu*P);
-[ Alpha ] = quadprog(symmetric(H), -e, [], [], [], [], lb, e, [], solver);
+lb = zeros(size(Y));
+H = Cond(Q/mu + P);
+[ Alpha ] = quadprog(H,-e,[],[],[],[],lb,C*e,[],opts.solver);
 % 停止计时
 Time = toc;
 
@@ -36,11 +31,10 @@ TaskNum = length(xTest);
 yTest = cell(TaskNum, 1);
 for t = 1 : TaskNum
     Tt = T==t;
-    et = ones(size(xTest{t}, 1), 1);
-    Ht = Kernel([xTest{t}, et], X, kernel);
+    Ht = Kernel(xTest{t}, X, kernel);
     y0 = predict(Ht, Y, Alpha);
     yt = predict(Ht(:,Tt), Y(Tt,:), Alpha(Tt,:));
-    y = sign(mu*y0 + nu*yt);
+    y = sign(y0/mu + yt);
     y(y==0) = 1;
     yTest{t} = y;
 end

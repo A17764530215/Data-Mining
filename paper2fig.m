@@ -1,59 +1,173 @@
-h = figure();
+clear
+clc
 %%
-MyStat = MyStat*100;
-MyTime = MyTime*1000;
-%%
-load('MTL_UCI5.mat');
-load('Caltech5.mat');
-load('MLC5.mat');
-load('LabCParams.mat');
-labels = {'\nu-TWSVM','SVM','PSVM','LS-SVM','TWSVM','LS-TWSVM','MT-\nu-TWSVM II','MT-\nu-TWSVM I','MTPSVM','MTLS-SVM','DMTSVM','MTL-aLS-SVM','MCTSVM'};
-% 单任务学习
-STL_IDX = [2 3 4 5 6 1 8 7];
-% 多任务学习
-MTL_IDX = [9 10 12 11 13 8 7 ];
-CUR_IDX = STL_IDX;
-IDX = 1;
-%% Monk
-xLabels = {'60', '90', '120', '150', '180', '210', '240', '270', 'All'};
-DrawResult(MyStat(CUR_IDX,[2:9,1],IDX)', MyTime(CUR_IDX,[2:9 1])', 'Task size', labels(CUR_IDX), xLabels);
+Summary.Data = Summary.Data*100;
+Summary.Time = Summary.Time*1000;
+%% Classify Accuracy
+[ d ] = Classify();
+[ d ] = SetPaper3(d);
+[ m, ~, k ] = size(Summary.Data);
+Data = mat2cell(Summary.Data, m, d.Counts, k);
+[ Info ] = Transform(Data, d, 1);
+BatchDraw(Info, [1 6 7 2 3 8 4 5]);
 
-%% ISOLET
-xLabels = {'ab', 'cd', 'ef', 'gh', 'ij', 'kl','mn','op'};
-DrawResult(MyStat(CUR_IDX,10:17,IDX)', MyTime(CUR_IDX,10:17)', 'Category', labels(CUR_IDX), xLabels);
+%% Classify Time
+[ d ] = Classify();
+[ d ] = SetPaper3(d);
+[ m, n, k ] = size(Summary.Time);
+Data = mat2cell(Summary.Time, m, d.Counts, k);
+[ Info ] = Transform(Data, d, 1);
+BatchDraw(Info, [1 6 7 2 3 8 4 5]);
 
-%% Letter1
-xLabels = {'3', '5', '7', '9', '11'};
-DrawResult(MyStat(CUR_IDX,18:22,IDX)', MyTime(CUR_IDX,18:23)', 'Category', labels(CUR_IDX), xLabels);
+%% Safe Screening
+[ d ] = SafeScreening();
+Data = mat2cell(Summary.State', length(d.Legends), d.Counts);
+[ Info ] = Transform(Data, d, 1);
+BatchDraw(Info, [1 7 8 2 3 4 5 6 9]);
 
-%% Letter2
-xLabels = {'T1', 'T2', 'T3', 'T4', 'T5'};
-DrawResult(MyStat(CUR_IDX,23:27,IDX)', MyTime(CUR_IDX,23:27)', 'Category', labels(CUR_IDX), xLabels);
+%% 输出筛选曲线
+load('./results/paper3/MyStat-SSR-Linear.mat');
+Curve(Summary, [1:57], [6 7], 'linear', 'rate');
+Curve(Summary, [1:57], [8 9], 'linear', 'speed');
+load('./results/paper3/MyStat-SSR-Poly.mat');
+Curve(Summary, [1:57], [6 7], 'poly', 'rate');
+Curve(Summary, [1:57], [8 9], 'poly', 'speed');
+load('./results/paper3/MyStat-SSR-RBF.mat');
+Curve(Summary, [1:57], [6 7], 'rbf', 'rate');
+Curve(Summary, [1:57], [8 9], 'rbf', 'speed');
 
-%% Caltech
-xLabels = {'Birds_1','Insects_1','Flowers_1','Mammals_1','Instruments_1','Aircrafts','Balls','Bikes','Birds','Boats','Flowers','Instruments','Plants','Mammals','Vehicles'};
-DrawResult(MyStat(CUR_IDX,:,IDX)', MyTime(CUR_IDX,:)', 'Category', labels(CUR_IDX), xLabels, 45);
+% 转换格式
+function [ Summary ] = Transform(Data, d, k)
+    xTickLabels = mat2cell(d.XTicklabel', d.Counts);
+    Summary = [ ];
+    for i = 1 : length(d.Titles)
+        data = Data{i};
+        s.Draw = d.Draws{i};
+        s.Grid = d.Grids{i};
+        s.Title = d.Titles{i};
+        s.XLabel = d.xLabels{i};
+        s.YLabel = d.yLabels{k};
+        s.XTicklabels = xTickLabels{i};
+        s.Legends = d.Legends(d.STL);
+        s.Arc = d.Arcs(i);
+        s.Stat = data(d.STL,:,k);
+        Summary = cat(1, Summary, s);
+    end
+end
 
-%% Caltech101
-xLabels = {'Birds','Insects','Flowers','Mammals','Instruments'};
-DrawResult(MyStat(CUR_IDX,1:5,IDX)', MyTime(CUR_IDX,1:5)', 'Category', labels(CUR_IDX), xLabels, 45);
+% 配置
+function [ d ] = SetPaper1(d)
+    d.Legends = {
+        'SVM','PSVM','LS-SVM',...
+        'TWSVM','LS-TWSVM','\nu-TWSVM','ITWSVM',...
+        'RMTL','MTPSVM','MTLS-SVM','MTL-aLS-SVM',...
+        'DMTSVM','MCTSVM','MTLS_TWSVM','MT-\nu-TWSVM I','MT-\nu-TWSVM II'
+    };
+    d.MTL = [8:14];
+    d.STL = [1:6 14];
+end
 
-%% Caltech256
-xLabels = {'Aircrafts','Balls','Bikes', 'Birds','Boats','Flowers', 'Instruments','Plants','Mammals', 'Vehicles'};
-DrawResult(MyStat(CUR_IDX,6:15,IDX)', MyTime(CUR_IDX,6:15)', 'Category', labels(CUR_IDX), xLabels, 45);
+function [ d ] = SetPaper2(d)
+    d.Legends = {
+        'SVM','PSVM','LS-SVM',...
+        'TWSVM','LS-TWSVM','\nu-TWSVM','ITWSVM',...
+        'RMTL','MTPSVM','MTLS-SVM','MTL-aLS-SVM',...
+        'DMTSVM','MCTSVM','MTLS_TWSVM','MT-\nu-TWSVM I','MT-\nu-TWSVM II'
+    };
+    d.MTL = [8:13 15 16];
+    d.STL = [1:6 15 16];
+end
 
-%% Flags
-xLabels = {'100', '120', '140', '160', '180', '191'};
-DrawResult(MyStat(CUR_IDX,1:6,IDX)', MyTime(CUR_IDX,1:6)', 'Task size', labels(CUR_IDX), xLabels);
+function [ d ] = SetPaper3(d)
+    d.Legends = {
+        'SVM','PSVM','LS-SVM','TWSVM',...
+        'MTPSVM','MTLS-SVM','IRMTL','SSR-IRMTL',...
+        'DMTSVM','SSR_DMTSVM'
+    };
+    d.STL = [  5 6 7 8  ];
+end
 
-%% Emotions
-xLabels = {'100', '120', '140', '160', '180', '200'};
-DrawResult(MyStat(CUR_IDX,7:12,IDX)', MyTime(CUR_IDX,7:12)', 'Task size', labels(CUR_IDX), xLabels);
+% 配置
+function [ d ] = Classify()
+    d.Arcs = [0,0,0,0,45,45,0,0,0];
+    d.Counts = [ 9, 5, 5, 5, 10, 6, 6, 3, ];
+    d.Draws = {@bar, @bar, @bar, @bar, @bar, @bar, @bar,@bar };
+    d.Grids = {'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off'};
+    d.IndexCount = 8;
+    d.Titles = {'Monk', 'Letter_1', 'Letter_2', 'Caltech 101', 'Caltech 256', 'Flags', 'Emotions', 'MTL'};
+    d.xLabels = { 'Task Size', 'Dataset Index', '#Task', 'Dataset Index', 'Category', 'Category',  'Task Size', 'Task Size', 'Dataset Index'};
+    d.XTicklabel = {
+        '60', '90', '120', '150', '180', '210', '240', '270', 'All',...
+        '3', '5', '7', '9', '11',...
+        'T1', 'T2', 'T3', 'T4', 'T5',...
+        'Birds','Insects','Flowers','Mammals','Instruments',...
+        'Aircrafts','Balls','Bikes', 'Birds','Boats','Flowers', 'Instruments','Plants','Mammals', 'Vehicles',...
+        '100', '120', '140', '160', '180', '191',...
+        '100', '120', '140', '160', '180', '200',...
+        'Letter', 'Spam_{3}', 'Spam_{15}'
+    };
+    d.yLabels = {'Accuracy', 'Precision', 'Recall', 'F1'};
+    %         'ab', 'cd', 'ef', 'gh', 'ij', 'kl','mn','op',...
+end
 
-%% Flags-Each
-xLabels = {'1', '2', '3', '4', '5', '6', '7'};
-DrawResult(MyStat(CUR_IDX,1:7,IDX)', MyTime(CUR_IDX,1), 'Task index', labels(CUR_IDX), xLabels);
+function [ d ] = SafeScreening()
+    d.Arcs = [0,0,0,0,45,45,0,0,0];
+    d.Counts = [ 9, 8, 5, 5, 5, 10, 6, 6, 3 ];
+    d.Draws = {@plot, @bar, @plot, @bar, @bar, @bar, @plot, @plot,@bar };
+    d.Grids = {'on', 'off', 'on', 'off', 'off', 'off', 'on', 'on', 'off'};
+    d.IndexCount = 7;
+    d.Legends = {
+        'S0', 'SC', 'C0', 'CC', 'Inactive', 'Screening', 'Speedup'
+    };
+    d.STL = [5 6];
+    d.Titles = {'Monk', 'Isolet', 'Letter_1', 'Letter_2', 'Caltech 101', 'Caltech 256', 'Flags', 'Emotions', 'MTL'};
+    d.xLabels = { 'Task Size', 'Dataset Index', '#Task', 'Dataset Index', 'Category', 'Category',  'Task Size', 'Task Size', 'Dataset'};
+    d.XTicklabel = {
+        '60', '90', '120', '150', '180', '210', '240', '270', 'All',...
+        'ab', 'cd', 'ef', 'gh', 'ij', 'kl','mn','op',...
+        '3', '5', '7', '9', '11',...
+        'T1', 'T2', 'T3', 'T4', 'T5',...
+        'Birds','Insects','Flowers','Mammals','Instruments',...
+        'Aircrafts','Balls','Bikes', 'Birds','Boats','Flowers', 'Instruments','Plants','Mammals', 'Vehicles',...
+        '100', '120', '140', '160', '180', '191',...
+        '100', '120', '140', '160', '180', '200',...
+        'Letter', 'Spam_{3}', 'Spam_{15}'
+    };
+    d.yLabels = {'Rate'};
+end
 
-%% Emotions-Each
-xLabels = {'1', '2', '3', '4', '5', '6'};
-DrawResult(MyStat(CUR_IDX,1:6,IDX)', MyTime(CUR_IDX,1), labels(CUR_IDX), xLabels);
+% 绘图
+function [] = Curve(Summary, INDICES, IDX, Kernel, Name)
+    for i = INDICES
+        if ~isempty(Summary.Result{i, 1})
+            clf;
+            plot(Summary.Result{i, 1}(:,IDX));
+            path = sprintf('./figures/paper3/index/pic_%s_%s-%d.png', Kernel, Name,  i);
+            saveas(gcf, path);
+        end
+    end
+end
+
+function [ ] = BatchDraw(Summary, IDX)
+    figure();
+    i = 1;
+    for p = IDX
+        subplot(3, 3, i);
+        DrawResult(Summary(p));
+        hold on
+        i = i + 1;
+    end
+end
+
+function [ ] = DrawResult(s)
+%DRAWRESULT 此处显示有关此函数的摘要
+% 绘制实验结果
+%   此处显示详细说明
+    s.Draw(s.Stat');
+    title(s.Title)
+    xlabel(s.XLabel);
+    ylabel(s.YLabel);
+    legend(s.Legends, 'Location', 'northwest');
+    grid(s.Grid);
+    set(gca, 'XTicklabel', s.XTicklabels, 'XTickLabelRotation', s.Arc);
+end

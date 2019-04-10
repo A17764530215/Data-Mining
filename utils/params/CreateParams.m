@@ -8,5 +8,4 @@ function [ Params ] = CreateParams(root)
     for index = 2 : nParams
         Params(index) = GetParams(root, index);
     end  
-    
 end

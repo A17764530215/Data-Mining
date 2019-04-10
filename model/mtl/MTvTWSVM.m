@@ -12,11 +12,10 @@ kernel = opts.kernel;
 solver = opts.solver;
 TaskNum = length(xTrain);
 symmetric = @(H) (H+H')/2;
+[ X, Y, ~, N ] = GetAllData(xTrain, yTrain, TaskNum);
     
 %% Prepare
 tic;
-% 得到所有的样本和标签以及任务编号
-[ X, Y, ~, N ] = GetAllData(xTrain, yTrain, TaskNum);
 % 分割正负类点
 A = X(Y==1,:);
 B = X(Y==-1,:);
@@ -30,40 +29,42 @@ F = [Kernel(B, X, kernel) e2];
 % 得到Q,R矩阵
 EEF = Cond(E'*E)\F';
 FFE = Cond(F'*F)\E';
-Q = F*EEF;
-R = E*FFE;
-% 构造P,S对角阵
-EEFc = cell(TaskNum, 1);
-FFEc = cell(TaskNum, 1);
+Q = F*EEF; R = E*FFE;
+% 得到P,S矩阵
 Ec = mat2cell(E, N(1,:));
 Fc = mat2cell(F, N(2,:));
-P = sparse(0, 0);
-S = sparse(0, 0);
+EEFc = cell(TaskNum, 1);
+FFEc = cell(TaskNum, 1);
+P = cell(TaskNum, 1);
+S = cell(TaskNum, 1);
 for t = 1 : TaskNum
-    EEFc{t} = Cond(Ec{t}'*Ec{t})\(Fc{t}');
-    FFEc{t} = Cond(Fc{t}'*Fc{t})\(Ec{t}');
-    P = blkdiag(P, Fc{t}*EEFc{t});
-    S = blkdiag(S, Ec{t}*FFEc{t});
+    Et = Ec{t}; Ft = Fc{t};
+    EEFc{t} = Cond(Et'*Et)\(Ft');
+    FFEc{t} = Cond(Ft'*Ft)\(Et');
+    P{t} = Ft*EEFc{t};
+    S{t} = Et*FFEc{t};
 end
+P = spblkdiag(P{:});
+S = spblkdiag(S{:});
 
 %% Fit
 % MTL_TWSVR1_Xie
 H1 = Q + TaskNum/mu1*P;
 Alpha = quadprog(symmetric(H1),[],-e2',-v1,[],[],zeros(m2, 1),e2/m2,[],solver);
-CAlpha = mat2cell(Alpha, N(2,:));
 % MTL_TWSVR2_Xie
 H2 = R + TaskNum/mu2*S;
 Gamma = quadprog(symmetric(H2),[],-e1',-v2,[],[],zeros(m1, 1),e1/m1,[],solver);
-CGamma = mat2cell(Gamma, N(1,:));
 
 %% GetWeight
+CAlpha = mat2cell(Alpha, N(2,:));
+CGamma = mat2cell(Gamma, N(1,:));
 u = -EEF*Alpha;
 v = FFE*Gamma;
 U = cell(TaskNum, 1);
 V = cell(TaskNum, 1);
 for t = 1 : TaskNum
-    U{t} = u - TaskNum/mu1*EEFc{t}*CAlpha{t};
-    V{t} = v + TaskNum/mu2*FFEc{t}*CGamma{t};
+    U{t} = u - EEFc{t}*(TaskNum/mu1*CAlpha{t});
+    V{t} = v + FFEc{t}*(TaskNum/mu2*CGamma{t});
 end
 Time = toc;
     
@@ -83,4 +84,3 @@ for t = 1 : TaskNum
 end
 
 end
-

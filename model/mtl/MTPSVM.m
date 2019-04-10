@@ -5,14 +5,14 @@ function [ yTest, Time ] = MTPSVM( xTrain, yTrain, xTest, opts )
 %   此处显示详细说明
 
 %% Parse opts
-TaskNum = length(xTrain);
+C = opts.C;
 lambda = opts.lambda;
-nu = opts.nu;
 kernel = opts.kernel;
+TaskNum = length(xTrain);
+[ X, Y, T ] = GetAllData( xTrain, yTrain, TaskNum );
 
 %% Fit
 tic;
-[ X, Y, T ] = GetAllData( xTrain, yTrain, TaskNum );
 H = Kernel(X, X, kernel);
 Q = Y.*H.*Y';
 P = sparse(0, 0);
@@ -23,7 +23,7 @@ for t = 1 : TaskNum
 end
 I = speye(size(Q));
 E = ones(size(Y));
-Alpha = Cond(Q + TaskNum/lambda*P + 1/nu*I)\E;
+Alpha = Cond(Q + TaskNum/lambda*P + I/C)\E;
 Time = toc;
 
 %% Predict

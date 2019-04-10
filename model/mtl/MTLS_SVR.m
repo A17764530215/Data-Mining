@@ -5,14 +5,14 @@ function  [ yTest, Time ] = MTLS_SVR(xTrain, yTrain, xTest, opts)
 %   此处显示详细说明
 
 %% Parse opts
+C = opts.C;
 lambda = opts.lambda;
-gamma = opts.gamma;
 kernel = opts.kernel;
 TaskNum = length(xTrain);
+[ X, Y, T ] = GetAllData( xTrain, yTrain, TaskNum );
 
 %% Fit
 tic;
-[ X, Y, T ] = GetAllData( xTrain, yTrain, TaskNum );
 Q = Kernel(X, X, kernel);
 P = sparse(0, 0);
 A = sparse(0, 0);
@@ -24,7 +24,7 @@ end
 o = zeros(TaskNum, 1);
 O = speye(TaskNum)*0;
 I = speye(size(Q));
-H = Q + TaskNum/lambda*P + 1/gamma*I;
+H = Q + TaskNum/lambda*P + I/C;
 Alphab = [H A;A' O]\[Y; o];
 Alpha = Alphab(1:end-TaskNum,:);
 b = Alphab(end-TaskNum+1:end,:);
@@ -42,7 +42,7 @@ for t = 1 : TaskNum
 end
 
     function [ y ] = Predict(H, Alpha)
-        svi = Alpha > 0 & Alpha < gamma;
+        svi = Alpha ~= 0;
         y = H(:,svi)*Alpha(svi);
     end
 end

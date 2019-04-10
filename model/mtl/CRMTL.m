@@ -1,4 +1,4 @@
-function [ yTest, Time ] = IRMTL( xTrain, yTrain, xTest, opts )
+function [ yTest, Time ] = CRMTL( xTrain, yTrain, xTest, opts )
 %IRMTL 此处显示有关此函数的摘要
 % Regularized MTL
 %   此处显示详细说明
@@ -8,13 +8,10 @@ C = opts.C;
 mu = opts.mu;
 kernel = opts.kernel;
 TaskNum = length(xTrain);
-symmetric = @(H) (H+H')/2;
+[ X, Y, T, ~ ] = GetAllData(xTrain, yTrain, TaskNum);
 
 %% Prepare
 tic;
-% 得到所有的样本和标签以及任务编号
-[ X, Y, T, ~ ] = GetAllData(xTrain, yTrain, TaskNum);
-X = [X, ones(size(Y))];
 Q = Y.*Kernel(X, X, kernel).*Y';
 P = sparse(0, 0);
 for t = 1 : TaskNum
@@ -24,8 +21,8 @@ end
 % 二次规划求解
 e = ones(size(Y));
 lb = zeros(size(Y));
-H = Cond(Q/mu + P);
-[ Alpha ] = quadprog(symmetric(H), -e, [], [], [], [], lb, C*e, [], []);
+H = Cond(Q + TaskNum/mu*P);
+[ Alpha ] = quadprog(H,-e,[],[],[],[],lb,C*e,[],opts.solver);
 % 停止计时
 Time = toc;
 
@@ -33,12 +30,11 @@ Time = toc;
 TaskNum = length(xTest);
 yTest = cell(TaskNum, 1);
 for t = 1 : TaskNum
-    Tt = find(T==t);
-    et = ones(size(xTest{t}, 1), 1);
-    Ht = Kernel([xTest{t}, et], X, kernel);
+    Tt = T==t;
+    Ht = Kernel(xTest{t}, X, kernel);
     y0 = predict(Ht, Y, Alpha);
     yt = predict(Ht(:,Tt), Y(Tt,:), Alpha(Tt,:));
-    y = sign(y0/mu + yt);
+    y = sign(y0 + TaskNum/mu*yt);
     y(y==0) = 1;
     yTest{t} = y;
 end

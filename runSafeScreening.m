@@ -1,37 +1,22 @@
 clc
 clear
 
-Path = './data/ssr/rbf/';
-if exist(Path, 'dir') == 0
-    mkdir(Path);
-end
-
-% 添加搜索路径
-addpath(genpath('./datasets'));
-addpath(genpath('./params'));
-addpath(genpath('./model'));
-addpath(genpath('./utils'));
-
 % 加载数据集和网格搜索参数
-load('Caltech5.mat');
-load('MTL_UCI5.mat');
-load('MLC5.mat');
-load('LabCParams.mat');
-
-DataSets = [MTL_UCI5; Caltech5; MLC5];
-IParams = CParams;
-
-% 数据集
-DataSetIndices = [ 2:9 1 28:54 ];
-ParamIndices = [ 1:2 ];
+load('DATA5.mat');
+load('LabSParams.mat');
+% DataSetIndices = [ 1:9 18:27 43:56 ]; % low related
+% DataSetIndices = [ 10:17 28:42 ]; % high related
+% DataSetIndices = [ 1:9 18:57 ];
+DataSetIndices = [ 1:9 18:57 ];
+ParamIndices = [ 1:8 21:28 ];
+OverWrite = false;
 
 %% 实验设置 RMTL
 solver = struct('Display', 'off');
 opts = InitOptions('clf', 0, solver, 0, 3);
 fd = fopen(['./log/log-', datestr(now, 'yyyymmddHHMM'), '.txt'], 'w');
+Path = './data/ssr';
 
-profile clear;
-profile on;
 % 实验开始
 fprintf('runGridSearch\n');
 for i = DataSetIndices
@@ -39,15 +24,15 @@ for i = DataSetIndices
     fprintf('DataSet: %s\n', DataSet.Name);
     [ X, Y, ValInd ] = GetMultiTask(DataSet);
     [ X ] = Normalize(X);
-    StatDir = [ Path, int2str(DataSet.Kfold) '-fold/' ];
-    if exist(StatDir, 'dir') == 0
-        mkdir(StatDir);
-    end
     for j = ParamIndices
-        Method = IParams{j};
-        Name = [Method.Name, '-', DataSet.Name];
-        StatPath = [StatDir, Name, '.mat'];
-        if exist(StatPath, 'file') == 2
+        Method = SParams{j};
+        Name = [Method.ID, '-', DataSet.Name];
+        SavePath = sprintf('%s/%s/%d-fold/', Path, Method.kernel.type, DataSet.Kfold);
+        if exist(SavePath, 'dir') == 0
+            mkdir(SavePath);
+        end
+        StatPath = [SavePath, Name, '.mat'];
+        if exist(StatPath, 'file') == 2 && OverWrite == false
             fprintf(fd, 'skip: %s\n', StatPath);
             continue;
         else
@@ -63,6 +48,4 @@ for i = DataSetIndices
     end
 end
 fclose(fd);
-profile viewer;
-p = profile('info');
-profsave(p, 'profile_results');
+IParams = CreateParams(Method);

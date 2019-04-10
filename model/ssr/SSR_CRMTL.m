@@ -1,4 +1,4 @@
-function [  CVStat, CVTime, CVRate ] = SSR_IRMTL( xTrain, yTrain, xTest, yTest, TaskNum, IParams, opts )
+function [  CVStat, CVTime, CVRate ] = SSR_CRMTL( xTrain, yTrain, xTest, yTest, TaskNum, IParams, opts )
 %SSR_IRMTL 此处显示有关此函数的摘要
 % Safe Screening for IRMTL
 %   此处显示详细说明
@@ -64,14 +64,15 @@ end
             Tt = T==t;
             P{t} = Q(Tt,Tt);
         end
-        H = Cond(Q/opts.mu + spblkdiag(P{:}));
+        H = Cond(Q + TaskNum/opts.mu*spblkdiag(P{:}));
     end
 
     function [ Alpha1 ] = Primal(H1, C1)
         % primal problem
         e = ones(size(H1, 1), 1);
         lb = zeros(size(H1, 1), 1);
-        [ Alpha1 ] = quadprog(H1,-e,[],[],[],[],lb,C1*e,[],solver);
+        ub = C1*e;
+        [ Alpha1 ] = quadprog(H1, -e, [], [], [], [], lb, ub, [], solver);
     end
 
     function [ Alpha1, Rate ] = Reduced(H1, Alpha1, C1)
@@ -85,7 +86,7 @@ end
             f = H1(R,S)*Alpha1(S)-1;
             lb = zeros(size(f));
             ub = C1*ones(size(f));
-            [ Alpha1(R) ] = quadprog(H1(R,R),f,[],[],[],[],lb,ub,[],solver);
+            [ Alpha1(R) ] = quadprog(H1(R,R), f, [], [], [], [], lb, ub, [], solver);
         end
     end
 
@@ -124,7 +125,7 @@ end
             Ht = Kernel(xTest{t}, X, opts.kernel);
             y0 = predict(Ht, Y, Alpha);
             yt = predict(Ht(:,Tt), Y(Tt,:), Alpha(Tt,:));
-            y = sign(y0/mu + yt);
+            y = sign(y0 + TaskNum/mu*yt);
             y(y==0) = 1;
             yTest{t} = y;
         end

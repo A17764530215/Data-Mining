@@ -10,10 +10,10 @@ r = opts.R;
 kernel = opts.kernel;
 solver = opts.solver;
 TaskNum = length(xTrain);
+[ X, Y, T ] = GetAllData( xTrain, yTrain, TaskNum );
 
 %% Fit
 tic;
-[ X, Y, T ] = GetAllData( xTrain, yTrain, TaskNum );
 % kernel matrix
 Q = Kernel(X, X, kernel);
 P = sparse(0, 0);

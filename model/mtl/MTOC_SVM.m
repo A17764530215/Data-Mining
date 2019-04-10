@@ -9,10 +9,10 @@ C = opts.C;
 kernel = opts.kernel;
 solver = opts.solver;
 TaskNum = length(xTrain);
+[ X, Y, T ] = GetAllData( xTrain, yTrain, TaskNum );
 
 %% Fit
 tic;
-[ X, Y, T ] = GetAllData( xTrain, yTrain, TaskNum );
 Ip = find(Y==1);
 Xp = X(Ip,:);
 Q = Kernel(Xp, Xp, kernel);

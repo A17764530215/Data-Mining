@@ -4,7 +4,7 @@ function [ yTest, Time ] = LS_SVM( xTrain, yTrain, xTest, opts )
 %   此处显示详细说明
 
 %% Parse opts
-gamma = opts.gamma;
+C = opts.C;
 kernel = opts.kernel;
 
 %% Fit
@@ -13,7 +13,7 @@ X = xTrain;
 Y = yTrain;
 Q = Y.*Kernel(X, X, kernel).*Y';
 I = speye(size(Q));
-H = Q + 1/gamma*I;
+H = Q + I/C;
 E = ones(size(Y));
 Alphab = [H Y;Y' 0]\[E; 0];
 Alpha = Alphab(1:end-1);

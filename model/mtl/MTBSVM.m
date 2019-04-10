@@ -14,11 +14,10 @@ kernel = opts.kernel;
 solver = opts.solver;
 TaskNum = length(xTrain);
 symmetric = @(H) (H+H')/2;
+[ X, Y, ~, N ] = GetAllData(xTrain, yTrain, TaskNum);
 
 %% Prepare
 tic;
-% 得到所有的样本和标签以及任务编号
-[ X, Y, T ] = GetAllData(xTrain, yTrain, TaskNum);
 % 分割正负类点
 Yp = Y==1;
 Yn = Y==-1;
@@ -38,14 +37,14 @@ FFE = (F'*F+C4*I)\E';
 Q = F*EEF;
 R = E*FFE;
 % 得到P,S矩阵
-P = sparse(0, 0);
-S = sparse(0, 0);
+Ec = mat2cell(E, N(1,:));
+Fc = mat2cell(F, N(2,:));
 EEFt = cell(TaskNum, 1);
 FFEt = cell(TaskNum, 1);
+P = sparse(0, 0);
+S = sparse(0, 0);
 for t = 1 : TaskNum
-    Et = E(T(Yp)==t,:);
-    Ft = F(T(Yn)==t,:);
-    It = speye(size(Et, 2));
+    Et = Ec{t}; Ft = Fc{t}; It = speye(size(Et, 2));
     EEFt{t} = (rho/TaskNum*(Et'*Et)+C3/TaskNum*It)\(Ft');
     FFEt{t} = (lambda/TaskNum*(Ft'*Ft)+C4/TaskNum*It)\(Et');
     P = blkdiag(P, Ft*EEFt{t});
@@ -53,20 +52,21 @@ for t = 1 : TaskNum
 end
 
 %% Fit
-% 求解两个二次规划
 % MTBSVM1
 Alpha = quadprog(symmetric(Q + P),-e2,[],[],[],[],zeros(m2, 1),C1*e2,[],solver);
 % MTBSVM2
 Gamma = quadprog(symmetric(R + S),-e1,[],[],[],[],zeros(m1, 1),C2*e1,[],solver);
 
 %% GetWeight
+CAlpha = mat2cell(Alpha, N(2,:));
+CGamma = mat2cell(Gamma, N(1,:));
 u = -EEF*Alpha;
 v = FFE*Gamma;
 U = cell(TaskNum, 1);
 V = cell(TaskNum, 1);
 for t = 1 : TaskNum
-    U{t} = u - EEFt{t}*Alpha(T(Yn)==t,:);
-    V{t} = v + FFEt{t}*Gamma(T(Yp)==t,:);
+    U{t} = u - EEFt{t}*CAlpha{t};
+    V{t} = v + FFEt{t}*CGamma{t};
 end
 Time = toc;
 

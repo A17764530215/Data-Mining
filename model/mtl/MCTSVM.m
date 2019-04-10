@@ -80,6 +80,7 @@ CAlpha = mat2cell(Alpha, I(2,:));
 H2 = Cond(R + 1/lambda*S);
 Gamma = quadprog(symmetric(H2),-e1,[],[],[],[],zeros(m1, 1),C2*e1,[],solver);
 CGamma = mat2cell(Gamma, I(1,:));
+Time = toc;
 
 %% GetWeight
 u = -EEF*Alpha;
@@ -90,7 +91,6 @@ for t = 1 : TaskNum
     U{t} = u - EEFt{t}*(1/rho*CAlpha{t});
     V{t} = v + FFEt{t}*(1/lambda*CGamma{t});
 end
-Time = toc;
 
 %% Predict
 TaskNum = length(xTest);

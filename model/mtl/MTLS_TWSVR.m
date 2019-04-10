@@ -12,26 +12,25 @@ rho = opts.rho;
 lambda = opts.rho;
 kernel = opts.kernel;
 TaskNum = length(xTrain);
+[ X, Y, T ] = GetAllData(xTrain, yTrain, TaskNum);
 
 %% Prepare
 tic;
-% 得到所有的样本和标签以及任务编号
-[ A, Y, T ] = GetAllData(xTrain, yTrain, TaskNum);
-[m, ~] = size(A);
+[m, ~] = size(X);
 e = ones(m, 1);
-C = A;
-A = [Kernel(A, C, kernel) e];
+C = X;
+X = [Kernel(X, C, kernel) e];
 % 得到f和g
 f = Y + eps2;
 g = Y - eps1;
 % 得到Q矩阵
-AAA = Cond(A'*A)\A';
-Q = A*AAA;
+AAA = Cond(X'*X)\X';
+Q = X*AAA;
 % 得到P矩阵
 P = sparse(0, 0);
 AAAt = cell(TaskNum, 1);
 for t = 1 : TaskNum
-    At = A(T==t,:);
+    At = X(T==t,:);
     AAAt{t} = Cond(At'*At)\(At');
     Pt = At*AAAt{t};
     P = blkdiag(P, Pt);
