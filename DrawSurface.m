@@ -15,11 +15,11 @@ clear
 load('DATA5.mat');
 load('LabSParams.mat');
 Path = './data/ssr/linear/5-fold';
-[ Result1 ] = GetBestAccuracy(Path, DataSets, SParams{6}, [1:57],  {'Accuracy'});
+[ Result1 ] = GetBestResult(Path, DataSets, SParams{8}, [1:9 18:21],  {'Accuracy'});
 BestParams1 = [Result1.Result.BestParam];
-[ Result2 ] = GetBestRate(Path, DataSets, SParams{6}, [1:57],  {'Selected'});
-BestParams2 = [Result2.Result.BestParam];
-DrawAccuracyRate(Result1, Result2, 'linear', [1 : 57]);
+% [ Result2 ] = GetBestRate(Path, DataSets, SParams{8}, [1:9 18:21],  {'Selected'});
+% BestParams2 = [Result2.Result.BestParam];
+DrawAccuracyRate(Result1, Result2, 'linear', [1:13]);
 %%
 function [ ] = DrawAccuracyRate(Result1, Result2, Kernel, IDX)
     figure();
@@ -40,28 +40,14 @@ end
 % file = sprintf('./results/paper3/RES_RBF_%s.mat', datestr(now, 'mmddHHMM'));
 % save(file, 'Result');
 %% 
-function [ r ] = GetBestAccuracy(Path, DataSets, SParams, IDX, INDICES)
+function [ r ] = GetBestResult(Path, DataSets, SParams, IDX, INDICES)
     Result = [];
     for i = IDX
-        File = sprintf('%s/SSRC_IRMTL-%s.mat', Path, DataSets(i).Name);
+        File = sprintf('%s/%s-%s.mat', Path, SParams.ID, DataSets(i).Name);
         d = load(File);
-        Data = mean(d.CVStat, 3);
-        [ s ] = GetBestParam(SParams, Data, INDICES, 'mu', 'C', false);
-        s.DataSet = DataSets(i).Name;
-        Result = cat(1, Result, s);
-    end
-    r.Result = Result;
-    r.SParams = SParams;
-end
-
-%% 
-function [ r ] = GetBestRate(Path, DataSets, SParams, IDX, INDICES)
-    Result = [];
-    for i = IDX
-        File = sprintf('%s/SSRC_IRMTL-%s.mat', Path, DataSets(i).Name);
-        d = load(File);
-        Data = d.CVRate(:,1)./d.CVRate(:,2);
-        [ s ] = GetBestParam(SParams, Data, INDICES, 'mu', 'C', false);
+        [ s ] = GetBestParam(SParams, mean(d.CVStat, 3), INDICES, 'mu', 'C', false);
+        [ s ] = GetBestParam(SParams, d.CVRate(:,1)./d.CVRate(:,2), INDICES, 'mu', 'C', false);
+        
         s.DataSet = DataSets(i).Name;
         Result = cat(1, Result, s);
     end

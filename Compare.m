@@ -32,7 +32,7 @@ function [ d ] = Compare(Path, DataSets, INDICES, MethodA, MethodB)
         % Record
         Result{i} = [a, b, B.CVRate, A.CVTime(:,1), B.CVTime(:,1)];
         if mean(C(:)) == 1
-            State(i,:) = [cnt, Inactive, Screening, T(1)];
+            State(i,:) = [avg, Inactive, Screening, T(1)];
         else
             fprintf('Error: %d\n', i);
             Error(i,:) = [cnt, Inactive, Screening, T(1)];

@@ -1,13 +1,11 @@
 clear
 clc
-%%
-Summary.Data = Summary.Data*100;
-Summary.Time = Summary.Time*1000;
+
 %% Classify Accuracy
 [ d ] = Classify();
 [ d ] = SetPaper3(d);
 [ m, ~, k ] = size(Summary.Data);
-Data = mat2cell(Summary.Data, m, d.Counts, k);
+Data = mat2cell(Summary.Data*100, m, d.Counts, k);
 [ Info ] = Transform(Data, d, 1);
 BatchDraw(Info, [1 6 7 2 3 8 4 5]);
 
@@ -15,7 +13,7 @@ BatchDraw(Info, [1 6 7 2 3 8 4 5]);
 [ d ] = Classify();
 [ d ] = SetPaper3(d);
 [ m, n, k ] = size(Summary.Time);
-Data = mat2cell(Summary.Time, m, d.Counts, k);
+Data = mat2cell(Summary.Time*1000, m, d.Counts, k);
 [ Info ] = Transform(Data, d, 1);
 BatchDraw(Info, [1 6 7 2 3 8 4 5]);
 
@@ -23,7 +21,7 @@ BatchDraw(Info, [1 6 7 2 3 8 4 5]);
 [ d ] = SafeScreening();
 Data = mat2cell(Summary.State', length(d.Legends), d.Counts);
 [ Info ] = Transform(Data, d, 1);
-BatchDraw(Info, [1 7 8 2 3 4 5 6 9]);
+BatchDraw(Info, [1 7 8 3 4 5 6 9]);
 
 %%  ‰≥ˆ…∏—°«˙œﬂ
 load('./results/paper3/MyStat-SSR-Linear.mat');
@@ -81,21 +79,21 @@ end
 function [ d ] = SetPaper3(d)
     d.Legends = {
         'SVM','PSVM','LS-SVM','TWSVM',...
-        'MTPSVM','MTLS-SVM','IRMTL','SSR-IRMTL',...
+        'MTPSVM','MTLS-SVM','CRMTL','SSR-CRMTL','IRMTL','SSR-IRMTL',...
         'DMTSVM','SSR_DMTSVM'
     };
-    d.STL = [  5 6 7 8  ];
+    d.STL = [  1 4 5:10 ];
 end
 
 % ≈‰÷√
 function [ d ] = Classify()
-    d.Arcs = [0,0,0,0,45,45,0,0,0];
+    d.Arcs = [0,0,0,45,45,0,0,0];
     d.Counts = [ 9, 5, 5, 5, 10, 6, 6, 3, ];
     d.Draws = {@bar, @bar, @bar, @bar, @bar, @bar, @bar,@bar };
     d.Grids = {'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off'};
     d.IndexCount = 8;
     d.Titles = {'Monk', 'Letter_1', 'Letter_2', 'Caltech 101', 'Caltech 256', 'Flags', 'Emotions', 'MTL'};
-    d.xLabels = { 'Task Size', 'Dataset Index', '#Task', 'Dataset Index', 'Category', 'Category',  'Task Size', 'Task Size', 'Dataset Index'};
+    d.xLabels = { 'Task Size', '#Task', 'Dataset Index', 'Category', 'Category',  'Task Size', 'Task Size', 'Dataset Index'};
     d.XTicklabel = {
         '60', '90', '120', '150', '180', '210', '240', '270', 'All',...
         '3', '5', '7', '9', '11',...
@@ -106,7 +104,7 @@ function [ d ] = Classify()
         '100', '120', '140', '160', '180', '200',...
         'Letter', 'Spam_{3}', 'Spam_{15}'
     };
-    d.yLabels = {'Accuracy', 'Precision', 'Recall', 'F1'};
+    d.yLabels = {'Accuracy (%)', 'Precision', 'Recall', 'F1'};
     %         'ab', 'cd', 'ef', 'gh', 'ij', 'kl','mn','op',...
 end
 
@@ -119,7 +117,7 @@ function [ d ] = SafeScreening()
     d.Legends = {
         'S0', 'SC', 'C0', 'CC', 'Inactive', 'Screening', 'Speedup'
     };
-    d.STL = [5 6];
+    d.STL = [1:6];
     d.Titles = {'Monk', 'Isolet', 'Letter_1', 'Letter_2', 'Caltech 101', 'Caltech 256', 'Flags', 'Emotions', 'MTL'};
     d.xLabels = { 'Task Size', 'Dataset Index', '#Task', 'Dataset Index', 'Category', 'Category',  'Task Size', 'Task Size', 'Dataset'};
     d.XTicklabel = {
