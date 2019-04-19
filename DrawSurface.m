@@ -14,43 +14,66 @@ clc
 clear
 load('DATA5.mat');
 load('LabSParams.mat');
-Path = './data/ssr/linear/5-fold';
-[ Result1 ] = GetBestResult(Path, DataSets, SParams{8}, [1:9 18:21],  {'Accuracy'});
-BestParams1 = [Result1.Result.BestParam];
-% [ Result2 ] = GetBestRate(Path, DataSets, SParams{8}, [1:9 18:21],  {'Selected'});
-% BestParams2 = [Result2.Result.BestParam];
-DrawAccuracyRate(Result1, Result2, 'linear', [1:13]);
+SParams = reshape(SParams, 14, 3);
+figure();
+for k = [ 1 3 ]
+    for i = [ 8 12 ]
+        [ Result ] = GetBestResult('./data/ssr', DataSets, SParams{i,k}, [1],  {'Accuracy'}, {'Selected'}, '\mu', 'C');
+        DrawBestResult('./figures/paper3/index', Result, [1], '\mu', 'C');
+    end
+    for i = [ 10 14 ]
+        [ Result ] = GetBestResult('./data/ssr', DataSets, SParams{i,k}, [1],  {'Accuracy'}, {'Selected'}, 'C', '\mu');
+        DrawBestResult('./figures/paper3/index', Result, [1], 'C', '\mu');
+    end
+end
+
 %%
-function [ ] = DrawAccuracyRate(Result1, Result2, Kernel, IDX)
-    figure();
+function [ ] = DrawBestResult(Path, Result, IDX, x, y)
+    p = Result.Params;
+    X = p.(replace(x,'\',''));
+    Y = p.(replace(y,'\',''));
+    kernel = p.kernel;
     for i  = IDX
+        r = Result(i);
+        folder = sprintf('%s/%s/%d-fold/', Path, kernel.type, r.Kfold);
+        if exist(folder, 'dir') == 0
+            mkdir(folder);
+        end
+        path = sprintf('%s/%s-%s.png', folder, r.Name, p.ID);
         clf;
+        % Accuracy
         subplot(1, 2, 1);
         title('Accuracy');
-        surf(Result1.Result(i).Z)
+        surf(X, Y, r.BestAccuracy.Z, 'EdgeColor', 'none');view(2);colorbar;
+        xlabel(x);
+        ylabel(y);
         hold on;
+        % Selected
         subplot(1, 2, 2);
         title('Selected');
-        surf(Result2.Result(i).Z);
-        path = sprintf('./figures/paper3/index/pic_%s-%d.png', Kernel,  i);
+        surf(X, Y, r.BestScreening.Z, 'EdgeColor', 'none');view(2);colorbar;
+        xlabel(x);
+        ylabel(y);
         saveas(gcf, path);
     end
 end
-%%
-% file = sprintf('./results/paper3/RES_RBF_%s.mat', datestr(now, 'mmddHHMM'));
-% save(file, 'Result');
-%% 
-function [ r ] = GetBestResult(Path, DataSets, SParams, IDX, INDICES)
+
+function [ Result ] = GetBestResult(Path, DataSets, Params, IDX, A, B, x, y)
+    kernel = Params.kernel;
     Result = [];
     for i = IDX
-        File = sprintf('%s/%s-%s.mat', Path, SParams.ID, DataSets(i).Name);
+        d = DataSets(i);
+        folder = sprintf('%s/%s/%d-fold/', Path, kernel.type, d.Kfold);
+        File = sprintf('%s/%s-%s.mat', folder, Params.ID, d.Name);
         d = load(File);
-        [ s ] = GetBestParam(SParams, mean(d.CVStat, 3), INDICES, 'mu', 'C', false);
-        [ s ] = GetBestParam(SParams, d.CVRate(:,1)./d.CVRate(:,2), INDICES, 'mu', 'C', false);
-        
-        s.DataSet = DataSets(i).Name;
+        Data = mean(d.CVStat, 3);
+        s.BestAccuracy = GetBestParam(Params, Data, A, x, y);
+        rate = d.CVRate;
+        Data = (rate(:,1)+rate(:,2))./(rate(:,3)+rate(:,4));
+        s.BestScreening = GetBestParam(Params, Data, B, x, y);
+        s.Name = DataSets(i).Name;
+        s.Kfold = DataSets(i).Kfold;
+        s.Params = Params;
         Result = cat(1, Result, s);
     end
-    r.Result = Result;
-    r.SParams = SParams;
 end

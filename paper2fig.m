@@ -78,11 +78,14 @@ end
 
 function [ d ] = SetPaper3(d)
     d.Legends = {
-        'SVM','PSVM','LS-SVM','TWSVM',...
-        'MTPSVM','MTLS-SVM','CRMTL','SSR-CRMTL','IRMTL','SSR-IRMTL',...
-        'DMTSVM','SSR_DMTSVM'
+        'SVM','PSVM','LS-SVM','TWSVM','MTPSVM','MTLS-SVM',...
+        'RMTL-L1','SSRL1-IRMTL','RMTL-L2','SSRL2-IRMTL','RMTL-L2','SSRL2-IRMTL',...
+        'IRMTL-C','SSRC-IRMTL','IRMTL-M','SSRM-IRMTL','IRMTL-P','SSRP-IRMTL',...
+        'CRMTL-C','SSRC-CRMTL','CRMTL-M','SSRM-CRMTL','CRMTL-P','SSRP-CRMTL'
+%         'DMTSVM','SSR-DMTSVM','LSTWSVM','MTLS-TWSVM'
     };
-    d.STL = [  1 4 5:10 ];
+    d.STL = [ 7:24 ];
+%     d.STL = [ 5 6 7 8 9 10 ];
 end
 
 % ≈‰÷√
@@ -117,7 +120,7 @@ function [ d ] = SafeScreening()
     d.Legends = {
         'S0', 'SC', 'C0', 'CC', 'Inactive', 'Screening', 'Speedup'
     };
-    d.STL = [1:6];
+    d.STL = [1:4];
     d.Titles = {'Monk', 'Isolet', 'Letter_1', 'Letter_2', 'Caltech 101', 'Caltech 256', 'Flags', 'Emotions', 'MTL'};
     d.xLabels = { 'Task Size', 'Dataset Index', '#Task', 'Dataset Index', 'Category', 'Category',  'Task Size', 'Task Size', 'Dataset'};
     d.XTicklabel = {

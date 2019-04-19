@@ -1,4 +1,4 @@
-function [ d ] = GetBestParam(Params, Data, index, x, y, draw)
+function [ d ] = GetBestParam(Params, Data, index, x, y)
 %GETBESTPARAM 此处显示有关此函数的摘要
 % 得到最佳参数
 %   此处显示详细说明
@@ -14,20 +14,15 @@ end
 [ Min, ~ ] = min(Data);
 
 %% 得到参数值
-X = Params.(x);
-Y = Params.(y);
+X = Params.(replace(x,'\',''));
+Y = Params.(replace(y,'\',''));
 Nx = length(X);
 Ny = length(Y);
 count = Nx*Ny;
-L = floor(IDX(1)/count)*count+1;
-R = ceil(IDX(1)/count)*count;
+L = mod(IDX(1)-mod(IDX(1), count)+1, count);
+R = L+count - 1;
 try
     Z = reshape([Result(L:R).(index{1})]', Ny, Nx);
-    if draw
-        surf(X, Y, Z);
-        xlabel(['\', x]);
-        ylabel(y);
-    end
 catch
     fprintf(['error:', Params.ID]);
 end

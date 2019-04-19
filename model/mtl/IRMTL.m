@@ -21,7 +21,7 @@ end
 % 二次规划求解
 e = ones(size(Y));
 lb = zeros(size(Y));
-H = Cond(Q/mu + P);
+H = Cond(Q + TaskNum/mu*P);
 [ Alpha ] = quadprog(H,-e,[],[],[],[],lb,C*e,[],opts.solver);
 % 停止计时
 Time = toc;
@@ -34,7 +34,7 @@ for t = 1 : TaskNum
     Ht = Kernel(xTest{t}, X, kernel);
     y0 = predict(Ht, Y, Alpha);
     yt = predict(Ht(:,Tt), Y(Tt,:), Alpha(Tt,:));
-    y = sign(y0/mu + yt);
+    y = sign(y0 + TaskNum/mu*yt);
     y(y==0) = 1;
     yTest{t} = y;
 end

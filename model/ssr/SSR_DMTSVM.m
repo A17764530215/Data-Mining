@@ -6,6 +6,7 @@ function [ CVStat, CVTime, CVRate ] = SSR_DMTSVM( xTrain, yTrain, xTest, yTest, 
 %% Fit
 [ X, Y, ~, N ] = GetAllData(xTrain, yTrain, TaskNum);
 solver = opts.solver;
+[ change, step ] = Change(IParams);
 n = GetParamsCount(IParams);
 CVStat = zeros(n, opts.IndexCount, TaskNum);
 CVTime = zeros(n, 2);
@@ -15,27 +16,22 @@ for i = 1 : n
     tic;
     [ H3, H4, EEF, FFE, EEFc, FFEc, e1, e2, m1, m2 ] = Prepare(X, Y, N, TaskNum, Params);
     C1 = Params.C1;
-    if i > 1
+    if mod(i, step) ~= 1
         C0 = LastParams.C1;
         % solve the rest problem
-        [ bC, bMP ] = EqualsTo(Params, LastParams);
-        if bC
-            [ Alpha1 ] = SSR_C(H3, Alpha0, C1, C0);
-            [ Gamma1 ] = SSR_C(H4, Gamma0, C1, C0);
-            [ CVRate(i,1:2) ] = GetRate([ Alpha1; Gamma1 ], C1);
-            [ Alpha0 ] = Reduced(H3, Alpha1, C1);
-            [ Gamma0 ] = Reduced(H4, Gamma1, C1);
-        elseif bMP
-            [ Alpha1 ] = SSR_MU_P(H1, H3, Alpha0, C1);
-            [ Gamma1 ] = SSR_MU_P(H2, H4, Gamma0, C1);
-            [ CVRate(i,1:2) ] = GetRate([ Alpha1; Gamma1 ], C1);
-            [ Alpha0 ] = Reduced(H3, Alpha1, C1);
-            [ Gamma0 ] = Reduced(H4, Gamma1, C1);
-        else
-            % solve the first problem
-            [ Alpha0 ] = Primal(H3, -e2, zeros(m2, 1), C1*e2);
-            [ Gamma0 ] = Primal(H4, -e1, zeros(m1, 1), C1*e1);
+        switch change
+            case 'C'
+                [ Alpha1 ] = SSR_C(H3, Alpha0, C1, C0);
+                [ Gamma1 ] = SSR_C(H4, Gamma0, C1, C0);
+            case 'H'
+                [ Alpha1 ] = SSR_MU_P(H1, H3, Alpha0, C1);
+                [ Gamma1 ] = SSR_MU_P(H2, H4, Gamma0, C1);
+            otherwise
+                throw(MException('SSR_CRMTL', 'Change: no parameter changed'));
         end
+        [ CVRate(i,1:2) ] = GetRate([ Alpha1; Gamma1 ], C1);
+        [ Alpha0 ] = Reduced(H3, Alpha1, C1);
+        [ Gamma0 ] = Reduced(H4, Gamma1, C1);
     else
         % solve the first problem
         [ Alpha0 ] = Primal(H3, -e2, zeros(m2, 1), C1*e2);
@@ -51,17 +47,29 @@ for i = 1 : n
     LastParams = Params;
 end
 
-    function [ bC, bMP ] = EqualsTo(p1, p2)
-        k1 = p1.kernel;
-        k2 = p2.kernel;
-        if strcmp(k1.type, 'rbf') && strcmp(k2.type, 'rbf')
-            bC = k1.p1 == k2.p1 && p1.rho == p2.rho;
-            bM = k1.p1 == k2.p1 && p1.C1 == p2.C1;
-            bP = p1.C1 == p2.C1 && p1.rho == p2.rho;
-            bMP = bM || bP;
+    function [ change, step ] = Change(IParams)
+    % 得到最先变的参数
+        p1 = GetParams(IParams, 1);
+        p2 = GetParams(IParams, 2);
+        if p1.C1 ~= p2.C1
+            change = 'C';
+            step = length(IParams.C1);
+        elseif p1.rho ~= p2.rho
+            step = length(IParams.rho);
+            change = 'H';
         else
-            bC = p1.rho == p2.rho;
-            bMP = p1.C1 == p2.C1;
+            k1 = p1.kernel;
+            k2 = p2.kernel;
+            if strcmp(k1.type, 'rbf') && strcmp(k2.type, 'rbf')
+                if k1.p1 ~= k2.p1
+                    change = 'H';
+                    step = length(IParams.kernel.p1);
+                else
+                    throw(MException('SSR_CRMTL', 'Change: no parameter changed'));
+                end
+            else 
+                throw(MException('SSR_CRMTL', 'Change: no parameter changed'));
+            end
         end
     end
 
@@ -157,17 +165,6 @@ end
         end
     end
 
-    function [ Alpha2 ] = SSR_MU_P(H1, H2, Alpha1, C1)
-        % safe screening rules for $\mu$, $p$
-        P = chol(H2, 'upper');
-        LL = (H1+H2)*Alpha1;
-        RL = sqrt(sum(P.*P, 1))';
-        RR = RL*norm(P'\(H1*Alpha1)+P*Alpha1);
-        Alpha2 = Inf(size(Alpha1));
-        Alpha2(LL - RR > 2) = 0;
-        Alpha2(LL + RR < 2) = C1;
-    end
-
     function [ Alpha2 ] = SSR_C(H2, Alpha1, C1, C0)
         k1 = (C1 + C0)/C0;
         k2 = (C1 - C0)/C0;
@@ -179,6 +176,18 @@ end
         Alpha2 = Inf(size(Alpha1));
         Alpha2(LL - RR > 2) = 0;
         Alpha2(LL + RR < 2) = C1;
+    end
+
+    function [ Alpha1 ] = SSR_MU_P(H0, H1, Alpha0, C1)
+        % safe screening rules for $\mu$, $p$
+        P = chol(H1, 'upper');
+        LL = (H0+H1)*Alpha0/2;
+        RL = sqrt(sum(P.*P, 1))';
+        A = P'\((H0+H1)*Alpha0);
+        RR = RL*sqrt(A'*A/4-Alpha0'*H0*Alpha0);
+        Alpha1 = Inf(size(Alpha0));
+        Alpha1(LL - RR > 1) = 0;
+        Alpha1(LL + RR < 1) = C1;
     end
 
 end

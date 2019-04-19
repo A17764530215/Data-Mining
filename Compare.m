@@ -1,4 +1,4 @@
-function [ d ] = Compare(Path, DataSets, INDICES, MethodA, MethodB) 
+function [ Summary ] = Compare(Path, File, DataSets, INDICES, MethodA, MethodB) 
 %COMPARE 此处显示有关此函数的摘要
 % 对比方法A,B
 %   此处显示详细说明
@@ -27,14 +27,16 @@ function [ d ] = Compare(Path, DataSets, INDICES, MethodA, MethodB)
         IDX = B.CVRate>0;
         cnt = sum(IDX, 1);
         avg = mean(B.CVRate, 1);
-        Inactive = avg(3)+avg(4);
-        Screening = avg(1)+avg(2);
+        Inactive = mean(avg(3)+avg(4), 1);
+        Screening = mean(avg(1)+avg(2), 1);
         % Record
         Result{i} = [a, b, B.CVRate, A.CVTime(:,1), B.CVTime(:,1)];
         if mean(C(:)) == 1
+%             [~,IDX] = max(a(:,1));
+%             avg = B.CVRate(IDX,:);
             State(i,:) = [avg, Inactive, Screening, T(1)];
         else
-            fprintf('Error: %d\n', i);
+            fprintf('Error: %d, %s\n', i, [Path, MethodB.ID, '-', D.Name,'.mat']);
             Error(i,:) = [cnt, Inactive, Screening, T(1)];
         end
         
@@ -46,9 +48,10 @@ function [ d ] = Compare(Path, DataSets, INDICES, MethodA, MethodB)
         ErrorResult{i} = R(ERROR_ID,:);
     end
     
-    d.Result = Result;
-    d.State = State;
-    d.Error = Error;
-    d.ErrorParams = ErrorParams;
-    d.ErrorResult = ErrorResult;
+    Summary.Result = Result;
+    Summary.State = State;
+    Summary.Error = Error;
+    Summary.ErrorParams = ErrorParams;
+    Summary.ErrorResult = ErrorResult;
+    save(File, 'Summary');
 end

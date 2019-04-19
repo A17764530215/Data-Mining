@@ -66,15 +66,15 @@ end
         end
     end
 
-    function [ Alpha2 ] = SSR(H1, H2, Alpha1)
-        % safe screening rules
-        P = chol(H2, 'upper');
-        LL = (H1+H2)*Alpha1;
+    function [ Alpha1 ] = SSR(H0, H1, Alpha0)
+        P = chol(H1, 'upper');
+        LL = (H0+H1)*Alpha0/2;
         RL = sqrt(sum(P.*P, 1))';
-        RR = RL*(norm((P'\(H1*Alpha1)+P*Alpha1)));
-        Alpha2 = Inf(size(Alpha1));
-        Alpha2(LL - RR > 2) = 0;
-        Alpha2(LL + RR < 2) = 1;
+        A = P'\((H0+H1)*Alpha0);
+        RR = RL*sqrt(A'*A/4-Alpha0'*H0*Alpha0);
+        Alpha1 = Inf(size(Alpha0));
+        Alpha1(LL - RR > 1) = 0;
+        Alpha1(LL + RR < 1) = 1;
     end
 
     function [ yTest, Rate ] = Predict(X, Y, xTest, Alpha, opts)
