@@ -75,7 +75,7 @@ end
             Tt = T==t;
             P{t} = Q(Tt,Tt);
         end
-        H = Cond(Q + TaskNum/opts.mu*spblkdiag(P{:}));
+        H = Cond(Q/opts.mu + spblkdiag(P{:}));
     end
 
     function [ Alpha1 ] = Primal(H1, C1)
@@ -136,7 +136,7 @@ end
             Ht = Kernel(xTest{t}, X, opts.kernel);
             y0 = predict(Ht, Y, Alpha);
             yt = predict(Ht(:,Tt), Y(Tt,:), Alpha(Tt,:));
-            y = sign(y0 + TaskNum/mu*yt);
+            y = sign(y0/mu + yt);
             y(y==0) = 1;
             yTest{t} = y;
         end

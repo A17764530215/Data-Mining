@@ -2,17 +2,12 @@ clc
 clear
 
 % 加载数据集和网格搜索参数
-load('DATA5.mat');
+load('DATA5R.mat');
 load('LabSParams.mat');
-SParams = reshape(SParams, 24, 3);
-% DataSetIndices = [ 1:9 18:27 43:56 ]; % low related
-% DataSetIndices = [ 10:17 28:42 ]; % high related
-% DATA3
-% DataSetIndices = [ 18 44:51 78:92 ];
-% ParamIndices = [ 1:8 25:32 ];
-% DATA5
-DataSetIndices = [ 1:9 18:57 ];
-ParamIndices = [ 13:24 ];
+SParams = reshape(SParams, 28, 3);
+% DATA5R
+DataSetIndices = [ 1:19 ];
+ParamIndices = [ 19 20 ];
 OverWrite = false;
 
 %% 实验设置 RMTL

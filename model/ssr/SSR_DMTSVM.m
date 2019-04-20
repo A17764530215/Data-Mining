@@ -14,30 +14,32 @@ CVRate = zeros(n, 4);
 for i = 1 : n
     Params = GetParams(IParams, i);
     tic;
-    [ H3, H4, EEF, FFE, EEFc, FFEc, e1, e2, m1, m2 ] = Prepare(X, Y, N, TaskNum, Params);
     C1 = Params.C1;
     if mod(i, step) ~= 1
         C0 = LastParams.C1;
         % solve the rest problem
-        switch change
-            case 'C'
+        if change == 'C'
                 [ Alpha1 ] = SSR_C(H3, Alpha0, C1, C0);
                 [ Gamma1 ] = SSR_C(H4, Gamma0, C1, C0);
-            case 'H'
-                [ Alpha1 ] = SSR_MU_P(H1, H3, Alpha0, C1);
-                [ Gamma1 ] = SSR_MU_P(H2, H4, Gamma0, C1);
-            otherwise
-                throw(MException('SSR_CRMTL', 'Change: no parameter changed'));
+        else
+            H1 = H3; H2 = H4;
+            if change == 'P'
+                [ Q, P, R, S, EEF, FFE, EEFc, FFEc ] = Prepare(X, Y, N, TaskNum, Params);
+            end
+            [ H3, H4 ] = GetHessian(Q, P, R, S, TaskNum, Params);
+            [ Alpha1 ] = SSR_MU_P(H1, H3, Alpha0, C1);
+            [ Gamma1 ] = SSR_MU_P(H2, H4, Gamma0, C1);
         end
         [ CVRate(i,1:2) ] = GetRate([ Alpha1; Gamma1 ], C1);
         [ Alpha0 ] = Reduced(H3, Alpha1, C1);
         [ Gamma0 ] = Reduced(H4, Gamma1, C1);
     else
         % solve the first problem
+        [ Q, P, R, S, EEF, FFE, EEFc, FFEc, e1, e2, m1, m2 ] = Prepare(X, Y, N, TaskNum, Params);
+        [ H3, H4 ] = GetHessian(Q, P, R, S, TaskNum, Params);
         [ Alpha0 ] = Primal(H3, -e2, zeros(m2, 1), C1*e2);
         [ Gamma0 ] = Primal(H4, -e1, zeros(m1, 1), C1*e1);
     end
-    H1 = H3; H2 = H4;
     [ CVTime(i, 1) ] = toc;
     % 预测
     [ U, V ] = GetWeight(EEF, FFE, EEFc, FFEc, Alpha0, Gamma0, N, TaskNum, Params);
@@ -56,13 +58,13 @@ end
             step = length(IParams.C1);
         elseif p1.rho ~= p2.rho
             step = length(IParams.rho);
-            change = 'H';
+            change = 'M';
         else
             k1 = p1.kernel;
             k2 = p2.kernel;
             if strcmp(k1.type, 'rbf') && strcmp(k2.type, 'rbf')
                 if k1.p1 ~= k2.p1
-                    change = 'H';
+                    change = 'P';
                     step = length(IParams.kernel.p1);
                 else
                     throw(MException('SSR_CRMTL', 'Change: no parameter changed'));
@@ -73,7 +75,13 @@ end
         end
     end
 
-    function [ H1, H2, EEF, FFE, EEFc, FFEc, e1, e2, m1, m2 ] = Prepare(X, Y, N, TaskNum, opts)
+    function [ H1, H2 ] = GetHessian(Q, P, R, S, TaskNum, opts)
+        Sym = @(H) (H+H')/2 + 1e-5*speye(size(H));
+        H1 = Sym(Q + TaskNum/opts.rho*P);
+        H2 = Sym(R + TaskNum/opts.rho*S);
+    end
+
+    function [ Q, P, R, S, EEF, FFE, EEFc, FFEc, e1, e2, m1, m2 ] = Prepare(X, Y, N, TaskNum, opts)
         % 分割正负类点
         A = X(Y==1,:);
         B = X(Y==-1,:);
@@ -105,16 +113,13 @@ end
         end
         P = spblkdiag(P{:});
         S = spblkdiag(S{:});
-        Sym = @(H) (H+H')/2 + 1e-5*speye(size(H));
-        H1 = Sym(Q + TaskNum/opts.rho*P);
-        H2 = Sym(R + TaskNum/opts.rho*S);
     end
 
     function [ Alpha ] = Primal(H, f, lb, ub)
         Alpha = quadprog(H,f,[],[],[],[],lb,ub,[],solver);
     end
 
-    function [ Alpha ] = Reduced(H, Alpha, C1)
+    function [ Alpha, R, S ] = Reduced(H, Alpha, C1)
         % reduced problem
         [ ~, R, S ] = GetRate(Alpha, C1);
         if mean(R) > 0
@@ -169,10 +174,9 @@ end
         k1 = (C1 + C0)/C0;
         k2 = (C1 - C0)/C0;
         % safe screening rules for $C$
-        P = chol(H2, 'upper');
+        T = chol(H2, 'upper');
         LL = H2*Alpha1*k1;
-        RL = sqrt(sum(P.*P, 1))';
-        RR = RL*norm(P*Alpha1*k2);
+        RR = sqrt(sum(T.*T, 1))'*norm(T*Alpha1*k2);
         Alpha2 = Inf(size(Alpha1));
         Alpha2(LL - RR > 2) = 0;
         Alpha2(LL + RR < 2) = C1;
@@ -180,11 +184,10 @@ end
 
     function [ Alpha1 ] = SSR_MU_P(H0, H1, Alpha0, C1)
         % safe screening rules for $\mu$, $p$
-        P = chol(H1, 'upper');
         LL = (H0+H1)*Alpha0/2;
-        RL = sqrt(sum(P.*P, 1))';
-        A = P'\((H0+H1)*Alpha0);
-        RR = RL*sqrt(A'*A/4-Alpha0'*H0*Alpha0);
+        T = chol(H1, 'upper');
+        A = T'\((H0+H1)*Alpha0);
+        RR = sqrt(sum(T.*T, 1))'*sqrt(A'*A/4-Alpha0'*H0*Alpha0);
         Alpha1 = Inf(size(Alpha0));
         Alpha1(LL - RR > 1) = 0;
         Alpha1(LL + RR < 1) = C1;

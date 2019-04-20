@@ -33,7 +33,9 @@ for i = 1 : n
         % solve the first problem
         [ Alpha0 ] = Primal(H1, C1);
     end
-    H0 = H1;
+    if change == 'H'
+        H0 = H1;
+    end
     CVTime(i, 1) = toc;
     % Ô¤²â
     [ y_hat, CVRate(i, 3:4) ] = Predict(X, Y, xTest, Alpha0, Params);
@@ -108,8 +110,7 @@ end
         % safe screening rules for $C$
         P = chol(H1, 'upper');
         LL = H1*(Alpha0*k1);
-        RL = sqrt(sum(P.*P, 1))';
-        RR = RL*norm(P*Alpha0*k2);
+        RR = sqrt(sum(P.*P, 1))'*norm(P*Alpha0*k2);
         Alpha1 = Inf(size(Alpha0));
         Alpha1(LL - RR > 2) = 0;
         Alpha1(LL + RR < 2) = C1;
@@ -118,10 +119,9 @@ end
     function [ Alpha1 ] = SSR_MU_P(H0, H1, Alpha0, C1)
         % safe screening rules for $\mu$, $p$
         P = chol(H1, 'upper');
-        LL = (H0+H1)*Alpha0/2;
-        RL = sqrt(sum(P.*P, 1))';
         A = P'\((H0+H1)*Alpha0);
-        RR = RL*sqrt(A'*A/4-Alpha0'*H0*Alpha0);
+        LL = (H0+H1)*Alpha0/2;
+        RR = sqrt(sum(P.*P, 1))'*sqrt(A'*A/4-Alpha0'*H0*Alpha0);
         Alpha1 = Inf(size(Alpha0));
         Alpha1(LL - RR > 1) = 0;
         Alpha1(LL + RR < 1) = C1;

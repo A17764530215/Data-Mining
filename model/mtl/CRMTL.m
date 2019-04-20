@@ -13,15 +13,15 @@ TaskNum = length(xTrain);
 %% Prepare
 tic;
 Q = Y.*Kernel(X, X, kernel).*Y';
-P = sparse(0, 0);
+P = cell(TaskNum, 1);
 for t = 1 : TaskNum
     Tt = T==t;
-    P = blkdiag(P, Q(Tt,Tt));
+    P{t} = Q(Tt,Tt);
 end
 % 二次规划求解
 e = ones(size(Y));
 lb = zeros(size(Y));
-H = Cond(mu*Q + (1-mu)*TaskNum*P);
+H = Cond(mu*Q + (1-mu)*TaskNum*spblkdiag(P{:}));
 [ Alpha ] = quadprog(H,-e,[],[],[],[],lb,C*e,[],opts.solver);
 % 停止计时
 Time = toc;
