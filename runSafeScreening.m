@@ -4,11 +4,12 @@ clear
 % 加载数据集和网格搜索参数
 load('DATA5R.mat');
 load('LabSParams.mat');
+Kernels = {'Linear', 'Poly', 'RBF'};
 SParams = reshape(SParams, 28, 3);
 % DATA5R
-DataSetIndices = [ 1:19 ];
-ParamIndices = [ 19 20 ];
-OverWrite = false;
+DataSetIndices = [ 1:4 ];
+ParamIndices = [ 25:28 ];
+OverWrite = true;
 
 %% 实验设置 RMTL
 solver = struct('Display', 'off');
@@ -17,13 +18,13 @@ fd = fopen(['./log/log-', datestr(now, 'yyyymmddHHMM'), '.txt'], 'w');
 Path = './data/ssr';
 Kfold = 1;
 % 实验开始
-fprintf('runGridSearch\n');
-for i = DataSetIndices
-    DataSet = DataSets(i);
-    fprintf('DataSet: %s\n', DataSet.Name);
-    [ X, Y, ValInd ] = GetMultiTask(DataSet);
-    [ X ] = Normalize(X);
-    for k = [ 1 3 ]
+for k = [ 1 ]
+    fprintf('runGridSearch:%s\n', Kernels{k});
+    for i = DataSetIndices
+        DataSet = DataSets(i);
+        fprintf('DataSet: %s\n', DataSet.Name);
+        [ X, Y, ValInd ] = GetMultiTask(DataSet);
+        [ X ] = Normalize(X);
         for j = ParamIndices
             Method = SParams{j,k};
             Name = [Method.ID, '-', DataSet.Name];

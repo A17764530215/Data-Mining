@@ -15,14 +15,14 @@ for i = 1 : n
     Params = GetParams(IParams, i);
     Params.solver = opts.solver;
     tic;
-    [ H2 ] = Prepare(X, Y, TaskNum, Params);
+    [ H1 ] = Prepare(X, Y, TaskNum, Params);
     if mod(i, step) == 1
         % solve the first problem
-        [ H1, Alpha0 ] = Primal(H2);
+        [ H0, Alpha0 ] = Primal(H1);
     else
         % solve the rest problem
-        [ Alpha1 ] = SSR(H1, H2, Alpha0);
-        [ H1, Alpha0, CVRate(i,1:2) ] = Reduced(H2, Alpha1);
+        [ Alpha1 ] = DVI_H(H0, H1, Alpha0, 1);
+        [ H0, Alpha0, CVRate(i,1:2) ] = Reduced(H1, Alpha1);
     end
     CVTime(i, 1) = toc;
     [ y_hat, CVRate(i, 3:4) ] = Predict(X, Y, xTest, Alpha0, Params);
@@ -56,7 +56,6 @@ end
     end
 
     function [ H ] = Prepare(X, Y, TaskNum, opts)
-        symmetric = @(H) (H+H')/2;
         mu = 1/(2*opts.lambda2);
         nu = TaskNum/(2*opts.lambda1);
         % construct hessian matrix
@@ -67,7 +66,6 @@ end
             P{t} = Q(Tt,Tt);
         end
         H = Cond(mu*Q + nu*spblkdiag(P{:}));
-        H = symmetric(H);
     end
 
     function [ H1, Alpha1 ] = Primal(H1)
@@ -90,16 +88,6 @@ end
             ub = ones(size(f));
             [ Alpha2(R) ] = quadprog(H2(R,R), f, [], [], [], [], lb, ub, [], solver);
         end
-    end
-
-    function [ Alpha1 ] = SSR(H0, H1, Alpha0)
-        P = chol(H1, 'upper');
-        LL = (H0+H1)*Alpha0/2;
-        A = P'\((H0+H1)*Alpha0);
-        RR = sqrt(sum(P.*P, 1))'*sqrt(A'*A/4-Alpha0'*H0*Alpha0);
-        Alpha1 = Inf(size(Alpha0));
-        Alpha1(LL - RR > 1) = 0;
-        Alpha1(LL + RR < 1) = 1;
     end
 
     function [ yTest, Rate ] = Predict(X, Y, xTest, Alpha, opts)

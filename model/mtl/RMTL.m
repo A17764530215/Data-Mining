@@ -11,7 +11,6 @@ solver = opts.solver;
 TaskNum = length(xTrain);
 mu = 1/(2*lambda2);
 nu = TaskNum/(2*lambda1);
-symmetric = @(H) (H+H')/2;
 [ X, Y, T, ~ ] = GetAllData(xTrain, yTrain, TaskNum);
 
 %% Prepare
@@ -26,7 +25,7 @@ end
 lb = zeros(size(Y));
 e = ones(size(Y));
 H = Cond(mu*Q + nu*spblkdiag(P{:}));
-[ Alpha ] = quadprog(symmetric(H), -e, [], [], [], [], lb, e, [], solver);
+[ Alpha ] = quadprog(H, -e, [], [], [], [], lb, e, [], solver);
 % Í£Ö¹¼ÆÊ±
 Time = toc;
 

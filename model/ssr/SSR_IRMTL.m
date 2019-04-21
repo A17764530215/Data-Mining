@@ -22,9 +22,9 @@ for i = 1 : n
         % solve the rest problem
         switch change
             case 'C'
-                [ Alpha1 ] = SSR_C(H1, Alpha0, C1, C0);
+                [ Alpha1 ] = DVI_C(H1, Alpha0, C1, C0);
             case 'H'
-                [ Alpha1 ] = SSR_MU_P(H0, H1, Alpha0, C1);
+                [ Alpha1 ] = DVI_H(H0, H1, Alpha0, C1);
             otherwise
                 throw(MException('SSR_IRMTL', 'Change: no parameter changed'));
         end
@@ -98,31 +98,6 @@ end
             ub = C1*ones(size(f));
             [ Alpha1(R) ] = quadprog(H1(R,R),f,[],[],[],[],lb,ub,[],solver);
         end
-    end
-
-    function [ Alpha1 ] = SSR_C(H1, Alpha0, C1, C0)
-        k1 = (C1+C0)/C0;
-        k2 = (C1-C0)/C0;
-        % safe screening rules for $C$
-        P = chol(H1, 'upper');
-        LL = H1*(Alpha0*k1);
-        RL = sqrt(sum(P.*P, 1))';
-        RR = RL*norm(P*Alpha0*k2);
-        Alpha1 = Inf(size(Alpha0));
-        Alpha1(LL - RR > 2) = 0;
-        Alpha1(LL + RR < 2) = C1;
-    end
-
-    function [ Alpha1 ] = SSR_MU_P(H0, H1, Alpha0, C1)
-        % safe screening rules for $\mu$, $p$
-        P = chol(H1, 'upper');
-        LL = (H0+H1)*Alpha0/2;
-        RL = sqrt(sum(P.*P, 1))';
-        A = P'\((H0+H1)*Alpha0);
-        RR = RL*sqrt(A'*A/4-Alpha0'*H0*Alpha0);
-        Alpha1 = Inf(size(Alpha0));
-        Alpha1(LL - RR > 1) = 0;
-        Alpha1(LL + RR < 1) = C1;
     end
 
     function [ yTest, Rate ] = Predict(X, Y, xTest, Alpha, opts)

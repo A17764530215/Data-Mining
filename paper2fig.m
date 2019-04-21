@@ -5,30 +5,27 @@ SParams = reshape(SParams, 28, 3);
 figure();
 
 %% Paper1
-[ d ] = DATA5();
-[ d ] = SetLegends(d, 'data', {
+[ d ] = DATA5({
     'SVM','PSVM','LS-SVM','TWSVM','LS-TWSVM','\nu-TWSVM','ITWSVM',...
     'RMTL','MTPSVM','MTLS-SVM','MTL-aLS-SVM',...
     'DMTSVM','MCTSVM','MTLS_TWSVM','MT-\nu-TWSVM I','MT-\nu-TWSVM II'
 }, [9:13 14]);
 
 %% Paper2
-[ d ] = DATA5();
-[ d ] = SetLegends(d, 'data', {
+[ d ] = DATA5({
     'SVM','PSVM','LS-SVM','TWSVM','LS-TWSVM','\nu-TWSVM','ITWSVM',...
     'RMTL','MTPSVM','MTLS-SVM','MTL-aLS-SVM',...
     'DMTSVM','MCTSVM','MTLS_TWSVM','MT-\nu-TWSVM I','MT-\nu-TWSVM II'
 }, [9:13 15 16]);
 
 %% Paper3
-[ d ] = DATA5R();
-[ d ] = SetLegends(d, 'data', {
+[ d ] = DATA5R({
     'SVM','PSVM','LS-SVM','TWSVM','MTPSVM','MTLS-SVM',...
     'RMTL-L1','SSRL1-IRMTL','RMTL-L2','SSRL2-IRMTL','RMTL-L2','SSRL2-IRMTL',...
     'IRMTL-C','SSRC-IRMTL','IRMTL-M','SSRM-IRMTL','IRMTL-P','SSRP-IRMTL',...
     'CRMTL-C','SSRC-CRMTL','CRMTL-M','SSRM-CRMTL','CRMTL-P','SSRP-CRMTL',...
     'DMTSVMA_C','SSRC_DMTSVMA','DMTSVMA_M','SSRM_DMTSVMA'
-}, [ 1 5 6 13 14 19 20 ]);
+}, [ 1 5 6 19 20 ]);
 
 Kernels = {'Linear', 'Poly', 'RBF'};
 type = {'data', 'time'};
@@ -38,7 +35,7 @@ for k = [1 3]
     for i = 1 : 2
         clf;
         FigureFactory(type{i}, Summary, d, 1:4);
-        path = sprintf('./results/paper3/figures/%s-%s', Kernels{k}, type{i});
+        path = sprintf('./results/paper3/figures/Figure-%s-%s', upper(type{i}), Kernels{k});
         saveas(gcf, [path, '.png']);
         saveas(gcf, path, 'fig');
         saveas(gcf, path, 'epsc');
@@ -46,8 +43,7 @@ for k = [1 3]
 end
 
 %% Safe screening
-[ d ] = DATA5R();
-[ d ] = SetLegends(d, 'state', {'S0', 'SC', 'C0', 'CC', 'Inactive', 'Screening', 'Speedup'}, [ 7 ]);
+[ d ] = DATA5R({'S0', 'SC', 'C0', 'CC', 'Inactive', 'Screening', 'Speedup'}, [ 1 2 3 4 ]);
 for i = [ 1 3 ]
     Params = reshape(SParams(7:end,i), [2 11]);
     for k = [ 1 : 9 ]
@@ -71,19 +67,7 @@ end
 Curve(Summary, [1:57], [6 7], 'rbf', 'rate');
 Curve(Summary, [1:57], [8 9], 'rbf', 'speed');
 
-function [ d ] = SetLegends(d, type, legends, idx)
-% 设置实验属性
-    switch type
-        case 'data'
-            d.Legends = legends;
-            d.STL = idx;
-        case 'state'
-            d.Legends = legends;
-            d.STL = idx;
-    end
-end
-
-function [ d ] = DATA5()
+function [ d ] = DATA5(legends, idx)
 % 数据集属性
     d.Arcs = [0,0,0,0,45,45,0,0,0];
     d.Counts = [ 9, 8, 5, 5, 5, 10, 6, 6, 3 ];
@@ -102,9 +86,11 @@ function [ d ] = DATA5()
         '100', '120', '140', '160', '180', '200',...
         'Letter', 'Spam_{3}', 'Spam_{15}'
     };
+    d.Legends = legends;
+    d.STL = idx;
 end
 
-function [ d ] = DATA5R()
+function [ d ] = DATA5R(legends, idx)
 % 数据集属性
     d.Arcs = [0,0,45,45];
     d.Counts = [ 9, 5, 7, 10 ];
@@ -119,6 +105,8 @@ function [ d ] = DATA5R()
         'Birds_5','Insects_4','Flowers_3','Mammals_{10}','Instruments_6',...
         'Flowers_3', 'Instruments_5','Plants_4','Mammals_{10}', 'Vehicles_9'
     };
+    d.Legends = legends;
+    d.STL = idx;
 %         'Aircrafts_5','Balls_5','Bikes_6', 'Birds_9','Boats_4',...
 end
 

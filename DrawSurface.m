@@ -1,29 +1,26 @@
-%% MTvTWSVM
 clc
 clear
-load('DATA5.mat');
-load('LabCParams.mat');
+load('DATA5R.mat');
+load('LabSParams.mat');
+SParams = reshape(SParams, 28, 3);
+%%
 INDICES = {'Accuracy', 'Precision', 'Recall', 'F1'};
-Data = mean(Summary.Data, 3);
-[ d ] = GetBestParam(CParams{7}, Data, INDICES, 'rho', 'v1', true);
-xlabel('\mu_1(\mu_2)');
-ylabel('\nu_1(\nu_2)');
+Data = mean(CVStat, 3);
+[ d ] = GetBestParam(SParams{6,3}, Data, INDICES, 'lambda', 'C');
+% xlabel('C');
+% ylabel('\lambda');
+%%
+figure();
 
 %% SSRC_IRMTL
-clc
-clear
-load('DATA5.mat');
-load('LabSParams.mat');
-SParams = reshape(SParams, 14, 3);
-figure();
 for k = [ 1 3 ]
-    for i = [ 8 12 ]
-        [ Result ] = GetBestResult('./data/ssr', DataSets, SParams{i,k}, [1],  {'Accuracy'}, {'Selected'}, '\mu', 'C');
-        DrawBestResult('./figures/paper3/index', Result, [1], '\mu', 'C');
+    for i = [ 20 ]
+        [ Result ] = GetBestResult('./data/ssr', DataSets, SParams{i,k}, [1:20],  {'Accuracy'}, {'Selected'}, '\mu', 'C');
+        DrawBestResult('./figures/paper3/index', Result, [1:19], '\mu', 'C');
     end
-    for i = [ 10 14 ]
-        [ Result ] = GetBestResult('./data/ssr', DataSets, SParams{i,k}, [1],  {'Accuracy'}, {'Selected'}, 'C', '\mu');
-        DrawBestResult('./figures/paper3/index', Result, [1], 'C', '\mu');
+    for i = [ 22 ]
+        [ Result ] = GetBestResult('./data/ssr', DataSets, SParams{i,k}, [1:20],  {'Accuracy'}, {'Selected'}, 'C', '\mu');
+        DrawBestResult('./figures/paper3/index', Result, [1:19], 'C', '\mu');
     end
 end
 
@@ -35,26 +32,26 @@ function [ ] = DrawBestResult(Path, Result, IDX, x, y)
     kernel = p.kernel;
     for i  = IDX
         r = Result(i);
-        folder = sprintf('%s/%s/%d-fold/', Path, kernel.type, r.Kfold);
+        folder = sprintf('%s/%s/%d-fold', Path, kernel.type, r.Kfold);
         if exist(folder, 'dir') == 0
             mkdir(folder);
         end
-        path = sprintf('%s/%s-%s.png', folder, r.Name, p.ID);
+        path = sprintf('%s/%s-%s', folder, r.Name, p.ID);
         clf;
         % Accuracy
         subplot(1, 2, 1);
-        title('Accuracy');
         surf(X, Y, r.BestAccuracy.Z, 'EdgeColor', 'none');view(2);colorbar;
+        title('Accuracy');
         xlabel(x);
         ylabel(y);
         hold on;
         % Selected
         subplot(1, 2, 2);
-        title('Selected');
         surf(X, Y, r.BestScreening.Z, 'EdgeColor', 'none');view(2);colorbar;
+        title('Selected');
         xlabel(x);
         ylabel(y);
-        saveas(gcf, path);
+        saveas(gcf, [path, '.png']);
     end
 end
 
