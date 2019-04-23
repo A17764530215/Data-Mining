@@ -15,7 +15,6 @@ for i = 1 : n
     Params = GetParams(IParams, i);
     Params.solver = opts.solver;
     tic;
-    [ H1 ] = Prepare(X, Y, TaskNum, Params);
     C1 = Params.C;
     if mod(i, step) ~= 1
         C0 = LastParams.C;
@@ -24,6 +23,8 @@ for i = 1 : n
             case 'C'
                 [ Alpha1 ] = DVI_C(H1, Alpha0, C1, C0);
             case 'H'
+                [ H0 ] = H1;
+                [ H1 ] = Prepare(X, Y, TaskNum, Params);
                 [ Alpha1 ] = DVI_H(H0, H1, Alpha0, C1);
             otherwise
                 throw(MException('SSR_CRMTL', 'Change: no parameter changed'));
@@ -31,14 +32,12 @@ for i = 1 : n
         [ Alpha0, CVRate(i,1:2) ] = Reduced(H1, Alpha1, C1);
     else
         % solve the first problem
+        [ H1 ] = Prepare(X, Y, TaskNum, Params);
         [ Alpha0 ] = Primal(H1, C1);
-    end
-    if change == 'H'
-        H0 = H1;
     end
     CVTime(i, 1) = toc;
     % Ô¤²â
-    [ y_hat, CVRate(i, 3:4) ] = Predict(X, Y, xTest, Alpha0, Params);
+    [ y_hat, CVRate(i, 3:4) ] = Predict(X, Y, TaskNum, xTest, Alpha0, Params);
     CVStat(i,:,:) = MTLStatistics(TaskNum, y_hat, yTest, opts);
     LastParams = Params;
 end
@@ -104,7 +103,7 @@ end
         end
     end
 
-    function [ yTest, Rate ] = Predict(X, Y, xTest, Alpha, opts)
+    function [ yTest, Rate ] = Predict(X, Y, TaskNum, xTest, Alpha, opts)
         % extract opts
         mu = opts.mu;
         C = opts.C;

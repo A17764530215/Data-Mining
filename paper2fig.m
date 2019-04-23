@@ -29,7 +29,7 @@ figure();
 
 Kernels = {'Linear', 'Poly', 'RBF'};
 type = {'data', 'time'};
-for k = [1 3]
+for k = [3]
     Path = ['./results/paper3/MyStat-Stat-', Kernels{k}, '.mat'];
     load(Path);
     for i = 1 : 2
@@ -43,10 +43,10 @@ for k = [1 3]
 end
 
 %% Safe screening
-[ d ] = DATA5R({'S0', 'SC', 'C0', 'CC', 'Inactive', 'Screening', 'Speedup'}, [ 1 2 3 4 ]);
+[ d ] = DATA5R({'S0', 'SC', 'C0', 'CC', 'Inactive', 'Screening', 'Speedup'}, [ 7 ]);
 for i = [ 1 3 ]
-    Params = reshape(SParams(7:end,i), [2 11]);
-    for k = [ 1 : 9 ]
+    Params = reshape(SParams(19:24,i), [2 3]);
+    for k = [ 1 : 3 ]
         p = Params{2,k};
         Name = sprintf('MyStat-%s-%s', p.ID , p.kernel.type);
         Path = sprintf('./results/paper3/statistics/%s.mat', Name);

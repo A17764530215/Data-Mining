@@ -68,10 +68,10 @@ end
                     change = 'P';
                     step = length(IParams.kernel.p1);
                 else
-                    throw(MException('SSR_CRMTL', 'Change: no parameter changed'));
+                    throw(MException('SSR_DMTSVM', 'Change: no parameter changed'));
                 end
             else 
-                throw(MException('SSR_CRMTL', 'Change: no parameter changed'));
+                throw(MException('SSR_DMTSVM', 'Change: no parameter changed'));
             end
         end
     end

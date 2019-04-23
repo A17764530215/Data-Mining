@@ -15,12 +15,12 @@ figure();
 %% SSRC_IRMTL
 for k = [ 1 3 ]
     for i = [ 20 ]
-        [ Result ] = GetBestResult('./data/ssr', DataSets, SParams{i,k}, [1:20],  {'Accuracy'}, {'Selected'}, '\mu', 'C');
-        DrawBestResult('./figures/paper3/index', Result, [1:19], '\mu', 'C');
+        [ Result ] = GetBestResult('./data/ssr', DataSets, SParams{i,k}, [1:19],  {'Accuracy'}, {'Selected'}, '\mu', 'C');
+        DrawBestResult('./figures/paper3/index', Result, [1:18], '\mu', 'C');
     end
     for i = [ 22 ]
-        [ Result ] = GetBestResult('./data/ssr', DataSets, SParams{i,k}, [1:20],  {'Accuracy'}, {'Selected'}, 'C', '\mu');
-        DrawBestResult('./figures/paper3/index', Result, [1:19], 'C', '\mu');
+        [ Result ] = GetBestResult('./data/ssr', DataSets, SParams{i,k}, [1:19],  {'Accuracy'}, {'Selected'}, 'C', '\mu');
+        DrawBestResult('./figures/paper3/index', Result, [1:18], 'C', '\mu');
     end
 end
 
