@@ -3,82 +3,55 @@ function [ yTest, Time ] = DMTSVM( xTrain, yTrain, xTest, opts )
 % Multi-Task Twin Support Vector Machine
 %   此处显示详细说明
 
-%% Parse opts
-C1 = opts.C1;
-C2 = opts.C1;
-rho = opts.rho;
-lambda = opts.rho;
-kernel = opts.kernel;
 TaskNum = length(xTrain);
 [ X, Y, ~, N ] = GetAllData(xTrain, yTrain, TaskNum);
-Sym = @(H) (H+H')/2 + 1e-5*speye(size(H));
-    
-%% Prepare
-tic;
-% 分割正负类点
-A = X(Y==1,:);
-B = X(Y==-1,:);
-[m1, ~] = size(A);
-[m2, ~] = size(B);
-% 核函数
-e1 = ones(m1, 1);
-e2 = ones(m2, 1);
-E = [Kernel(A, X, kernel) e1];
-F = [Kernel(B, X, kernel) e2];
-% 得到Q,R矩阵
-EEF = Cond(E'*E)\F';
-FFE = Cond(F'*F)\E';
-Q = F*EEF;
-R = E*FFE;
-% 得到P,S矩阵
-Ec = mat2cell(E, N(1,:));
-Fc = mat2cell(F, N(2,:));
-EEFc = cell(TaskNum, 1);
-FFEc = cell(TaskNum, 1);
-P = cell(TaskNum, 1);
-S = cell(TaskNum, 1);
-for t = 1 : TaskNum
-    Et = Ec{t}; Ft = Fc{t};
-    EEFc{t} = Cond(Et'*Et)\(Ft');
-    FFEc{t} = Cond(Ft'*Ft)\(Et');
-    P{t} = Ft*EEFc{t};
-    S{t} = Et*FFEc{t};
-end
-P = spblkdiag(P{:});
-S = spblkdiag(S{:});
 
-%% Fit
-% DMTSVM1
-Alpha = quadprog(Sym(Q + TaskNum/rho*P),-e2,[],[],[],[],zeros(m2, 1),C1*e2,[],opts.solver);
-% DMTSVM2
-Gamma = quadprog(Sym(R + TaskNum/lambda*S),-e1,[],[],[],[],zeros(m1, 1),C2*e1,[],opts.solver);
+tic;
+[ Q, P, R, S, EEF, FFE, EEFc, FFEc ] = Prepare(X, Y, N, opts);
+[ H1, H2 ] = GetHessian(Q, P, R, S, TaskNum, opts);
+[ Alpha, Gamma ] = Primal(H1, H2, e1, e2, opts);
 Time = toc;
 
-%% GetWeight
-CAlpha = mat2cell(Alpha, N(2,:));
-CGamma = mat2cell(Gamma, N(1,:));
-u = -EEF*Alpha;
-v = FFE*Gamma;
-U = cell(TaskNum, 1);
-V = cell(TaskNum, 1);
-for t = 1 : TaskNum
-    U{t} = u - EEFc{t}*(TaskNum/rho*CAlpha{t});
-    V{t} = v + FFEc{t}*(TaskNum/lambda*CGamma{t});
-end
+[ U, V ] = GetWeight(EEF, FFE, EEFc, FFEc, Alpha, Gamma, N, TaskNum, opts);
+[ yTest ] = Predict(xTest, X, TaskNum, U, V);
 
-%% Predict
-TaskNum = length(xTest);
-yTest = cell(TaskNum, 1);
-for t = 1 : TaskNum
-    At = xTest{t};
-    [m, ~] = size(At);
-    et = ones(m, 1);
-    KAt = [Kernel(At, X, kernel) et];
-    D1 = abs(KAt * U{t})/norm(U{t}(1:end-1));
-    D2 = abs(KAt * V{t})/norm(V{t}(1:end-1));
-    yt = sign(D2-D1);
-    yt(yt==0) = 1;
-    yTest{t} = yt;
-end
+    function [ H1, H2 ] = GetHessian(Q, P, R, S, TaskNum, opts)
+        Sym = @(H) (H+H')/2 + 1e-5*speye(size(H));
+        H1 = Sym(Q + TaskNum/opts.rho*P);
+        H2 = Sym(R + TaskNum/opts.rho*S);
+    end
+
+    function [ Alpha, Gamma ] = Primal(H1, H2, e1, e2, opts)
+        Alpha = quadprog(H1,-e2,[],[],[],[],zeros(m2, 1),opts.C*e2,[],opts.solver);
+        Gamma = quadprog(H2,-e1,[],[],[],[],zeros(m1, 1),opts.C*e1,[],opts.solver);
+    end
+
+    function [ U, V ] = GetWeight(EEF, FFE, EEFc, FFEc, Alpha, Gamma, N, TaskNum, opts)
+        CAlpha = mat2cell(Alpha, N(2,:));
+        CGamma = mat2cell(Gamma, N(1,:));
+        u = -EEF*Alpha;
+        v = FFE*Gamma;
+        U = cell(TaskNum, 1);
+        V = cell(TaskNum, 1);
+        for t = 1 : TaskNum
+            U{t} = u - EEFc{t}*(TaskNum/opts.rho*CAlpha{t});
+            V{t} = v + FFEc{t}*(TaskNum/opts.lambda*CGamma{t});
+        end
+    end
+
+    function [ yTest ] = Predict(xTest, X, TaskNum, U, V)
+        yTest = cell(TaskNum, 1);
+        for t = 1 : TaskNum
+            Xt = xTest{t};
+            [m, ~] = size(Xt);
+            et = ones(m, 1);
+            KXt = [Kernel(Xt, X, kernel) et];
+            D1 = abs(KXt * U{t})/norm(U{t}(1:end-1));
+            D2 = abs(KXt * V{t})/norm(V{t}(1:end-1));
+            yt = sign(D2-D1);
+            yt(yt==0) = 1;
+            yTest{t} = yt;
+        end
+    end
 
 end

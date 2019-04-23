@@ -10,24 +10,24 @@ addpath(genpath('./model'));
 addpath(genpath('./utils'));
 
 % 加载数据集和网格搜索参数
-load('MTL_UCI.mat');
+load('Spambase.mat');
 load('LabCParams.mat');
 
-DataSets = MTL_UCI;
+DataSets = {DataSet};
 IParams = CParams;
 
 % 数据集
-DataSetIndices = [13];
+DataSetIndices = [1];
 ParamIndices = [6:11];
 BestParams = 145;
 
 % 实验设置
-opts = InitOptions('clf', 1, []);
+opts = InitOptions('clf', 1, [], 2);
 
-% 实验开始
+%% 实验开始
 fprintf('runCrossValid\n');
 for i = DataSetIndices
-    DataSet = DataSets(i);
+    DataSet = DataSets{i};
     fprintf('DataSet: %s\n', DataSet.Name);
     [ X, Y, ValInd ] = GetMultiTask(DataSet);
     [ X ] = Normalize(X);
