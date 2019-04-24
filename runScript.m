@@ -26,6 +26,24 @@ DataSets = {MTL_UCI;Caltech};
 DataSets = cellcat(DataSets, 1);
 save DATA3.mat DataSets;
 
+%% 选取数据集
+load('DATA5.mat');
+IDX = [1:9 18:22 10 23 47 54 55 56 57 33:42 ];
+DataSets = DataSets(IDX);
+save DATA5R.mat DataSets;
+
+%%
+A = rand(100, 20);
+kernel = struct('type', 'rbf', 'p1', 64);
+H = Kernel(A, A, kernel);
+% H2 = (H2+H2')/2;
+tic
+T = chol(H, 'upper');
+toc;
+% sigma = 0.2;
+% x = 0:0.1:10;
+% y = exp(-x.^2/(2*sigma^2));
+% plot(x, y);
 %% 添加搜索路径
 addpath(genpath('./datasets'));
 addpath(genpath('./params'));

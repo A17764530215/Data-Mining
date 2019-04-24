@@ -1,4 +1,4 @@
-function [ CVStat, CVTime, CVRate ] = SSR_DMTSVM( xTrain, yTrain, xTest, yTest, TaskNum, IParams, opts )
+function [ CVStat, CVTime, CVRate ] = SSR_DMTSVMA( xTrain, yTrain, xTest, yTest, TaskNum, IParams, opts )
 %SSR_QUAD_SOLVER 此处显示有关此函数的摘要
 % Safe Screening for DMTSVM
 %   此处显示详细说明
@@ -11,43 +11,28 @@ solver = opts.solver;
 n = GetParamsCount(IParams);
 CVStat = zeros(n, opts.IndexCount, TaskNum);
 CVTime = zeros(n, 2);
-CVRate = zeros(n, 4);
+CVRate = zeros(n, 1);
 for i = 1 : n
     Params = GetParams(IParams, i);
     tic;
-    C1 = Params.C1;
     if mod(i, step) ~= 1
-        C0 = LastParams.C1;
-        % solve the rest problem
-        if change == 'C'
-            [ Alpha1 ] = DVI_C(H2, Alpha0, C1, C0);
-            [ Gamma1 ] = DVI_C(H3, Gamma0, C1, C0);
-        else
+        if change ~= 'C'
             if change == 'P'
-                [ Q, P, R, S, EEF, FFE, EEFc, FFEc ] = Prepare(X, Y, N, TaskNum, Params);
+                [ Q, P, R, S, EEF, FFE, EEFc, FFEc, e1, e2, m1, m2 ] = Prepare(X, Y, N, TaskNum, Params);
             end
-            H0 = H2; H1 = H3;
-            [ H2, H3 ] = GetHessian(Q, P, R, S, TaskNum, Params);
-            [ Alpha1 ] = DVI_H(H0, H2, Alpha0, C1);
-            [ Gamma1 ] = DVI_H(H1, H3, Gamma0, C1);
+            [ H1, H2 ] = GetHessian(Q, P, R, S, TaskNum, Params);
         end
-        [ CVRate(i,1:2) ] = GetRate([ Alpha1; Gamma1 ], C1);
-        [ Alpha0 ] = Reduced(H2, Alpha1, C1);
-        [ Gamma0 ] = Reduced(H3, Gamma1, C1);
     else
-        % solve the first problem
         [ Q, P, R, S, EEF, FFE, EEFc, FFEc, e1, e2, m1, m2 ] = Prepare(X, Y, N, TaskNum, Params);
-        [ H2, H3 ] = GetHessian(Q, P, R, S, TaskNum, Params);
-        [ Alpha0 ] = Primal(H2, -e2, zeros(m2, 1), C1*e2);
-        [ Gamma0 ] = Primal(H3, -e1, zeros(m1, 1), C1*e1);
+        [ H1, H2 ] = GetHessian(Q, P, R, S, TaskNum, Params);
     end
+    [ Alpha0 ] = Primal(H1, -e2, zeros(m2, 1), Params.C1*e2);
+    [ Gamma0 ] = Primal(H2, -e1, zeros(m1, 1), Params.C1*e1);
     [ CVTime(i, 1) ] = toc;
     % 预测
     [ U, V ] = GetWeight(EEF, FFE, EEFc, FFEc, Alpha0, Gamma0, N, TaskNum, Params);
     [ y_hat ] = Predict(xTest, X, TaskNum, U, V, Params);
-    [ CVRate(i,3:4) ] = GetTotalRate([ Alpha0; Gamma0 ], C1);
     [ CVStat(i,:,:) ] = MTLStatistics(TaskNum, y_hat, yTest, opts);
-    LastParams = Params;
 end
 
     function [ change, step ] = Change(IParams)
@@ -68,10 +53,10 @@ end
                     change = 'P';
                     step = length(IParams.kernel.p1);
                 else
-                    throw(MException('SSR_DMTSVM', 'Change: no parameter changed'));
+                    throw(MException('SSR_DMTSVMA', 'Change: no parameter changed'));
                 end
             else 
-                throw(MException('SSR_DMTSVM', 'Change: no parameter changed'));
+                throw(MException('SSR_DMTSVMA', 'Change: no parameter changed'));
             end
         end
     end
@@ -118,29 +103,6 @@ end
 
     function [ Alpha ] = Primal(H, f, lb, ub)
         Alpha = quadprog(H,f,[],[],[],[],lb,ub,[],solver);
-    end
-
-    function [ Alpha, R, S ] = Reduced(H, Alpha, C1)
-        % reduced problem
-        [ ~, R, S ] = GetRate(Alpha, C1);
-        if mean(R) > 0
-            f = H(R,S)*Alpha(S)-1;
-            lb = zeros(size(f));
-            ub = C1*ones(size(f));
-            Alpha(R) = quadprog(H(R,R),f,[],[],[],[],lb,ub,[],solver);
-        end
-    end
-
-    function [ Rate ] = GetTotalRate(Alpha, C1)
-        Rate = mean([abs(Alpha)<1e-7, abs(Alpha-C1)<1e-7]);
-    end
-
-    function [ Rate, R, S ] = GetRate(Alpha, C1)
-        R = Alpha == Inf;
-        S0 = Alpha == 0;
-        SC = Alpha == C1;
-        S = S0 | SC;
-        Rate = mean([S0, SC]);
     end
 
     function [ U, V ] = GetWeight(EEF, FFE, EEFc, FFEc, Alpha, Gamma, N, TaskNum, opts)

@@ -4,8 +4,10 @@ function [  CVStat, CVTime, CVRate ] = SSR_CRMTL( xTrain, yTrain, xTest, yTest, 
 %   此处显示详细说明
 
 %% Fit
-[ X, Y, T, ~ ] = GetAllData(xTrain, yTrain, TaskNum);
+[ X, Y, T, N ] = GetAllData(xTrain, yTrain, TaskNum);
+N = sum(N, 1);
 solver = opts.solver;
+[ change, step ] = Change(IParams);
 n = GetParamsCount(IParams);
 CVStat = zeros(n, opts.IndexCount, TaskNum);
 CVTime = zeros(n, 2);
@@ -14,49 +16,61 @@ for i = 1 : n
     Params = GetParams(IParams, i);
     Params.solver = opts.solver;
     tic;
-    [ H1 ] = Prepare(X, Y, TaskNum, Params);
+    [ H1 ] = Prepare(X, Y, T, TaskNum, Params);
     C1 = Params.C;
-    if i > 1
+    if mod(i, step) ~= 1
         C0 = LastParams.C;
         % solve the rest problem
-        [ bC, bMP ] = EqualsTo(Params, LastParams);
-        if bC
-            [ Alpha1 ] = SSR_C(H1, Alpha0, C1, C0);
-            [ Alpha0, CVRate(i,1:2) ] = Reduced(H1, Alpha1, C1);
-        elseif bMP
-            [ Alpha1 ] = SSR_MU_P(H0, H1, Alpha0, C1);
-            [ Alpha0, CVRate(i,1:2) ] = Reduced(H1, Alpha1, C1);
-        else
-            % solve the first problem
-            [ Alpha0 ] = Primal(H1, C1);
+        switch change
+            case 'C'
+                [ Alpha1 ] = DVI_C(H1, Alpha0, C1, C0);
+            case 'H'
+                [ Alpha1 ] = DVI_H(H0, H1, Alpha0, C1);
+            otherwise
+                throw(MException('SSR_CRMTL', 'Change: no parameter changed'));
         end
+        [ Alpha0, CVRate(i,1:2) ] = Reduced(H1, Alpha1, C1);
     else
         % solve the first problem
         [ Alpha0 ] = Primal(H1, C1);
     end
-    H0 = H1;
     CVTime(i, 1) = toc;
+    if change == 'H'
+        H0 = H1;
+    end
     % 预测
-    [ y_hat, CVRate(i, 3:4) ] = Predict(X, Y, xTest, Alpha0, Params);
+    [ y_hat, CVRate(i, 3:4) ] = Predict(X, Y, TaskNum, xTest, Alpha0, Params);
     CVStat(i,:,:) = MTLStatistics(TaskNum, y_hat, yTest, opts);
     LastParams = Params;
 end
 
-    function [ bC, bMP ] = EqualsTo(p1, p2)
-        k1 = p1.kernel;
-        k2 = p2.kernel;
-        if strcmp(k1.type, 'rbf') && strcmp(k2.type, 'rbf')
-            bC = k1.p1 == k2.p1 && p1.mu == p2.mu;
-            bM = k1.p1 == k2.p1 && p1.C == p2.C;
-            bP = p1.C == p2.C && p1.mu == p2.mu;
-            bMP = bM || bP;
+    function [ change, step ] = Change(IParams)
+    % 得到最先变的参数
+        p1 = GetParams(IParams, 1);
+        p2 = GetParams(IParams, 2);
+        if p1.C ~= p2.C
+            change = 'C';
+            step = length(IParams.C);
+        elseif p1.mu ~= p2.mu
+            step = length(IParams.mu);
+            change = 'H';
         else
-            bC = p1.mu == p2.mu;
-            bMP = p1.C == p2.C;
+            k1 = p1.kernel;
+            k2 = p2.kernel;
+            if strcmp(k1.type, 'rbf') && strcmp(k2.type, 'rbf')
+                if k1.p1 ~= k2.p1
+                    change = 'H';
+                    step = length(IParams.kernel.p1);
+                else
+                    throw(MException('SSR_CRMTL', 'Change: no parameter changed'));
+                end
+            else 
+                throw(MException('SSR_CRMTL', 'Change: no parameter changed'));
+            end
         end
     end
 
-    function [ H ] = Prepare(X, Y, TaskNum, opts)
+    function [ H ] = Prepare(X, Y, T, TaskNum, opts)
         % construct hessian matrix
         Q = Y.*Kernel(X, X, opts.kernel).*Y';
         P = cell(TaskNum, 1);
@@ -64,7 +78,7 @@ end
             Tt = T==t;
             P{t} = Q(Tt,Tt);
         end
-        H = Cond(Q + TaskNum/opts.mu*spblkdiag(P{:}));
+        H = Cond(opts.mu*Q + (1-opts.mu)*TaskNum*spblkdiag(P{:}));
     end
 
     function [ Alpha1 ] = Primal(H1, C1)
@@ -90,31 +104,7 @@ end
         end
     end
 
-    function [ Alpha1 ] = SSR_C(H1, Alpha0, C1, C0)
-        k1 = (C1+C0)/C0;
-        k2 = (C1-C0)/C0;
-        % safe screening rules for $C$
-        P = chol(H1, 'upper');
-        LL = H1*(Alpha0*k1);
-        RL = sqrt(sum(P.*P, 1))';
-        RR = RL*norm(P*Alpha0*k2);
-        Alpha1 = Inf(size(Alpha0));
-        Alpha1(LL - RR > 2) = 0;
-        Alpha1(LL + RR < 2) = C1;
-    end
-
-    function [ Alpha1 ] = SSR_MU_P(H0, H1, Alpha0, C1)
-        % safe screening rules for $\mu$, $p$
-        P = chol(H1, 'upper');
-        LL = (H0+H1)*Alpha0;
-        RL = sqrt(sum(P.*P, 1))';
-        RR = RL*norm(P'\((H0*H1)*Alpha0));
-        Alpha1 = Inf(size(Alpha0));
-        Alpha1(LL - RR > 2) = 0;
-        Alpha1(LL + RR < 2) = C1;
-    end
-
-    function [ yTest, Rate ] = Predict(X, Y, xTest, Alpha, opts)
+    function [ yTest, Rate ] = Predict(X, Y, TaskNum, xTest, Alpha, opts)
         % extract opts
         mu = opts.mu;
         C = opts.C;
@@ -125,7 +115,7 @@ end
             Ht = Kernel(xTest{t}, X, opts.kernel);
             y0 = predict(Ht, Y, Alpha);
             yt = predict(Ht(:,Tt), Y(Tt,:), Alpha(Tt,:));
-            y = sign(y0 + TaskNum/mu*yt);
+            y = sign(mu*y0 + (1-mu)*TaskNum*yt);
             y(y==0) = 1;
             yTest{t} = y;
         end

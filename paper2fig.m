@@ -1,125 +1,78 @@
 clear
 clc
-%%
-Summary.Data = Summary.Data*100;
-Summary.Time = Summary.Time*1000;
-%% Classify Accuracy
-[ d ] = Classify();
-[ d ] = SetPaper3(d);
-[ m, ~, k ] = size(Summary.Data);
-Data = mat2cell(Summary.Data, m, d.Counts, k);
-[ Info ] = Transform(Data, d, 1);
-BatchDraw(Info, [1 6 7 2 3 8 4 5]);
+load('LabSParams.mat');
+SParams = reshape(SParams, 28, 3);
+figure();
 
-%% Classify Time
-[ d ] = Classify();
-[ d ] = SetPaper3(d);
-[ m, n, k ] = size(Summary.Time);
-Data = mat2cell(Summary.Time, m, d.Counts, k);
-[ Info ] = Transform(Data, d, 1);
-BatchDraw(Info, [1 6 7 2 3 8 4 5]);
+%% Paper1
+[ d ] = DATA5({
+    'SVM','PSVM','LS-SVM','TWSVM','LS-TWSVM','\nu-TWSVM','ITWSVM',...
+    'RMTL','MTPSVM','MTLS-SVM','MTL-aLS-SVM',...
+    'DMTSVM','MCTSVM','MTLS_TWSVM','MT-\nu-TWSVM I','MT-\nu-TWSVM II'
+}, [9:13 14]);
 
-%% Safe Screening
-[ d ] = SafeScreening();
-Data = mat2cell(Summary.State', length(d.Legends), d.Counts);
-[ Info ] = Transform(Data, d, 1);
-BatchDraw(Info, [1 7 8 2 3 4 5 6 9]);
+%% Paper2
+[ d ] = DATA5({
+    'SVM','PSVM','LS-SVM','TWSVM','LS-TWSVM','\nu-TWSVM','ITWSVM',...
+    'RMTL','MTPSVM','MTLS-SVM','MTL-aLS-SVM',...
+    'DMTSVM','MCTSVM','MTLS_TWSVM','MT-\nu-TWSVM I','MT-\nu-TWSVM II'
+}, [9:13 15 16]);
 
-%% 输出筛选曲线
-load('./results/paper3/MyStat-SSR-Linear.mat');
-Curve(Summary, [1:57], [6 7], 'linear', 'rate');
-Curve(Summary, [1:57], [8 9], 'linear', 'speed');
-load('./results/paper3/MyStat-SSR-Poly.mat');
-Curve(Summary, [1:57], [6 7], 'poly', 'rate');
-Curve(Summary, [1:57], [8 9], 'poly', 'speed');
-load('./results/paper3/MyStat-SSR-RBF.mat');
-Curve(Summary, [1:57], [6 7], 'rbf', 'rate');
-Curve(Summary, [1:57], [8 9], 'rbf', 'speed');
+%% Paper3
+[ d ] = DATA5R({
+    'SVM','PSVM','LS-SVM','TWSVM','MTPSVM','MTLS-SVM',...
+    'RMTL-L1','SSRL1-IRMTL','RMTL-L2','SSRL2-IRMTL','RMTL-L2','SSRL2-IRMTL',...
+    'IRMTL-C','SSRC-IRMTL','IRMTL-M','SSRM-IRMTL','IRMTL-P','SSRP-IRMTL',...
+    'CRMTL-C','SSRC-CRMTL','CRMTL-M','SSRM-CRMTL','CRMTL-P','SSRP-CRMTL',...
+    'DMTSVMA_C','SSRC_DMTSVMA','DMTSVMA_M','SSRM_DMTSVMA'
+}, [ 1 5 6 19 20 ]);
 
-% 转换格式
-function [ Summary ] = Transform(Data, d, k)
-    xTickLabels = mat2cell(d.XTicklabel', d.Counts);
-    Summary = [ ];
-    for i = 1 : length(d.Titles)
-        data = Data{i};
-        s.Draw = d.Draws{i};
-        s.Grid = d.Grids{i};
-        s.Title = d.Titles{i};
-        s.XLabel = d.xLabels{i};
-        s.YLabel = d.yLabels{k};
-        s.XTicklabels = xTickLabels{i};
-        s.Legends = d.Legends(d.STL);
-        s.Arc = d.Arcs(i);
-        s.Stat = data(d.STL,:,k);
-        Summary = cat(1, Summary, s);
+Kernels = {'Linear', 'Poly', 'RBF'};
+type = {'data', 'time'};
+for k = [3]
+    Path = ['./results/paper3/MyStat-Stat-', Kernels{k}, '.mat'];
+    load(Path);
+    for i = 1 : 2
+        clf;
+        FigureFactory(type{i}, Summary, d, 1:4);
+        path = sprintf('./results/paper3/figures/Figure-%s-%s', upper(type{i}), Kernels{k});
+        saveas(gcf, [path, '.png']);
+        saveas(gcf, path, 'fig');
+        saveas(gcf, path, 'epsc');
     end
 end
 
-% 配置
-function [ d ] = SetPaper1(d)
-    d.Legends = {
-        'SVM','PSVM','LS-SVM',...
-        'TWSVM','LS-TWSVM','\nu-TWSVM','ITWSVM',...
-        'RMTL','MTPSVM','MTLS-SVM','MTL-aLS-SVM',...
-        'DMTSVM','MCTSVM','MTLS_TWSVM','MT-\nu-TWSVM I','MT-\nu-TWSVM II'
-    };
-    d.MTL = [8:14];
-    d.STL = [1:6 14];
+%% Safe screening
+[ d ] = DATA5R({'S0', 'SC', 'C0', 'CC', 'Inactive', 'Screening', 'Speedup'}, [ 7 ]);
+for i = [ 1 3 ]
+    Params = reshape(SParams(19:24,i), [2 3]);
+    for k = [ 1 : 3 ]
+        p = Params{2,k};
+        Name = sprintf('MyStat-%s-%s', p.ID , p.kernel.type);
+        Path = sprintf('./results/paper3/statistics/%s.mat', Name);
+        if exist(Path, 'file')
+            load(Path);
+            clf;
+            FigureFactory('state', Summary, d, [1:4]);
+            path = sprintf('./results/paper3/figures/%s', Name);
+            saveas(gcf, [path, '.png']);
+            saveas(gcf, path, 'fig');
+            saveas(gcf, path, 'epsc');
+            fprintf([path, '\n']);
+        end
+    end
 end
 
-function [ d ] = SetPaper2(d)
-    d.Legends = {
-        'SVM','PSVM','LS-SVM',...
-        'TWSVM','LS-TWSVM','\nu-TWSVM','ITWSVM',...
-        'RMTL','MTPSVM','MTLS-SVM','MTL-aLS-SVM',...
-        'DMTSVM','MCTSVM','MTLS_TWSVM','MT-\nu-TWSVM I','MT-\nu-TWSVM II'
-    };
-    d.MTL = [8:13 15 16];
-    d.STL = [1:6 15 16];
-end
+%% 输出筛选曲线
+Curve(Summary, [1:57], [6 7], 'rbf', 'rate');
+Curve(Summary, [1:57], [8 9], 'rbf', 'speed');
 
-function [ d ] = SetPaper3(d)
-    d.Legends = {
-        'SVM','PSVM','LS-SVM','TWSVM',...
-        'MTPSVM','MTLS-SVM','IRMTL','SSR-IRMTL',...
-        'DMTSVM','SSR_DMTSVM'
-    };
-    d.STL = [  5 6 7 8  ];
-end
-
-% 配置
-function [ d ] = Classify()
-    d.Arcs = [0,0,0,0,45,45,0,0,0];
-    d.Counts = [ 9, 5, 5, 5, 10, 6, 6, 3, ];
-    d.Draws = {@bar, @bar, @bar, @bar, @bar, @bar, @bar,@bar };
-    d.Grids = {'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off'};
-    d.IndexCount = 8;
-    d.Titles = {'Monk', 'Letter_1', 'Letter_2', 'Caltech 101', 'Caltech 256', 'Flags', 'Emotions', 'MTL'};
-    d.xLabels = { 'Task Size', 'Dataset Index', '#Task', 'Dataset Index', 'Category', 'Category',  'Task Size', 'Task Size', 'Dataset Index'};
-    d.XTicklabel = {
-        '60', '90', '120', '150', '180', '210', '240', '270', 'All',...
-        '3', '5', '7', '9', '11',...
-        'T1', 'T2', 'T3', 'T4', 'T5',...
-        'Birds','Insects','Flowers','Mammals','Instruments',...
-        'Aircrafts','Balls','Bikes', 'Birds','Boats','Flowers', 'Instruments','Plants','Mammals', 'Vehicles',...
-        '100', '120', '140', '160', '180', '191',...
-        '100', '120', '140', '160', '180', '200',...
-        'Letter', 'Spam_{3}', 'Spam_{15}'
-    };
-    d.yLabels = {'Accuracy', 'Precision', 'Recall', 'F1'};
-    %         'ab', 'cd', 'ef', 'gh', 'ij', 'kl','mn','op',...
-end
-
-function [ d ] = SafeScreening()
+function [ d ] = DATA5(legends, idx)
+% 数据集属性
     d.Arcs = [0,0,0,0,45,45,0,0,0];
     d.Counts = [ 9, 8, 5, 5, 5, 10, 6, 6, 3 ];
     d.Draws = {@plot, @bar, @plot, @bar, @bar, @bar, @plot, @plot,@bar };
     d.Grids = {'on', 'off', 'on', 'off', 'off', 'off', 'on', 'on', 'off'};
-    d.IndexCount = 7;
-    d.Legends = {
-        'S0', 'SC', 'C0', 'CC', 'Inactive', 'Screening', 'Speedup'
-    };
-    d.STL = [5 6];
     d.Titles = {'Monk', 'Isolet', 'Letter_1', 'Letter_2', 'Caltech 101', 'Caltech 256', 'Flags', 'Emotions', 'MTL'};
     d.xLabels = { 'Task Size', 'Dataset Index', '#Task', 'Dataset Index', 'Category', 'Category',  'Task Size', 'Task Size', 'Dataset'};
     d.XTicklabel = {
@@ -133,7 +86,28 @@ function [ d ] = SafeScreening()
         '100', '120', '140', '160', '180', '200',...
         'Letter', 'Spam_{3}', 'Spam_{15}'
     };
-    d.yLabels = {'Rate'};
+    d.Legends = legends;
+    d.STL = idx;
+end
+
+function [ d ] = DATA5R(legends, idx)
+% 数据集属性
+    d.Arcs = [0,0,45,45];
+    d.Counts = [ 9, 5, 7, 10 ];
+    d.Draws = {@plot, @plot, @bar, @bar };
+    d.Grids = {'on', 'on', 'off', 'off'};
+    d.Titles = {'Monk', 'Letter', 'MTL', 'Caltech 256'};
+    d.xLabels = { 'Task Size', '#Tasks', 'Dataset', 'Category'};
+    d.XTicklabel = {
+        '60', '90', '120', '150', '180', '210', '240', '270', 'All',...
+        '3', '5', '7', '9', '11',...
+        'Isolet_5','Letter_5','Flags_7','Emotions_6','Letter_8', 'Spam_{3}', 'Spam_{15}',...
+        'Birds_5','Insects_4','Flowers_3','Mammals_{10}','Instruments_6',...
+        'Flowers_3', 'Instruments_5','Plants_4','Mammals_{10}', 'Vehicles_9'
+    };
+    d.Legends = legends;
+    d.STL = idx;
+%         'Aircrafts_5','Balls_5','Bikes_6', 'Birds_9','Boats_4',...
 end
 
 % 绘图
@@ -146,28 +120,4 @@ function [] = Curve(Summary, INDICES, IDX, Kernel, Name)
             saveas(gcf, path);
         end
     end
-end
-
-function [ ] = BatchDraw(Summary, IDX)
-    figure();
-    i = 1;
-    for p = IDX
-        subplot(3, 3, i);
-        DrawResult(Summary(p));
-        hold on
-        i = i + 1;
-    end
-end
-
-function [ ] = DrawResult(s)
-%DRAWRESULT 此处显示有关此函数的摘要
-% 绘制实验结果
-%   此处显示详细说明
-    s.Draw(s.Stat');
-    title(s.Title)
-    xlabel(s.XLabel);
-    ylabel(s.YLabel);
-    legend(s.Legends, 'Location', 'northwest');
-    grid(s.Grid);
-    set(gca, 'XTicklabel', s.XTicklabels, 'XTickLabelRotation', s.Arc);
 end

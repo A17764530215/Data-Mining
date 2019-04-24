@@ -6,7 +6,7 @@ function [ CVStat, CVTime, CVRate ] = SSR_RMTL( xTrain, yTrain, xTest, yTest, Ta
 %% Fit
 [ X, Y, T, ~ ] = GetAllData(xTrain, yTrain, TaskNum);
 solver = opts.solver;
-X = [X, ones(size(Y))];
+[ ~, step ] = Change(IParams);
 n = GetParamsCount(IParams);
 CVStat = zeros(n, opts.IndexCount, TaskNum);
 CVTime = zeros(n, 2);
@@ -15,22 +15,47 @@ for i = 1 : n
     Params = GetParams(IParams, i);
     Params.solver = opts.solver;
     tic;
-    [ H2 ] = Prepare(X, Y, TaskNum, Params);
-    if i == 1
+    [ H1 ] = Prepare(X, Y, TaskNum, Params);
+    if mod(i, step) == 1
         % solve the first problem
-        [ H1, Alpha0 ] = Primal(H2);
+        [ H0, Alpha0 ] = Primal(H1);
     else
         % solve the rest problem
-        [ Alpha1 ] = SSR(H1, H2, Alpha0);
-        [ H1, Alpha0, CVRate(i,1:2) ] = Reduced(H2, Alpha1);
+        [ Alpha1 ] = DVI_H(H0, H1, Alpha0, 1);
+        [ H0, Alpha0, CVRate(i,1:2) ] = Reduced(H1, Alpha1);
     end
     CVTime(i, 1) = toc;
     [ y_hat, CVRate(i, 3:4) ] = Predict(X, Y, xTest, Alpha0, Params);
     CVStat(i,:,:) = MTLStatistics(TaskNum, y_hat, yTest, opts);
 end
 
+    function [ change, step ] = Change(IParams)
+    % 得到最先变的参数
+        p1 = GetParams(IParams, 1);
+        p2 = GetParams(IParams, 2);
+        if p1.lambda1 ~= p2.lambda1
+            change = 'L1';
+            step = length(IParams.lambda1);
+        elseif p1.lambda2 ~= p2.lambda2
+            step = length(IParams.lambda2);
+            change = 'L2';
+        else
+            k1 = p1.kernel;
+            k2 = p2.kernel;
+            if strcmp(k1.type, 'rbf') && strcmp(k2.type, 'rbf')
+                if k1.p1 ~= k2.p1
+                    change = 'H';
+                    step = length(IParams.kernel.p1);
+                else
+                    throw(MException('SSR_CRMTL', 'Change: no parameter changed'));
+                end
+            else 
+                throw(MException('SSR_CRMTL', 'Change: no parameter changed'));
+            end
+        end
+    end
+
     function [ H ] = Prepare(X, Y, TaskNum, opts)
-        symmetric = @(H) (H+H')/2;
         mu = 1/(2*opts.lambda2);
         nu = TaskNum/(2*opts.lambda1);
         % construct hessian matrix
@@ -41,7 +66,6 @@ end
             P{t} = Q(Tt,Tt);
         end
         H = Cond(mu*Q + nu*spblkdiag(P{:}));
-        H = symmetric(H);
     end
 
     function [ H1, Alpha1 ] = Primal(H1)
@@ -66,17 +90,6 @@ end
         end
     end
 
-    function [ Alpha2 ] = SSR(H1, H2, Alpha1)
-        % safe screening rules
-        P = chol(H2, 'upper');
-        LL = (H1+H2)*Alpha1;
-        RL = sqrt(sum(P.*P, 1))';
-        RR = RL*(norm((P'\(H1*Alpha1)+P*Alpha1)));
-        Alpha2 = Inf(size(Alpha1));
-        Alpha2(LL - RR > 2) = 0;
-        Alpha2(LL + RR < 2) = 1;
-    end
-
     function [ yTest, Rate ] = Predict(X, Y, xTest, Alpha, opts)
         % extract opts
         mu = 1/(2*opts.lambda2);
@@ -85,8 +98,7 @@ end
         yTest = cell(TaskNum, 1);
         for t = 1 : TaskNum
             Tt = T==t;
-            et = ones(size(xTest{t}, 1), 1);
-            Ht = Kernel([xTest{t}, et], X, opts.kernel);
+            Ht = Kernel(xTest{t}, X, opts.kernel);
             y0 = predict(Ht, Y, Alpha);
             yt = predict(Ht(:,Tt), Y(Tt,:), Alpha(Tt,:));
             y = sign(mu*y0 + nu*yt);
