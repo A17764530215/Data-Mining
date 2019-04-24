@@ -6,14 +6,71 @@ function [ yTest, Time ] = MTL_aLS_SVM( xTrain, yTrain, xTest, opts )
 TaskNum = length(xTrain);
 [ X, Y, T ] = GetAllData( xTrain, yTrain, TaskNum );
 
-tic;
-[ XX ] = Prepare(X, Y, T, TaskNum, opts);
-[ G ] = GetHessian(Q, P, opts);
-[ Gamma ] = Primal(G, Y,opts);
-Time = toc;
+count = GetParamsCount(opts);
+if count > 1
+    % 网格搜索加速
+    yTest = cell(count, 1);
+    Time = zeros(count, 1);
+    [ change, step ] = Change(opts);
+    for i = 1 : count
+        params = GetParams(opts, i);
+        tic;
+        if mod(i, step) ~= 1
+            switch change
+                case {'C','rho'}
+                    % 无需额外计算
+                case 'p1'
+                    % 重新计算Hessian阵
+                    [ XX, Q, P ] = Prepare(X, Y, T, TaskNum, params);
+                otherwise
+                    throw(MException('MTL:MTL_aLS_SVM', 'no parameter changed'));
+            end
+        else
+            [ XX, Q, P ] = Prepare(X, Y, T, TaskNum, params);
+        end
+        [ G ] = GetHessian(Q, P, params);
+        [ Gamma ] = Primal(G, Y,params);
+        [ Time(i, 1) ] = toc;
+        [ b, Theta ]  = GetThetaB(Gamma, Y, XX, T, TaskNum, params);
+        [ yTest{i} ] = Predict(xTest, X, Y, T, TaskNum, Theta, b, params);
+    end
+else
+    tic;
+    [ XX, Q, P ] = Prepare(X, Y, T, TaskNum, opts);
+    [ G ] = GetHessian(Q, P, opts);
+    [ Gamma ] = Primal(G, Y,opts);
+    Time = toc;
+    [ b, Theta ]  = GetThetaB(Gamma, Y, XX, T, TaskNum, opts);
+    [ yTest ] = Predict(xTest, X, Y, T, TaskNum, Theta, b, opts);
+end
 
-[ b, Theta ]  = GetThetaB(Gamma, Y, XX, T, TaskNum, opts);
-[ yTest ] = Predict(xTest, X, Y, T, TaskNum, Theta, b, opts);
+    function [ change, step ] = Change(opts)
+        p1 = GetParams(opts, 1);
+        p2 = GetParams(opts, 2);
+        if p1.C1 ~= p2.C1
+            change = 'C';
+            step = length(opts.C1);
+        elseif p1.C2 ~= p2.C2
+            change = 'C';
+            step = length(opts.C2);
+        elseif p1.rho ~= p2.rho
+            change = 'rho';
+            step = length(opts.rho);
+        else
+            k1 = p1.kernel;
+            k2 = p2.kernel;
+            if strcmp(k1.type, 'rbf') && strcmp(k2.type, 'rbf')
+                if k1.p1 ~= k2.p1
+                    change = 'p1';
+                    step = length(IParams.kernel.p1);
+                else
+                    throw(MException('MTL:MTL_aLS_SVM', 'Change: no parameter changed'));
+                end
+            else 
+                throw(MException('MTL:MTL_aLS_SVM', 'Change: no parameter changed'));
+            end
+        end
+    end
 
     function [ XX, Q, P ] = Prepare(X, Y, T, TaskNum, opts)
         kernel = opts.kernel;
@@ -95,4 +152,3 @@ Time = toc;
     end
 
 end
-
