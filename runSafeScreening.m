@@ -20,7 +20,7 @@ Kfold = 1;
 for k = [ 1 3 ]
     fprintf('runGridSearch:%s\n', Kernels{k});
     for i = DataSetIndices
-        DataSet = MTL_UCI5(i);
+        DataSet = DataSets(i);
         fprintf('DataSet: %s\n', DataSet.Name);
         [ X, Y, ValInd ] = GetMultiTask(DataSet);
         [ X ] = Normalize(X);
