@@ -8,7 +8,7 @@ TaskNum = length(xTrain);
 count = GetParamsCount(opts);
 if count > 1
     % 网格搜索加速
-    yTest = zeros(count, size(xTest, 1));
+    yTest = cell(count, 1);
     Time = zeros(count, 1);
     [ change, step ] = Change(opts);
     for i = 1 : count
@@ -37,7 +37,7 @@ if count > 1
         [ Alpha ] = Primal(H, opts);
         Time(i, 1) = toc;
         % 预测
-        [ yTest(i, :) ] =  Predict(xTest, X, Y, T, Alpha, TaskNum, params);
+        [ yTest{i} ] =  Predict(xTest, X, Y, T, Alpha, TaskNum, params);
     end
 else
     % 无网格搜索
@@ -90,8 +90,8 @@ end
     end
 
     function [ Alpha ] = Primal(H, opts)
-        e = ones(size(H, 1));
-        lb = zeros(size(H, 1));
+        e = ones(size(H, 1), 1);
+        lb = zeros(size(H, 1), 1);
         [ Alpha ] = quadprog(H,-e,[],[],[],[],lb,opts.C*e,[],opts.solver);
     end
 
