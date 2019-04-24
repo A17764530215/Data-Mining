@@ -49,9 +49,9 @@ clear;clc;
 [ rbf0 ] = PackKernel('RBF', 84);
 SParams = cell(3, 1);
 % 2019Äê4ÔÂ8ÈÕ15:42:01
-[ SParams{1} ] = PackSParams(2.^(0:0.03:5)', (0:0.01:1)', linear0);
-[ SParams{2} ] = PackSParams(2.^(0:0.03:5)', (0:0.01:1)', poly0);
-[ SParams{3} ] = PackSParams(2.^(0:0.03:5)', (0:0.01:1)', rbf0);
+[ SParams{1} ] = PackSParams(2.^(0:0.03:5)', (0:0.002:1)', linear0);
+[ SParams{2} ] = PackSParams(2.^(0:0.03:5)', (0:0.002:1)', poly0);
+[ SParams{3} ] = PackSParams(2.^(0:0.03:5)', (0:0.002:1)', rbf0);
 SParams = cellcat(SParams, 1);
 [ SParams ] = PrintParams('./params/LabSParams.txt', SParams);
 [ IParams ] = CreateParams(SParams{9});

@@ -3,13 +3,13 @@ function [ Alpha1 ] = DVI_C(H1, Alpha0, C1, C0)
 % safe screening rules for $C$
 %   此处显示详细说明
 
-c1 = (C1+C0)/C0;
-c2 = (C1-C0)/C0;
-P = chol(H1, 'upper');
-L0 = H1*Alpha0;
-LL = L0*c1;
-RR = sqrt(sum(P.*P, 1))'*sqrt(Alpha0'*L0)*c2;
-Alpha1 = Inf(size(Alpha0));
-Alpha1(LL - RR > 2) = 0;
-Alpha1(LL + RR < 2) = C1;
+    c1 = (C1+C0)/C0;
+    c2 = (C1-C0)/C0;
+    P = chol(H1, 'upper');
+    L0 = H1*Alpha0;
+    LL = L0*c1;
+    RR = sqrt(sum(P.*P, 1))'*sqrt(Alpha0'*L0)*c2;
+    Alpha1 = Inf(size(Alpha0));
+    Alpha1(LL - RR > 2) = 0;
+    Alpha1(LL + RR < 2) = C1;
 end

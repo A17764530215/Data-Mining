@@ -4,7 +4,8 @@ function [  CVStat, CVTime, CVRate ] = SSR_CRMTL( xTrain, yTrain, xTest, yTest, 
 %   此处显示详细说明
 
 %% Fit
-[ X, Y, T, ~ ] = GetAllData(xTrain, yTrain, TaskNum);
+[ X, Y, T, N ] = GetAllData(xTrain, yTrain, TaskNum);
+N = sum(N, 1);
 solver = opts.solver;
 [ change, step ] = Change(IParams);
 n = GetParamsCount(IParams);
@@ -15,6 +16,7 @@ for i = 1 : n
     Params = GetParams(IParams, i);
     Params.solver = opts.solver;
     tic;
+    [ H1 ] = Prepare(X, Y, T, TaskNum, Params);
     C1 = Params.C;
     if mod(i, step) ~= 1
         C0 = LastParams.C;
@@ -23,8 +25,6 @@ for i = 1 : n
             case 'C'
                 [ Alpha1 ] = DVI_C(H1, Alpha0, C1, C0);
             case 'H'
-                [ H0 ] = H1;
-                [ H1 ] = Prepare(X, Y, TaskNum, Params);
                 [ Alpha1 ] = DVI_H(H0, H1, Alpha0, C1);
             otherwise
                 throw(MException('SSR_CRMTL', 'Change: no parameter changed'));
@@ -32,10 +32,12 @@ for i = 1 : n
         [ Alpha0, CVRate(i,1:2) ] = Reduced(H1, Alpha1, C1);
     else
         % solve the first problem
-        [ H1 ] = Prepare(X, Y, TaskNum, Params);
         [ Alpha0 ] = Primal(H1, C1);
     end
     CVTime(i, 1) = toc;
+    if change == 'H'
+        H0 = H1;
+    end
     % 预测
     [ y_hat, CVRate(i, 3:4) ] = Predict(X, Y, TaskNum, xTest, Alpha0, Params);
     CVStat(i,:,:) = MTLStatistics(TaskNum, y_hat, yTest, opts);
@@ -68,7 +70,7 @@ end
         end
     end
 
-    function [ H ] = Prepare(X, Y, TaskNum, opts)
+    function [ H ] = Prepare(X, Y, T, TaskNum, opts)
         % construct hessian matrix
         Q = Y.*Kernel(X, X, opts.kernel).*Y';
         P = cell(TaskNum, 1);
@@ -76,8 +78,7 @@ end
             Tt = T==t;
             P{t} = Q(Tt,Tt);
         end
-        mu = opts.mu;
-        H = Cond(mu*Q + (1-mu)*TaskNum*spblkdiag(P{:}));
+        H = Cond(opts.mu*Q + (1-opts.mu)*TaskNum*spblkdiag(P{:}));
     end
 
     function [ Alpha1 ] = Primal(H1, C1)
