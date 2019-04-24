@@ -14,7 +14,7 @@ DataSets = MTL_UCI5;
 CParams = reshape(CParams, 16, 3);
 
 % Êý¾Ý¼¯
-DataSetIndices = [ 2 3];
+DataSetIndices = [ 2 3 4 ];
 ParamIndices = [ 9:13 15 16 ];
 ForceWrite = false;
 
