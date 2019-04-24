@@ -20,8 +20,14 @@ for i = 1 : n
         switch change
             case 'C'
                 [ Alpha1 ] = DVI_C(H1, Alpha0, C1, C0);
-            case 'H'
-                [ H1 ] = Prepare(X, Y, T, TaskNum, params);
+            case 'mu'
+                H0 = H1;
+                [ H1 ] = GetHessian(Q, P, TaskNum, params);
+                [ Alpha1 ] = DVI_H(H0, H1, Alpha0, C1);
+            case 'p1'
+                H0 = H1;
+                [ Q, P ] = Prepare(X, Y, T, TaskNum, params);
+                [ H1 ] = GetHessian(Q, P, TaskNum, params);
                 [ Alpha1 ] = DVI_H(H0, H1, Alpha0, C1);
             otherwise
                 throw(MException('SSR_CRMTL', 'Change: no parameter changed'));
@@ -29,13 +35,11 @@ for i = 1 : n
         [ Alpha0, CVRate(i,1:2) ] = Reduced(H1, Alpha1, params);
     else
         % solve the first problem
-        [ H1 ] = Prepare(X, Y, T, TaskNum, params);
+        [ Q, P ] = Prepare(X, Y, T, TaskNum, params);
+        [ H1 ] = GetHessian(Q, P, TaskNum, params);
         [ Alpha0 ] = Primal(H1, params);
     end
     CVTime(i, 1) = toc;
-    if change == 'H'
-        H0 = H1;
-    end
     % Ô¤²â
     [ y_, CVRate(i, 3:4) ] = Predict(X, Y, T, TaskNum, xTest, Alpha0, params);
     CVStat(i,:,:) = MTLStatistics(TaskNum, y_, yTest, opts);
@@ -51,13 +55,13 @@ end
             step = length(IParams.C);
         elseif p1.mu ~= p2.mu
             step = length(IParams.mu);
-            change = 'H';
+            change = 'mu';
         else
             k1 = p1.kernel;
             k2 = p2.kernel;
             if strcmp(k1.type, 'rbf') && strcmp(k2.type, 'rbf')
                 if k1.p1 ~= k2.p1
-                    change = 'H';
+                    change = 'p1';
                     step = length(IParams.kernel.p1);
                 else
                     throw(MException('SSR_CRMTL', 'Change: no parameter changed'));
@@ -68,16 +72,20 @@ end
         end
     end
 
-    function [ H ] = Prepare(X, Y, T, TaskNum, opts)
+    function [ Q, P ] = Prepare(X, Y, T, TaskNum, opts)
         % construct hessian matrix
-        Sym = @(H) (H+H')/2 + 1e-5*speye(size(H));
         Q = Y.*Kernel(X, X, opts.kernel).*Y';
         P = cell(TaskNum, 1);
         for t = 1 : TaskNum
             Tt = T==t;
             P{t} = Q(Tt,Tt);
         end
-        H = Sym(opts.mu*Q + (1-opts.mu)*TaskNum*spblkdiag(P{:}));
+        P = spblkdiag(P{:});
+    end
+
+    function [ H ] = GetHessian(Q, P, TaskNum, opts)
+        Sym = @(H) (H+H')/2 + 1e-5*speye(size(H));
+        H = Sym(opts.mu*Q + (1-opts.mu)*TaskNum*P);
     end
 
     function [ Alpha1 ] = Primal(H1, opts)
