@@ -7,19 +7,16 @@ TaskNum = length(xTrain);
 [ X, Y, ~, N ] = GetAllData(xTrain, yTrain, TaskNum);
 
 tic;
-[ Q, P, R, S, EEF, FFE, EEFt, FFEt, m1, m2, e1, e2 ] = Prepare(X, Y, N, TaskNum, opts);
+[ Q, R, E, F, EEF, FFE, m1, m2, e1, e2 ] = Prepare(X, Y, N, TaskNum, opts);
+[ P, S, EEFt, FFEt ] = GetEachTask(E, F, N, TaskNum, opts);
 [ Alpha, Gamma ] = Primal(Q, P, R, S, e1, e2, m1, m2, opts);
 Time = toc;
 [ U, V ] = GetWeight(Alpha, Gamma, EEF, FFE, EEFt, FFEt, N, TaskNum);
 [ yTest ] = Predict(xTest, X, TaskNum, U, V, opts);
 
-    function [ Q, P, R, S, EEF, FFE, EEFt, FFEt,  m1, m2, e1, e2 ] = Prepare(X, Y, N, TaskNum, opts) 
-        C1 = opts.C1;
-        C2 = opts.C1;
+    function [ Q, R, E, F, EEF, FFE, m1, m2, e1, e2 ] = Prepare(X, Y, opts) 
         C3 = opts.C3;
         C4 = opts.C3;
-        rho = opts.rho;
-        lambda = opts.rho;
         kernel = opts.kernel;
         %
         Yp = Y==1;
@@ -39,6 +36,11 @@ Time = toc;
         FFE = (F'*F+C4*I)\E';
         Q = F*EEF;
         R = E*FFE;
+    end
+
+    function [ P, S, EEFt, FFEt ] = GetEachTask(E, F, N, TaskNum, opts)
+        rho = opts.rho;
+        lambda = opts.rho;
         % µ√µΩP,Sæÿ’Û
         Ec = mat2cell(E, N(1,:));
         Fc = mat2cell(F, N(2,:));

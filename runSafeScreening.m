@@ -1,13 +1,13 @@
 clear;clc;
 
 % 加载数据集和网格搜索参数
-load('MTL_UCI5.mat');
+load('DATA5R.mat');
 load('LabSParams.mat');
 Kernels = {'Linear', 'Poly' 'RBF'};
 SParams = reshape(SParams, 12, 3);
 % DATA5R
-DataSetIndices = [ 2 3 4 ];
-ParamIndices = [ 7:10 ];
+DataSetIndices = [ 1:31 ];
+ParamIndices = [ 7:8 ];
 OverWrite = false;
 
 %% 实验开始
@@ -38,8 +38,6 @@ for k = [ 1 3 ]
             else
                 try
                     [ CVStat, CVTime, CVRate ] = GridSearch(DataSet, Method, false, opts);
-%                     [ CVStat, CVTime, CVRate ] = SSR(X, Y, Method, DataSet.TaskNum, Kfold, ValInd, opts );
-
                     % 保存记录
                     save(StatPath, 'CVStat', 'CVTime', 'CVRate');
                     fprintf(fd, 'save: %s\n', StatPath);
