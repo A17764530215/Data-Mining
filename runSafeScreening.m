@@ -7,7 +7,7 @@ Kernels = {'Linear', 'Poly' 'RBF'};
 SParams = reshape(SParams, 12, 3);
 % DATA5R
 DataSetIndices = [ 1:31 ];
-ParamIndices = [ 1:10 ];
+ParamIndices = [ 1:12 ];
 OverWrite = false;
 
 %% 实验开始
