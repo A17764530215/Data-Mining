@@ -6,13 +6,27 @@ function [ yTest, Time ] = MTPSVM( xTrain, yTrain, xTest, opts )
 
 TaskNum = length(xTrain);
 [ X, Y, T ] = GetAllData( xTrain, yTrain, TaskNum );
-
+count = GetParamsCount(opts);
+for i = 1 : count
+end
 tic;
 [ Q, P, I, E ] = Prepare(X, Y, T, TaskNum, opts);
 [ Alpha ] = Primal(Q, P, I, E, TaskNum, opts);
 Time = toc;
 
 [ yTest ] = Predict(xTest, X, Y, T, TaskNum, Alpha, opts);
+
+    function [ change, step ] = Change(opts)
+        p1 = GetParams(opts, 1);
+        p2 = GetParams(opts, 2);
+        if p1.C ~= p2.C
+            change = 'C';
+        elseif p1.lambda ~= p2.lambda
+            chaneg = 'H'
+        else
+            
+        end
+    end
 
     function [ Q, P, I, E ] = Prepare(X, Y, T, TaskNum, opts
         H = Kernel(X, X, opts.kernel);
