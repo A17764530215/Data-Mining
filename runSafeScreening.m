@@ -20,7 +20,7 @@ Kfold = 1;
 for k = [ 1 3 ]
     fprintf('runGridSearch:%s\n', Kernels{k});
     for i = DataSetIndices
-        DataSet = DataSets(i);
+        DataSet = MTL_UCI5(i);
         fprintf('DataSet: %s\n', DataSet.Name);
         [ X, Y, ValInd ] = GetMultiTask(DataSet);
         [ X ] = Normalize(X);
@@ -37,7 +37,8 @@ for k = [ 1 3 ]
                 continue;
             else
                 try
-                    [ CVStat, CVTime, CVRate ] = SSR(X, Y, Method, DataSet.TaskNum, Kfold, ValInd, opts );
+                    [ CVStat, CVTime, CVRate ] = GridSearch(DataSet, Method, false, opts);
+                    % ±£´æ¼ÇÂ¼
                     save(StatPath, 'CVStat', 'CVTime', 'CVRate');
                     fprintf(fd, 'save: %s\n', StatPath);
                     if strcmp(Method.Name, 'SSR_CRMTL')

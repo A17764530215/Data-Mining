@@ -34,7 +34,7 @@ if count > 1
             [ H ] = GetHessian(Q, P, TaskNum, params);
         end
         % 求解优化模型
-        [ Alpha ] = Primal(H, opts);
+        [ Alpha ] = Primal(H, params);
         Time(i, 1) = toc;
         % 预测
         [ yTest{i} ] =  Predict(xTest, X, Y, T, Alpha, TaskNum, params);
