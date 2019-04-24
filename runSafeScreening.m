@@ -1,12 +1,12 @@
 clear;clc;
 
 % 加载数据集和网格搜索参数
-load('DATA5R.mat');
+load('MTL_UCI5.mat');
 load('LabSParams.mat');
 Kernels = {'Linear', 'Poly' 'RBF'};
 SParams = reshape(SParams, 12, 3);
 % DATA5R
-DataSetIndices = [ 1:31 ];
+DataSetIndices = [ 2 3 4 ];
 ParamIndices = [ 7:10 ];
 OverWrite = false;
 
@@ -20,7 +20,7 @@ Kfold = 1;
 for k = [ 1 3 ]
     fprintf('runGridSearch:%s\n', Kernels{k});
     for i = DataSetIndices
-        DataSet = DataSets(i);
+        DataSet = MTL_UCI5(i);
         fprintf('DataSet: %s\n', DataSet.Name);
         [ X, Y, ValInd ] = GetMultiTask(DataSet);
         [ X ] = Normalize(X);
@@ -37,7 +37,10 @@ for k = [ 1 3 ]
                 continue;
             else
                 try
-                    [ CVStat, CVTime, CVRate ] = SSR(X, Y, Method, DataSet.TaskNum, Kfold, ValInd, opts );
+                    [ CVStat, CVTime, CVRate ] = GridSearch(DataSet, Method, false, opts);
+%                     [ CVStat, CVTime, CVRate ] = SSR(X, Y, Method, DataSet.TaskNum, Kfold, ValInd, opts );
+
+                    % 保存记录
                     save(StatPath, 'CVStat', 'CVTime', 'CVRate');
                     fprintf(fd, 'save: %s\n', StatPath);
                     if strcmp(Method.Name, 'SSR_CRMTL')

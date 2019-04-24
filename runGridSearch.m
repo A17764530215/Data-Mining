@@ -15,7 +15,7 @@ CParams = reshape(CParams, 16, 3);
 
 % 数据集
 DataSetIndices = [ 2 3 4 ];
-ParamIndices = [ 9:13 15 16 ];
+ParamIndices = [ 1 2 3 9 :13 15 16 ];
 ForceWrite = false;
 
 %% 实验设置
