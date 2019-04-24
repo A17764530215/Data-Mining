@@ -4,20 +4,16 @@ function [  CVStat, CVTime, CVRate ] = SSR_CRMTL( xTrain, yTrain, xTest, yTest, 
 %   此处显示详细说明
 
 %% Fit
-[ X, Y, T, N ] = GetAllData(xTrain, yTrain, TaskNum);
-N = sum(N, 1);
-solver = opts.solver;
+[ X, Y, T, ~ ] = GetAllData(xTrain, yTrain, TaskNum);
 [ change, step ] = Change(IParams);
 n = GetParamsCount(IParams);
 CVStat = zeros(n, opts.IndexCount, TaskNum);
 CVTime = zeros(n, 2);
 CVRate = zeros(n, 4);
 for i = 1 : n
-    Params = GetParams(IParams, i);
-    Params.solver = opts.solver;
+    params = GetParams(IParams, i);
     tic;
-    [ H1 ] = Prepare(X, Y, T, TaskNum, Params);
-    C1 = Params.C;
+    C1 = params.C;
     if mod(i, step) ~= 1
         C0 = LastParams.C;
         % solve the rest problem
@@ -25,23 +21,25 @@ for i = 1 : n
             case 'C'
                 [ Alpha1 ] = DVI_C(H1, Alpha0, C1, C0);
             case 'H'
+                [ H1 ] = Prepare(X, Y, T, TaskNum, params);
                 [ Alpha1 ] = DVI_H(H0, H1, Alpha0, C1);
             otherwise
                 throw(MException('SSR_CRMTL', 'Change: no parameter changed'));
         end
-        [ Alpha0, CVRate(i,1:2) ] = Reduced(H1, Alpha1, C1);
+        [ Alpha0, CVRate(i,1:2) ] = Reduced(H1, Alpha1, params);
     else
         % solve the first problem
-        [ Alpha0 ] = Primal(H1, C1);
+        [ H1 ] = Prepare(X, Y, T, TaskNum, params);
+        [ Alpha0 ] = Primal(H1, params);
     end
     CVTime(i, 1) = toc;
     if change == 'H'
         H0 = H1;
     end
     % 预测
-    [ y_hat, CVRate(i, 3:4) ] = Predict(X, Y, TaskNum, xTest, Alpha0, Params);
-    CVStat(i,:,:) = MTLStatistics(TaskNum, y_hat, yTest, opts);
-    LastParams = Params;
+    [ y_, CVRate(i, 3:4) ] = Predict(X, Y, T, TaskNum, xTest, Alpha0, params);
+    CVStat(i,:,:) = MTLStatistics(TaskNum, y_, yTest, opts);
+    LastParams = params;
 end
 
     function [ change, step ] = Change(IParams)
@@ -72,39 +70,40 @@ end
 
     function [ H ] = Prepare(X, Y, T, TaskNum, opts)
         % construct hessian matrix
+        Sym = @(H) (H+H')/2 + 1e-5*speye(size(H));
         Q = Y.*Kernel(X, X, opts.kernel).*Y';
         P = cell(TaskNum, 1);
         for t = 1 : TaskNum
             Tt = T==t;
             P{t} = Q(Tt,Tt);
         end
-        H = Cond(opts.mu*Q + (1-opts.mu)*TaskNum*spblkdiag(P{:}));
+        H = Sym(opts.mu*Q + (1-opts.mu)*TaskNum*spblkdiag(P{:}));
     end
 
-    function [ Alpha1 ] = Primal(H1, C1)
+    function [ Alpha1 ] = Primal(H1, opts)
         % primal problem
         e = ones(size(H1, 1), 1);
         lb = zeros(size(H1, 1), 1);
-        ub = C1*e;
-        [ Alpha1 ] = quadprog(H1, -e, [], [], [], [], lb, ub, [], solver);
+        ub = opts.C*e;
+        [ Alpha1 ] = quadprog(H1, -e, [], [], [], [], lb, ub, [], opts.solver);
     end
 
-    function [ Alpha1, Rate ] = Reduced(H1, Alpha1, C1)
+    function [ Alpha1, Rate ] = Reduced(H1, Alpha1, opts)
         % reduced problem
         R = Alpha1 == Inf;
         S0 = Alpha1 == 0;
-        SC = Alpha1 == C1;
+        SC = Alpha1 == opts.C;
         Rate = mean([S0, SC]);
         if mean(R) > 0
             S = S0 | SC;
             f = H1(R,S)*Alpha1(S)-1;
             lb = zeros(size(f));
-            ub = C1*ones(size(f));
-            [ Alpha1(R) ] = quadprog(H1(R,R), f, [], [], [], [], lb, ub, [], solver);
+            ub = opts.C*ones(size(f));
+            [ Alpha1(R) ] = quadprog(H1(R,R), f, [], [], [], [], lb, ub, [], opts.solver);
         end
     end
 
-    function [ yTest, Rate ] = Predict(X, Y, TaskNum, xTest, Alpha, opts)
+    function [ yTest, Rate ] = Predict(X, Y, T, TaskNum, xTest, Alpha, opts)
         % extract opts
         mu = opts.mu;
         C = opts.C;

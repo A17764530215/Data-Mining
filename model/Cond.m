@@ -4,4 +4,3 @@ function [ H ] = Cond(H)
 
     H = H + 1e-5*speye(size(H));
 end
-

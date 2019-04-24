@@ -86,7 +86,8 @@ end
     end
 
     function [ H ] = GetHessian(Q, P, TaskNum, opts)
-        H = Cond(opts.mu*Q + (1-opts.mu)*TaskNum*P);
+        Sym = @(H) (H+H')/2 + 1e-5*speye(size(H));
+        H = Sym(opts.mu*Q + (1-opts.mu)*TaskNum*P);
     end
 
     function [ Alpha ] = Primal(H, opts)
