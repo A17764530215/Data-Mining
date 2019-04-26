@@ -10,7 +10,7 @@ function [ GSStat, GSTime, GSRate ] = GridSearch(DataSet, IParams, cv, opts)
     str = split('RMTL,IRMTL,CRMTL,MTPSVR,MTPSVM,MTLS_SVM,MTLS_SVR,MTL_aLS_SVM,RMMTL,MTOC_SVM,DMTSVM,MCTSVM,MTLS_TWSVM,MTvTWSVM,MTvTWSVM2,MTBSVM,MTLS_TBSVM,MTL_TWSVR,MTL_TWSVR_Xu,MTLS_TWSVR,MTLS_TWSVR_Xu,VSTG_MTL', ',');
     MT_Map = containers.Map(str, ones(length(str),1));
     % 方法是否自带网格搜索
-    str = split('SVM,PSVM,LS_SVM,CRMTL,MTPSVM,MTLS_SVM,MTL_aLS_SVM,DMTSVM,MCTSVM,MTvTWSVM,MTvTWSVM2', ',');
+    str = split('SVM,PSVM,LS_SVM,TWSVM,CRMTL,MTPSVM,MTLS_SVM,MTL_aLS_SVM,DMTSVM,MCTSVM,MTvTWSVM,MTvTWSVM2', ',');
     GS_Map = containers.Map(str, ones(length(str),1));
     % 方法是否自带安全筛选
     str = split('SSR_RMTL,SSR_IRMTL,SSR_CRMTL,SSR_DMTSVM,SSR_DMTSVMA', ',');

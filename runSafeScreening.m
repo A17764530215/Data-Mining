@@ -6,9 +6,9 @@ load('LabSParams.mat');
 Kernels = {'Linear', 'Poly' 'RBF'};
 SParams = reshape(SParams, 12, 3);
 % DATA5R
-DataSetIndices = [ 2 7 9 24 26 27 30 31 ];
-ParamIndices = [ 7: 10 ];
-OverWrite = true;
+DataSetIndices = [ 1:31 ];
+ParamIndices = [ 1:12 ];
+OverWrite = false;
 
 %% 实验开始
 solver = struct('Display', 'off');
