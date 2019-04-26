@@ -64,9 +64,7 @@ end
     function [ H, K, e ] = Prepare(X, Y, kernel)
         e = ones(size(Y));
         K = Kernel(X, X, kernel);
-        I = speye(size(K));
-        DY = I.*Y;
-        H = Cond(DY*K*DY);
+        H = Cond(Y.*K.*Y');
     end
 
     function [ Alpha ] = Primal(H, Y, e, opts)
@@ -75,8 +73,8 @@ end
 
     function [ yTest ] = Predict(xTest, X, Y, K, Alpha, kernel)
         svi = Alpha > 0;
-        b = mean(Y(svi,:)-K(svi,:)*(Y(svi,:).*Alpha(svi,:)));
-        yTest = sign(Kernel(xTest, X(svi,:), kernel)*(Y(svi,:).*Alpha(svi,:))+b);
+        b = mean(Y(svi)-K(svi,svi)*(Y(svi).*Alpha(svi)));
+        yTest = sign(Kernel(xTest, X(svi,:), kernel)*(Y(svi).*Alpha(svi))+b);
         yTest(yTest==0) = 1;
     end
 
