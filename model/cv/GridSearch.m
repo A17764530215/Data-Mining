@@ -17,9 +17,9 @@ function [ CVStat, CVTime, CVRate ] = GridSearch(DataSet, IParams, cv, opts)
     SSR_Map = containers.Map(str, ones(length(str),1));
     
     keys = SSR_Map.keys;
-    for i = 1 : length(keys)
-        GS_Map(keys{i}) = 1;
-        MT_Map(keys{i}) = 1;
+    for k = 1 : length(keys)
+        GS_Map(keys{k}) = 1;
+        MT_Map(keys{k}) = 1;
     end
     
     % 获取全部数据并标准化

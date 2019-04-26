@@ -5,6 +5,7 @@ function [ yTest, Time ] = CRMTL( xTrain, yTrain, xTest, opts )
 
 TaskNum = length(xTrain);
 [ X, Y, T, ~ ] = GetAllData(xTrain, yTrain, TaskNum);
+Sym = @(H) (H+H')/2 + 1e-5*speye(size(H));
 count = GetParamsCount(opts);
 if count > 1
     % 网格搜索加速
@@ -20,18 +21,18 @@ if count > 1
                     % 无需额外计算
                 case 'mu'
                     % 重新计算Hessian阵
-                    [ H ] = GetHessian(Q, P, TaskNum, params);
+                    [ H ] = Sym(params.mu*Q + (1-params.mu)*TaskNum*P);
                 case 'p1'
                     % 重新计算Hessian阵
                     [ Q, P ] = Prepare(X, Y, T, TaskNum, params);
-                    [ H ] = GetHessian(Q, P, TaskNum, params);
+                    [ H ] = Sym(params.mu*Q + (1-params.mu)*TaskNum*P);
                 otherwise
                     throw(MException('CRMTL', 'no parameter changed'));
             end
         else
             % 重新计算Hessian阵
             [ Q, P ] = Prepare(X, Y, T, TaskNum, params);
-            [ H ] = GetHessian(Q, P, TaskNum, params);
+            [ H ] = Sym(params.mu*Q + (1-params.mu)*TaskNum*P);
         end
         % 求解优化模型
         [ Alpha ] = Primal(H, params);
@@ -43,7 +44,7 @@ else
     % 无网格搜索
     tic;
     [ Q, P ] = Prepare(X, Y, T, TaskNum, opts);
-    [ H ] = GetHessian(Q, P, TaskNum, opts);
+    [ H ] = Sym(opts.mu*Q + (1-opts.mu)*TaskNum*P);
     [ Alpha ] = Primal(H, opts);
     Time = toc;
     % 预测
@@ -85,15 +86,11 @@ end
         P = spblkdiag(P{:});
     end
 
-    function [ H ] = GetHessian(Q, P, TaskNum, opts)
-        Sym = @(H) (H+H')/2 + 1e-5*speye(size(H));
-        H = Sym(opts.mu*Q + (1-opts.mu)*TaskNum*P);
-    end
-
     function [ Alpha ] = Primal(H, opts)
         e = ones(size(H, 1), 1);
         lb = zeros(size(H, 1), 1);
-        [ Alpha ] = quadprog(H,-e,[],[],[],[],lb,opts.C*e,[],opts.solver);
+        ub = repmat(opts.C, size(H,1), 1);
+        [ Alpha ] = quadprog(H,-e,[],[],[],[],lb,ub,[],opts.solver);
     end
 
     function [ yTest ] =  Predict(xTest, X, Y, T, Alpha, TaskNum, opts)

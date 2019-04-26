@@ -7,14 +7,14 @@ Kernels = {'Linear', 'Poly' 'RBF'};
 SParams = reshape(SParams, 12, 3);
 % DATA5R
 DataSetIndices = [ 1:31 ];
-ParamIndices = [ 1:12 ];
-OverWrite = false;
+ParamIndices = [ 9 10 ];
+OverWrite = true;
 
 %% 实验开始
 solver = struct('Display', 'off');
 opts = InitOptions('clf', 0, solver, 0, 3);
 fd = fopen(['./log/log-', datestr(now, 'yyyymmddHHMM'), '.txt'], 'w');
-Path = './data/ssr';
+Path = './data/ssr-old64';
 Kfold = 1;
 
 for k = [ 1 3 ]
@@ -49,7 +49,6 @@ for k = [ 1 3 ]
                         else
                             fprintf('error: %s %.2f %.2f\n', Name, State(6), State(7));
                             fprintf(fd, 'error: %s %.2f %.2f\n', Name, State(6), State(7));
-                            break;
                         end
                     end
                 catch Exception

@@ -22,7 +22,6 @@ function [ Result, State ] = CompareAB(Path, D, MethodA, MethodB)
     Result = [a, b, B.CVRate, A.CVTime(:,1), B.CVTime(:,1)];
     State = [c, avg, Inactive, Screening, T(1)];
     if c ~= 1
-        fprintf('Error: %s\n', [Path, MethodB.ID, '-', D.Name,'.mat']);
+        fprintf('Error: %s %.5f\n', [Path, MethodB.ID, '-', D.Name,'.mat'], c);
     end
 end
-

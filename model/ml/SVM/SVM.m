@@ -22,7 +22,7 @@ if count > 1
                     % 重新带入参数p1
                     [ H, K, e ] = Prepare(X, Y, params.kernel);
                 otherwise
-                    throw(MException('MTL:SVM', 'no parameter changed'));
+                    throw(MException('STL:SVM', 'no parameter changed'));
             end
         else
             [ H, K, e ] = Prepare(X, Y, params.kernel);
@@ -53,10 +53,10 @@ end
                     change = 'p1';
                     step = length(IParams.kernel.p1);
                 else
-                    throw(MException('MTL:SVM', 'Change: no parameter changed'));
+                    throw(MException('STL:SVM', 'Change: no parameter changed'));
                 end
             else 
-                throw(MException('MTL:SVM', 'Change: no parameter changed'));
+                throw(MException('STL:SVM', 'Change: no parameter changed'));
             end
         end
     end
@@ -64,9 +64,7 @@ end
     function [ H, K, e ] = Prepare(X, Y, kernel)
         e = ones(size(Y));
         K = Kernel(X, X, kernel);
-        I = speye(size(K));
-        DY = I.*Y;
-        H = Cond(DY*K*DY);
+        H = Y.*K.*Y';
     end
 
     function [ Alpha ] = Primal(H, Y, e, opts)
@@ -75,7 +73,7 @@ end
 
     function [ yTest ] = Predict(xTest, X, Y, K, Alpha, kernel)
         svi = Alpha > 0;
-        b = mean(Y(svi,:)-K(svi,:)*(Y(svi,:).*Alpha(svi,:)));
+        b = mean(Y(svi)-K(svi,svi)*(Y(svi).*Alpha(svi)));
         yTest = sign(Kernel(xTest, X(svi,:), kernel)*(Y(svi,:).*Alpha(svi,:))+b);
         yTest(yTest==0) = 1;
     end
