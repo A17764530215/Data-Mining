@@ -22,8 +22,8 @@ for k = [ 1 3 ]
     for i = DataSetIndices
         DataSet = DataSets(i);
         fprintf('DataSet: %s\n', DataSet.Name);
-        [ X, Y, ValInd ] = GetMultiTask(DataSet);
-        [ X ] = Normalize(X);
+%         [ X, Y, ValInd ] = GetMultiTask(DataSet);
+%         [ X ] = Normalize(X);
         for j = ParamIndices
             Method = SParams{j,k};
             Name = [Method.ID, '-', DataSet.Name];
@@ -43,12 +43,17 @@ for k = [ 1 3 ]
                     fprintf(fd, 'save: %s\n', StatPath);
                     if strcmp(Method.Name, 'SSR_CRMTL')
                         [ Result, State ] = CompareAB(SavePath, DataSet, SParams{j-1,k}, SParams{j,k});
-                        if State(1) == 1 && State(7) > 0.1
-                            fprintf('pass: %s %.2f %.2f\n', Name, State(6), State(7));
-                            fprintf(fd, 'pass: %s %.2f %.2f\n', Name, State(6), State(7));
+                        if State(1) == 1
+                            if State(7) > 0.1
+                                fprintf('pass: %s %.2f %.2f\n', Name, State(6), State(7));
+                                fprintf(fd, 'pass: %s %.2f %.2f\n', Name, State(6), State(7));
+                            else
+                                fprintf('warning: %s %.2f %.2f\n', Name, State(6), State(7));
+                                fprintf(fd, 'warning: %s %.2f %.2f\n', Name, State(6), State(7));
+                            end                            
                         else
-                            fprintf('error: %s %.2f %.2f\n', Name, State(6), State(7));
-                            fprintf(fd, 'error: %s %.2f %.2f\n', Name, State(6), State(7));
+                            fprintf('error: %s %.2f %.2f %.9f\n', Name, State(6), State(7), State(1));
+                            fprintf(fd, 'error: %s %.2f %.2f %.9f\n', Name, State(6), State(7), State(1));
                         end
                     end
                 catch Exception

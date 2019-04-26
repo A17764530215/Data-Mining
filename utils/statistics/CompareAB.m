@@ -19,9 +19,9 @@ function [ Result, State ] = CompareAB(Path, D, MethodA, MethodB)
     avg = mean(B.CVRate, 1);
     Inactive = mean(avg(3)+avg(4), 1);
     Screening = mean(avg(1)+avg(2), 1);
-    Result = [a, b, B.CVRate, A.CVTime(:,1), B.CVTime(:,1)];
+    Result = [a, b, B.CVRate, A.CVTime, B.CVTime];
     State = [c, avg, Inactive, Screening, T(1)];
     if c ~= 1
-        fprintf('Error: %s %.5f\n', [Path, MethodB.ID, '-', D.Name,'.mat'], c);
+        fprintf('Error: %s %.9f\n', [Path, MethodB.ID, '-', D.Name,'.mat'], c);
     end
 end
