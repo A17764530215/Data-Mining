@@ -6,8 +6,8 @@ load('LabSParams.mat');
 Kernels = {'Linear', 'Poly' 'RBF'};
 SParams = reshape(SParams, 14, 3);
 % DATA5R
-DataSetIndices = [ 2 ];
-ParamIndices = [ 13 14 ];
+DataSetIndices = [  24 ];
+ParamIndices = [  14 ];
 OverWrite = true;
 
 %% 实验开始

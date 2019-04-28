@@ -1,4 +1,4 @@
-function [  CVStat, CVTime, CVRate ] = SSR_CRMTL( xTrain, yTrain, xTest, yTest, TaskNum, IParams, opts )
+function [  CVStat, CVTime, CVRate, CVGap ] = SSR_CRMTL( xTrain, yTrain, xTest, yTest, TaskNum, IParams, opts )
 %SSR_IRMTL 此处显示有关此函数的摘要
 % Safe Screening for IRMTL
 %   此处显示详细说明
@@ -11,7 +11,7 @@ n = GetParamsCount(IParams);
 CVStat = zeros(n, opts.IndexCount, TaskNum);
 CVTime = zeros(n, 1);
 CVRate = zeros(n, 4);
-Gap = zeros(n, 1);
+CVGap = zeros(n, 2);
 for i = 1 : n
     params = GetParams(IParams, i);
     tic;
@@ -35,6 +35,7 @@ for i = 1 : n
                 throw(MException('SSR_CRMTL', 'Change: no parameter changed'));
         end
         [ Alpha0, CVRate(i,1:2) ] = Reduced(H1, Alpha1, params);
+        [ CVGap(i, 2) ] = DualGap(H1, Alpha0, params);
     else
         % solve the first problem
         [ Q, P ] = Prepare(X, Y, T, TaskNum, params);
@@ -43,7 +44,8 @@ for i = 1 : n
     end
     CVTime(i, 1) = toc;
     % 预测
-    [ Gap(i, 1) ] = DualGap(H1, Alpha0, params);
+    [ Alpha1 ] = Primal(H1, params);
+    [ CVGap(i, 1) ] = DualGap(H1, Alpha1, params);
     [ y_, CVRate(i, 3:4) ] = Predict(X, Y, T, TaskNum, xTest, Alpha0, params);
     CVStat(i,:,:) = MTLStatistics(TaskNum, y_, yTest, opts);
     LastParams = params;

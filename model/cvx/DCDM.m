@@ -12,17 +12,8 @@ while true
     Alphak = Alpha;
     for k = 1 : L
         Gk = H(k,:)*Alpha+f(k);
-        if Alpha(k) == lb
-            PG = min([Gk, 0]); % 不能再降
-        elseif Alpha(k) == ub
-            PG = max([Gk, 0]); % 不能再升
-        else
-            PG = Gk; % 可行方向
-        end
-        if PG ~= 0
-            % 使得Alpha一直在可行域
-            Alpha(k) = min([max([Alpha(k) - Gk/H(k,k), lb]), ub]);
-        end
+        % 使得Alpha一直在可行域
+        Alpha(k) = max([min([Alpha(k) - Gk/H(k,k), ub]), lb]);
     end
     times = times + 1;
     Diff = Alpha-Alphak;
