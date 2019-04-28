@@ -21,8 +21,8 @@ All data mining practice with Matlab
 ## Multi-class learning
 
 ## Clustering
- * Density Peaks (DP)
- * Comparative Density Peask (CDP)
+ * [Density Peaks (DP)](https://science.sciencemag.org/content/344/6191/1492)
+ * [Comparative Density Peask (CDP)](https://www.sciencedirect.com/science/article/pii/S0957417417307765)
  * AGNES
  
 ## Sample Selection Method
