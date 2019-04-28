@@ -4,10 +4,11 @@ clear;clc;
 load('DATA5R.mat');
 load('LabSParams.mat');
 Kernels = {'Linear', 'Poly' 'RBF'};
-SParams = reshape(SParams, 18, 3);
+SParams = reshape(SParams, 20, 3);
 % DATA5R
 DataSetIndices = [ 1:31 ];
-ParamIndices = [ 14 16 18 ];
+% ParamIndices = [ 14 16 18 ];
+ParamIndices = [ 20 ];
 OverWrite = true;
 
 %% 实验开始

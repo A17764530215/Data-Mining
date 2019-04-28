@@ -120,7 +120,7 @@ end
 
 %% 安全筛选参数
 function [ SParams ] = PackSParams(C, MU, NV, k0)
-    dcdm = struct('TolCon', 1e-13);
+    dcdm = struct('TolCon', 1e-11);
     c = 2.^(0:5)';
     mu = 2.^(-5:5)';
     nv = (0:0.1:1)';
