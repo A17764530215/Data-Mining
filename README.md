@@ -7,7 +7,7 @@ All data mining practice with Matlab
   * PSVM: Proximal support vector machine
 * TWSVM: Twin support vector machine
   * LS-TWSVM: Least squares twin support vector machine
-  * $\nu$-TWSVM: $\nu$-Twin support vector machine
+  * \nu-TWSVM: $\nu$-Twin support vector machine
 
 ## Multi-task learning
 * RMTL: Regularized multi-task learning
