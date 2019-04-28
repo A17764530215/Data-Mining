@@ -49,9 +49,9 @@ clear;clc;
 [ rbf0 ] = PackKernel('RBF', 64);
 SParams = cell(3, 1);
 % 2019年4月8日15:42:01
-[ SParams{1} ] = PackSParams(2.^(0:0.03:5)', (0:0.003:1)', linear0);
-[ SParams{2} ] = PackSParams(2.^(0:0.03:5)', (0:0.003:1)', poly0);
-[ SParams{3} ] = PackSParams(2.^(0:0.03:5)', (0:0.003:1)', rbf0);
+[ SParams{1} ] = PackSParams(2.^(0:0.03:5)', 2.^(-5:0.03:5)', (0:0.003:1)', linear0);
+[ SParams{2} ] = PackSParams(2.^(0:0.03:5)', 2.^(-5:0.03:5)', (0:0.003:1)', poly0);
+[ SParams{3} ] = PackSParams(2.^(0:0.03:5)', 2.^(-5:0.03:5)', (0:0.003:1)', rbf0);
 SParams = cellcat(SParams, 1);
 [ SParams ] = PrintParams('./params/LabSParams.txt', SParams);
 [ IParams ] = CreateParams(SParams{9});
@@ -118,7 +118,7 @@ function [ CParams ] = PackCParams(C, RHO, MU, ETA, P, RATE, kernel)
 end
 
 %% 安全筛选参数
-function [ SParams ] = PackSParams(C, NV, k0)
+function [ SParams ] = PackSParams(C, MU, NV, k0)
     c = 2.^(0:5)';
     mu = 2.^(-5:5)';
     nv = (0:0.1:1)';
@@ -132,6 +132,13 @@ function [ SParams ] = PackSParams(C, NV, k0)
 %         MTSVM
         struct('ID', 'MTPSVM', 'Name', 'MTPSVM', 'C', C, 'lambda', mu, 'kernel', k0);...
         struct('ID', 'MTLS_SVM', 'Name', 'MTLS_SVM', 'C', C, 'lambda', mu, 'kernel', k0);...
+%         IRMTL
+        struct('ID', 'IRMTL_C', 'Name', 'IRMTL', 'C', C, 'mu', mu, 'kernel', k0);...
+        struct('ID', 'SSRC_IRMTL', 'Name', 'SSR_IRMTL', 'C', C, 'mu', mu, 'kernel', k0);...
+        struct('ID', 'IRMTL_M', 'Name', 'IRMTL', 'mu', MU, 'C', c, 'kernel', k0);...
+        struct('ID', 'SSRM_IRMTL', 'Name', 'SSR_IRMTL', 'mu', MU, 'C', c, 'kernel', k0);...
+        struct('ID', 'IRMTL_P', 'Name', 'IRMTL', 'kernel', rbf, 'C', c, 'mu', 1);...
+        struct('ID', 'SSRP_IRMTL', 'Name', 'SSR_IRMTL', 'kernel', rbf, 'C', c, 'mu', 1);...
 %         CRMTL
         struct('ID', 'CRMTL_C', 'Name', 'CRMTL', 'C', C, 'mu', nv, 'kernel', k0);...
         struct('ID', 'SSRC_CRMTL', 'Name', 'SSR_CRMTL', 'C', C, 'mu', nv, 'kernel', k0);...

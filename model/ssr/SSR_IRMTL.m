@@ -10,15 +10,15 @@ solver = opts.solver;
 n = GetParamsCount(IParams);
 CVStat = zeros(n, opts.IndexCount, TaskNum);
 CVTime = zeros(n, 2);
-CVRate = zeros(n, 4);
+CVRate = zeros(n, 6);
 for i = 1 : n
-    Params = GetParams(IParams, i);
-    Params.solver = opts.solver;
+    params1 = GetParams(IParams, i);
+    params1.solver = opts.solver;
     tic;
-    [ H1 ] = Prepare(X, Y, TaskNum, Params);
-    C1 = Params.C;
+    [ H1 ] = Prepare(X, Y, TaskNum, params1);
+    C1 = params1.C;
     if mod(i, step) ~= 1
-        C0 = LastParams.C;
+        C0 = params0.C;
         % solve the rest problem
         switch change
             case 'C'
@@ -28,18 +28,30 @@ for i = 1 : n
             otherwise
                 throw(MException('SSR_IRMTL', 'Change: no parameter changed'));
         end
-        [ Alpha0, CVRate(i,1:2) ] = Reduced(H1, Alpha1, C1);
+        [ Alpha0, S, CVRate(i,1:2) ] = Reduced(H1, Alpha1, C1);
     else
         % solve the first problem
         [ Alpha0 ] = Primal(H1, C1);
     end
     H0 = H1;
     CVTime(i, 1) = toc;
+    % 检验筛选出来的0和C，是不是原有的0和C
+    if mod(i, step) ~= 1
+        [ Alpha1 ] = Primal(H1, params1.C);
+        [ CVRate(i, 5:6) ] = Compare(Alpha1, Alpha0, S);
+    end
     % 预测
-    [ y_hat, CVRate(i, 3:4) ] = Predict(X, Y, xTest, Alpha0, Params);
+    [ y_hat, CVRate(i, 3:4) ] = Predict(X, Y, xTest, Alpha0, params1);
     CVStat(i,:,:) = MTLStatistics(TaskNum, y_hat, yTest, opts);
-    LastParams = Params;
+    params0 = params1;
 end
+
+    function [ rate ] = Compare(Alpha1, Alpha0, S)
+        DiffS = Alpha1(S)-Alpha0(S);
+        DiffA = Alpha1-Alpha0;
+        rate(1) = max(DiffS);
+        rate(2) = max(DiffA);
+    end
 
     function [ change, step ] = Change(IParams)
     % 得到最先变的参数
@@ -85,14 +97,14 @@ end
         [ Alpha1 ] = quadprog(H1,-e,[],[],[],[],lb,C1*e,[],solver);
     end
 
-    function [ Alpha1, Rate ] = Reduced(H1, Alpha1, C1)
+    function [ Alpha1, S, Rate ] = Reduced(H1, Alpha1, C1)
         % reduced problem
         R = Alpha1 == Inf;
         S0 = Alpha1 == 0;
         SC = Alpha1 == C1;
+        S = S0 | SC;
         Rate = mean([S0, SC]);
         if mean(R) > 0
-            S = S0 | SC;
             f = H1(R,S)*Alpha1(S)-1;
             lb = zeros(size(f));
             ub = C1*ones(size(f));

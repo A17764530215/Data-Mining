@@ -4,17 +4,17 @@ clear;clc;
 load('DATA5R.mat');
 load('LabSParams.mat');
 Kernels = {'Linear', 'Poly' 'RBF'};
-SParams = reshape(SParams, 12, 3);
+SParams = reshape(SParams, 18, 3);
 % DATA5R
 DataSetIndices = [ 1:31 ];
-ParamIndices = [ 9 10 ];
+ParamIndices = [ 14 16 18 ];
 OverWrite = true;
 
 %% 实验开始
-solver = struct('Display', 'off');
+solver = [];% optimoptions('fmincon', 'Display', 'notify', 'Algorithm', 'interior-point', 'TolCon', 1e-12, 'MaxIter', 2000);
 opts = InitOptions('clf', 0, solver, 0, 3);
 fd = fopen(['./log/log-', datestr(now, 'yyyymmddHHMM'), '.txt'], 'w');
-Path = './data/ssr-old64';
+Path = './data/ssr-safe_test';
 Kfold = 1;
 
 for k = [ 1 3 ]
@@ -39,9 +39,9 @@ for k = [ 1 3 ]
                 try
                     [ CVStat, CVTime, CVRate ] = GridSearch(DataSet, Method, false, opts);
                     % 保存记录
-                    save(StatPath, 'CVStat', 'CVTime', 'CVRate');
+                    save(StatPath, 'CVStat', 'CVTime', 'CVRate', 'Method');
                     fprintf(fd, 'save: %s\n', StatPath);
-                    if strcmp(Method.Name, 'SSR_CRMTL')
+                    if strfind(Method.Name, 'SSR_')
                         [ Result, State ] = CompareAB(SavePath, DataSet, SParams{j-1,k}, SParams{j,k});
                         if State(1) == 1
                             if State(7) > 0.1
@@ -50,7 +50,7 @@ for k = [ 1 3 ]
                             else
                                 fprintf('warning: %s %.2f %.2f\n', Name, State(6), State(7));
                                 fprintf(fd, 'warning: %s %.2f %.2f\n', Name, State(6), State(7));
-                            end                            
+                            end
                         else
                             fprintf('error: %s %.2f %.2f %.9f\n', Name, State(6), State(7), State(1));
                             fprintf(fd, 'error: %s %.2f %.2f %.9f\n', Name, State(6), State(7), State(1));
