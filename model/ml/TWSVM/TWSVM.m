@@ -18,25 +18,25 @@ if count > 1
                     % 无需额外计算
                 case 'p1'
                     % 重新带入参数p1
-                    [ H, G, S2R, R2S, C, e1, e2, m1, m2 ] = Preppare(xTrain, yTrain, params.kernel);
+                    [ H, G, S2R, R2S, X, e1, e2, m1, m2 ] = Preppare(xTrain, yTrain, params.kernel);
                 otherwise
-                    throw(MException('STL:LS_SVM', 'no parameter changed'));
+                    throw(MException('STL:TWSVM', 'no parameter changed'));
             end
         else
-            [ H, G, S2R, R2S, C, e1, e2, m1, m2 ] = Preppare(xTrain, yTrain, params.kernel);
+            [ H, G, S2R, R2S, X, e1, e2, m1, m2 ] = Preppare(xTrain, yTrain, params.kernel);
         end
         [ Alpha, Mu ] = Primal(H, G, e1, e2, m1, m2, params);
         [ Time(i,1) ] = toc;
         [ u1, b1, u2, b2 ] = GetWeight(S2R, R2S, Alpha, Mu);
-        [ yTest{i} ] = Predict(xTest, C, u1, b1, u2, b2, params.kernel);
+        [ yTest{i} ] = Predict(xTest, X, u1, b1, u2, b2, params.kernel);
     end
 else
     tic
-    [ H, G, S2R, R2S, C, e1, e2, m1, m2 ] = Preppare(xTrain, yTrain, kernel);
+    [ H, G, S2R, R2S, X, e1, e2, m1, m2 ] = Preppare(xTrain, yTrain, opts.kernel);
     [ Alpha, Mu ] = Primal(H, G, e1, e2, m1, m2, opts);
     Time = toc;
     [ u1, b1, u2, b2 ] = GetWeight(S2R, R2S, Alpha, Mu);
-    [ yTest ] = Predict(xTest, C, u1, b1, u2, b2, opts.kernel);
+    [ yTest ] = Predict(xTest, X, u1, b1, u2, b2, opts.kernel);
 end
 
     function [ change, step ] = Change(opts)
@@ -53,15 +53,15 @@ end
                     change = 'p1';
                     step = length(IParams.kernel.p1);
                 else
-                    throw(MException('STL:LS_SVM', 'Change: no parameter changed'));
+                    throw(MException('STL:TWSVM', 'Change: no parameter changed'));
                 end
             else 
-                throw(MException('STL:LS_SVM', 'Change: no parameter changed'));
+                throw(MException('STL:TWSVM', 'Change: no parameter changed'));
             end
         end
     end
 
-    function [ H, G, S2R, R2S, C, e1, e2, m1, m2 ] = Preppare(xTrain, yTrain, kernel)
+    function [ H, G, S2R, R2S, X, e1, e2, m1, m2 ] = Preppare(xTrain, yTrain, kernel)
         symmetric = @(H) (H+H')/2;
         A = xTrain(yTrain==1, :);
         B = xTrain(yTrain==-1, :);
@@ -70,9 +70,9 @@ end
         e1 = ones(m1, 1);
         e2 = ones(m2, 1);
         % 构造核矩阵
-        C = [A; B];
-        S = [Kernel(A, C, kernel) e1];
-        R = [Kernel(B, C, kernel) e2];
+        X = [A; B];
+        S = [Kernel(A, X, kernel) e1];
+        R = [Kernel(B, X, kernel) e2];
         S2R = Cond(S'*S)\R';
         R2S = Cond(R'*R)\S';
         H = symmetric(R*S2R);
@@ -93,8 +93,8 @@ end
         b2 = z2(end);
     end
 
-    function [ yTest ] = Predict(xTest, C, u1, b1, u2, b2, kernel)
-        K = Kernel(xTest, C, kernel);
+    function [ yTest ] = Predict(xTest, X, u1, b1, u2, b2, kernel)
+        K = Kernel(xTest, X, kernel);
         D1 = abs(K*u1+b1)/norm(u1);
         D2 = abs(K*u2+b2)/norm(u2);
         yTest = sign(D2-D1);

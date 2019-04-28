@@ -22,7 +22,7 @@ if count > 1
                     % 重新带入参数p1
                     [ H, K, e ] = Prepare(X, Y, params.kernel);
                 otherwise
-                    throw(MException('MTL:SVM', 'no parameter changed'));
+                    throw(MException('STL:SVM', 'no parameter changed'));
             end
         else
             [ H, K, e ] = Prepare(X, Y, params.kernel);
@@ -53,10 +53,10 @@ end
                     change = 'p1';
                     step = length(IParams.kernel.p1);
                 else
-                    throw(MException('MTL:SVM', 'Change: no parameter changed'));
+                    throw(MException('STL:SVM', 'Change: no parameter changed'));
                 end
             else 
-                throw(MException('MTL:SVM', 'Change: no parameter changed'));
+                throw(MException('STL:SVM', 'Change: no parameter changed'));
             end
         end
     end

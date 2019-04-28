@@ -10,4 +10,5 @@ function [ DataSet ] = CreateMTL( Name, X, Y, Labels, Kfold )
     DataSet.Y = Y;
     DataSet.ValInd = MTLCV( X, Kfold );
     DataSet.Labels = Labels;
+    DataSet.Order = length(X) * size(X{1,1}, 1);
 end

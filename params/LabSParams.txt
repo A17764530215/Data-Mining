@@ -1,43 +1,61 @@
 kernel      Method.ID       nParams	Time
-linear      SVM             167  	0.03
+linear      SVM             167  	0.02
 linear      PSVM            167  	0.01
 linear      LS_SVM          167  	0.01
 linear      TWSVM           167  	0.01
-linear      MTPSVM          1837 	0.09
-linear      MTLS_SVM        1837 	0.08
+linear      MTPSVM          1837 	0.16
+linear      MTLS_SVM        1837 	0.15
+linear      IRMTL_C         1837 	0.13
+linear      SSRC_IRMTL      1837 	0.09
+linear      IRMTL_M         2004 	0.19
+linear      SSRM_IRMTL      2004 	0.09
+rbf         IRMTL_P         1206 	0.12
+rbf         SSRP_IRMTL      1206 	0.06
 linear      CRMTL_C         1837 	0.12
-linear      SSRC_CRMTL      1837 	0.11
-linear      CRMTL_M         2004 	0.22
-linear      SSRM_CRMTL      2004 	0.17
-rbf         CRMTL_P         1206 	0.14
+linear      SSRC_CRMTL      1837 	0.09
+linear      CRMTL_M         2004 	0.09
+linear      SSRM_CRMTL      2004 	0.09
+rbf         CRMTL_P         1206 	0.07
 rbf         SSRP_CRMTL      1206 	0.07
-linear      SSRM_CRMTL_DCDM02004 	0.09
-linear      SSRM_CRMTL_DCDM12004 	0.13
+linear      SSRM_CRMTL_DCDM02004 	0.12
+linear      SSRM_CRMTL_DCDM12004 	0.17
 poly        SVM             167  	0.01
 poly        PSVM            167  	0.01
 poly        LS_SVM          167  	0.01
 poly        TWSVM           167  	0.01
 poly        MTPSVM          1837 	0.10
-poly        MTLS_SVM        1837 	0.12
-poly        CRMTL_C         1837 	0.13
-poly        SSRC_CRMTL      1837 	0.10
+poly        MTLS_SVM        1837 	0.10
+poly        IRMTL_C         1837 	0.10
+poly        SSRC_IRMTL      1837 	0.10
+poly        IRMTL_M         2004 	0.11
+poly        SSRM_IRMTL      2004 	0.11
+rbf         IRMTL_P         1206 	0.07
+rbf         SSRP_IRMTL      1206 	0.07
+poly        CRMTL_C         1837 	0.10
+poly        SSRC_CRMTL      1837 	0.13
 poly        CRMTL_M         2004 	0.11
-poly        SSRM_CRMTL      2004 	0.11
-rbf         CRMTL_P         1206 	0.07
+poly        SSRM_CRMTL      2004 	0.14
+rbf         CRMTL_P         1206 	0.08
 rbf         SSRP_CRMTL      1206 	0.07
-poly        SSRM_CRMTL_DCDM02004 	0.11
-poly        SSRM_CRMTL_DCDM12004 	0.31
-rbf         SVM             167  	0.02
+poly        SSRM_CRMTL_DCDM02004 	0.19
+poly        SSRM_CRMTL_DCDM12004 	0.19
+rbf         SVM             167  	0.01
 rbf         PSVM            167  	0.01
 rbf         LS_SVM          167  	0.01
 rbf         TWSVM           167  	0.01
-rbf         MTPSVM          1837 	0.11
+rbf         MTPSVM          1837 	0.12
 rbf         MTLS_SVM        1837 	0.10
+rbf         IRMTL_C         1837 	0.15
+rbf         SSRC_IRMTL      1837 	0.13
+rbf         IRMTL_M         2004 	0.17
+rbf         SSRM_IRMTL      2004 	0.14
+rbf         IRMTL_P         1206 	0.07
+rbf         SSRP_IRMTL      1206 	0.07
 rbf         CRMTL_C         1837 	0.10
-rbf         SSRC_CRMTL      1837 	0.10
-rbf         CRMTL_M         2004 	0.11
-rbf         SSRM_CRMTL      2004 	0.11
-rbf         CRMTL_P         1206 	0.07
+rbf         SSRC_CRMTL      1837 	0.13
+rbf         CRMTL_M         2004 	0.14
+rbf         SSRM_CRMTL      2004 	0.14
+rbf         CRMTL_P         1206 	0.09
 rbf         SSRP_CRMTL      1206 	0.07
 rbf         SSRM_CRMTL_DCDM02004 	0.11
-rbf         SSRM_CRMTL_DCDM12004 	0.16
+rbf         SSRM_CRMTL_DCDM12004 	0.15

@@ -1,7 +1,7 @@
 clear
 clc
 load('LabSParams.mat');
-SParams = reshape(SParams, 28, 3);
+SParams = reshape(SParams, 12, 3);
 figure();
 
 %% Paper1
@@ -21,15 +21,15 @@ figure();
 %% Paper3
 [ d ] = DATA5R({
     'SVM','PSVM','LS-SVM','TWSVM','MTPSVM','MTLS-SVM',...
-    'RMTL-L1','SSRL1-IRMTL','RMTL-L2','SSRL2-IRMTL','RMTL-L2','SSRL2-IRMTL',...
-    'IRMTL-C','SSRC-IRMTL','IRMTL-M','SSRM-IRMTL','IRMTL-P','SSRP-IRMTL',...
     'CRMTL-C','SSRC-CRMTL','CRMTL-M','SSRM-CRMTL','CRMTL-P','SSRP-CRMTL',...
-    'DMTSVMA_C','SSRC_DMTSVMA','DMTSVMA_M','SSRM_DMTSVMA'
-}, [ 1 5 6 19 20 ]);
+}, [ 1 4 5 6 7 8 ]);
 
+%     'IRMTL-C','SSRC-IRMTL','IRMTL-M','SSRM-IRMTL','IRMTL-P','SSRP-IRMTL',...
+%     'RMTL-L1','SSRL1-IRMTL','RMTL-L2','SSRL2-IRMTL','RMTL-L2','SSRL2-IRMTL',...
+%     'DMTSVMA_C','SSRC_DMTSVMA','DMTSVMA_M','SSRM_DMTSVMA'
 Kernels = {'Linear', 'Poly', 'RBF'};
 type = {'data', 'time'};
-for k = [3]
+for k = [ 1  3 ]
     Path = ['./results/paper3/MyStat-Stat-', Kernels{k}, '.mat'];
     load(Path);
     for i = 1 : 2
@@ -43,9 +43,9 @@ for k = [3]
 end
 
 %% Safe screening
-[ d ] = DATA5R({'S0', 'SC', 'C0', 'CC', 'Inactive', 'Screening', 'Speedup'}, [ 7 ]);
+[ d ] = DATA5R({'Flag', 'S0', 'SC', 'C0', 'CC', 'Inactive', 'Screening', 'Speedup'}, [ 8 ]);
 for i = [ 1 3 ]
-    Params = reshape(SParams(19:24,i), [2 3]);
+    Params = reshape(SParams(7:12,i), [2 3]);
     for k = [ 1 : 3 ]
         p = Params{2,k};
         Name = sprintf('MyStat-%s-%s', p.ID , p.kernel.type);
@@ -94,7 +94,7 @@ function [ d ] = DATA5R(legends, idx)
 % 数据集属性
     d.Arcs = [0,0,45,45];
     d.Counts = [ 9, 5, 7, 10 ];
-    d.Draws = {@plot, @plot, @bar, @bar };
+    d.Draws = {@bar, @bar, @bar, @bar };
     d.Grids = {'on', 'on', 'off', 'off'};
     d.Titles = {'Monk', 'Letter', 'MTL', 'Caltech 256'};
     d.xLabels = { 'Task Size', '#Tasks', 'Dataset', 'Category'};

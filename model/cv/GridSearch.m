@@ -25,7 +25,6 @@ function [ GSStat, GSTime, GSRate ] = GridSearch(DataSet, IParams, cv, opts)
     % 获取全部数据并标准化
     [ X, Y, ValInd, TaskNum, Kfold ] = GetMultiTask(DataSet);
     [ X ] = Normalize(X);
-    IParams.solver = opts.solver;
     
     if cv
         % 有交叉验证
@@ -49,7 +48,7 @@ function [ GSStat, GSTime, GSRate ] = GridSearch(DataSet, IParams, cv, opts)
             CVStat = zeros(Kfold, n, opts.IndexCount, TaskNum);% 折数，参数数目，指标个数
             CVTime = zeros(Kfold, n, 1);
             if SSR_Map.isKey(IParams.Name)
-                CVRate = zeros(Kfold, n, 4);
+                CVRate = zeros(Kfold, n, 5);
             else
                 CVRate = zeros(Kfold, n, 1);
             end
