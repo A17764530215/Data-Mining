@@ -6,10 +6,12 @@ function [  CVStat, CVTime, CVRate ] = SSR_CRMTL( xTrain, yTrain, xTest, yTest, 
 %% Fit
 [ X, Y, T, ~ ] = GetAllData(xTrain, yTrain, TaskNum);
 [ change, step ] = Change(IParams);
+[ dcdm ] = isfield(IParams, 'dcdm');
 n = GetParamsCount(IParams);
 CVStat = zeros(n, opts.IndexCount, TaskNum);
 CVTime = zeros(n, 1);
 CVRate = zeros(n, 4);
+Gap = zeros(n, 1);
 for i = 1 : n
     params = GetParams(IParams, i);
     tic;
@@ -41,6 +43,7 @@ for i = 1 : n
     end
     CVTime(i, 1) = toc;
     % Ô¤²â
+    [ Gap(i, 1) ] = DualGap(H1, Alpha0, params);
     [ y_, CVRate(i, 3:4) ] = Predict(X, Y, T, TaskNum, xTest, Alpha0, params);
     CVStat(i,:,:) = MTLStatistics(TaskNum, y_, yTest, opts);
     LastParams = params;
@@ -107,8 +110,23 @@ end
             f = H1(R,S)*Alpha1(S)-1;
             lb = zeros(size(f));
             ub = opts.C*ones(size(f));
-            [ Alpha1(R) ] = quadprog(H1(R,R), f, [], [], [], [], lb, ub, [], opts.solver);
+            if dcdm
+                [ Alpha1(R) ] = DCDM_mex(H1(R,R), f, 0, opts.C, opts.dcdm);
+            else
+                [ Alpha1(R) ] = quadprog(H1(R,R), f, [], [], [], [], lb, ub, [], opts.solver);
+            end
         end
+    end
+
+    function [ L ] = HingeLoss(y)
+        Loss = 1 - y;
+        Loss(y > 1) = 0;
+        L = sum(Loss);
+    end
+
+    function [ Gap ] = DualGap(H1, Alpha1, opts)
+        f = H1*Alpha1;
+        Gap = (Alpha1'*H1*Alpha1)+opts.C*HingeLoss(f)-sum(Alpha1);
     end
 
     function [ yTest, Rate ] = Predict(X, Y, T, TaskNum, xTest, Alpha, opts)

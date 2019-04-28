@@ -46,9 +46,9 @@ end
     function [ change, step ] = Change(opts)
         p1 = GetParams(opts, 1);
         p2 = GetParams(opts, 2);
-        if p1.C1 ~= p2.C1
+        if p1.C ~= p2.C
             change = 'C';
-            step = length(opts.C1);
+            step = length(opts.C);
         elseif p1.rho ~= p2.rho
             change = 'mu';
             step = length(opts.rho);
@@ -137,8 +137,8 @@ end
 
     function [ Alpha, Gamma ] = Primal(H1, H2, e1, e2, m1,m2, opts)
         Sym = @(H) (H+H')/2;
-        Alpha = quadprog(Sym(H1),-e2,[],[],[],[],zeros(m2, 1),opts.C1*e2,[],opts.solver);
-        Gamma = quadprog(Sym(H2),-e1,[],[],[],[],zeros(m1, 1),opts.C1*e1,[],opts.solver);
+        Alpha = quadprog(Sym(H1),-e2,[],[],[],[],zeros(m2, 1),opts.C*e2,[],opts.solver);
+        Gamma = quadprog(Sym(H2),-e1,[],[],[],[],zeros(m1, 1),opts.C*e1,[],opts.solver);
     end
 
     function [ U, V ] = GetWeight(EEF, FFE, EEFt, FFEt, Alpha, Gamma, I, TaskNum, opts)

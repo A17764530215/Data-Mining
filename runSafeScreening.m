@@ -4,11 +4,11 @@ clear;clc;
 load('DATA5R.mat');
 load('LabSParams.mat');
 Kernels = {'Linear', 'Poly' 'RBF'};
-SParams = reshape(SParams, 12, 3);
+SParams = reshape(SParams, 14, 3);
 % DATA5R
-DataSetIndices = [ 1:31 ];
-ParamIndices = [ 1:12 ];
-OverWrite = false;
+DataSetIndices = [ 2 ];
+ParamIndices = [ 13 14 ];
+OverWrite = true;
 
 %% 实验开始
 solver = struct('Display', 'off');
@@ -17,13 +17,11 @@ fd = fopen(['./log/log-', datestr(now, 'yyyymmddHHMM'), '.txt'], 'w');
 Path = './data/ssr';
 Kfold = 1;
 
-for k = [ 1 3 ]
+for k = [ 1  ]
     fprintf('runGridSearch:%s\n', Kernels{k});
     for i = DataSetIndices
         DataSet = DataSets(i);
         fprintf('DataSet: %s\n', DataSet.Name);
-%         [ X, Y, ValInd ] = GetMultiTask(DataSet);
-%         [ X ] = Normalize(X);
         for j = ParamIndices
             Method = SParams{j,k};
             Name = [Method.ID, '-', DataSet.Name];
@@ -41,7 +39,7 @@ for k = [ 1 3 ]
                     % 保存记录
                     save(StatPath, 'CVStat', 'CVTime', 'CVRate');
                     fprintf(fd, 'save: %s\n', StatPath);
-                    if strcmp(Method.Name, 'SSR_CRMTL')
+                    if strcmp(Method.Name, 'SSR_CRMTL') && mod(j, 2) == 0
                         [ Result, State ] = CompareAB(SavePath, DataSet, SParams{j-1,k}, SParams{j,k});
                         if State(1) == 1
                             if State(7) > 0.1

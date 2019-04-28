@@ -12,7 +12,7 @@ LL = (L0+L1)/2;
 % A = P'\(L0)+P*Alpha0;
 % RR = sqrt(sum(P.*P, 1)'*((A'*A)/4-Alpha0'*L0));
 % ¸ß¾«¶È
-% RR = sqrt(sum(P.*P, 1)'*(L0'*(H1\L0)/4+Alpha0'*(L1/4-L0/2)));
+RR = sqrt(sum(P.*P, 1)'*(L0'*(H1\L0)/4+Alpha0'*(L1/4-L0/2)));
 Alpha1 = Inf(size(Alpha0));
 Alpha1(LL - RR > 1) = 0;
 Alpha1(LL + RR < 1) = C1;

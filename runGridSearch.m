@@ -11,12 +11,12 @@ load('MTL_UCI5.mat');
 load('LabCParams.mat');
 
 DataSets = MTL_UCI5;
-CParams = reshape(CParams, 16, 3);
+CParams = reshape(CParams, 17, 3);
 
 % 数据集
-DataSetIndices = [ 2 3 4 ];
-ParamIndices = [ 1 2 3 9 :13 15 16 ];
-ForceWrite = false;
+DataSetIndices = [ 2 ];
+ParamIndices = [ 14 15 ];
+ForceWrite = true;
 
 %% 实验设置
 solver = struct('Display', 'off');
@@ -31,7 +31,7 @@ for i = DataSetIndices
     [ X, Y, ValInd ] = GetMultiTask(DataSet);
     [ X ] = Normalize(X);
     for j = ParamIndices
-        Method = CParams{j, 3};
+        Method = CParams{j, 1};
         Name = [Method.ID, '-', DataSet.Name];
         SavePath = sprintf('%s/%s/%d-fold/', Path, Method.kernel.type, DataSet.Kfold);
         if exist(SavePath, 'dir') == 0
@@ -43,7 +43,7 @@ for i = DataSetIndices
             continue;
         else
             try
-                [ CVStat, CVTime ] = GridSearch(DataSet, Method, opts);
+                [ CVStat, CVTime ] = GridSearch(DataSet, Method, false, opts);
 %                 [ CVStat, CVTime ] = GridSearchCV(@MTL, X, Y, Method, DataSet.TaskNum, DataSet.Kfold, ValInd, opts);
                 save(StatPath, 'CVStat', 'CVTime');
                 fprintf(fd, 'save: %s\n', StatPath);

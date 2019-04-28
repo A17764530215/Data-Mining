@@ -1,37 +1,43 @@
 kernel      Method.ID       nParams	Time
-linear      SVM             167  	0.69
-linear      PSVM            167  	0.81
-linear      LS_SVM          167  	0.20
-linear      TWSVM           167  	0.13
-linear      MTPSVM          1837 	2.72
-linear      MTLS_SVM        1837 	0.26
-linear      CRMTL_C         1837 	0.11
-linear      SSRC_CRMTL      1837 	0.09
-linear      CRMTL_M         2004 	0.50
-linear      SSRM_CRMTL      2004 	0.10
-rbf         CRMTL_P         1206 	1.65
-rbf         SSRP_CRMTL      1206 	0.13
-poly        SVM             167  	0.05
+linear      SVM             167  	0.02
+linear      PSVM            167  	0.01
+linear      LS_SVM          167  	0.01
+linear      TWSVM           167  	0.01
+linear      MTPSVM          1837 	0.15
+linear      MTLS_SVM        1837 	0.08
+linear      CRMTL_C         1837 	0.08
+linear      SSRC_CRMTL      1837 	0.08
+linear      CRMTL_M         2004 	0.13
+linear      SSRM_CRMTL      2004 	0.09
+rbf         CRMTL_P         1206 	0.14
+rbf         SSRP_CRMTL      1206 	0.11
+linear      SSRC_CRMTL_DCDM01837 	0.13
+linear      SSRC_CRMTL_DCDM11837 	0.20
+poly        SVM             167  	0.02
 poly        PSVM            167  	0.01
 poly        LS_SVM          167  	0.01
 poly        TWSVM           167  	0.01
-poly        MTPSVM          1837 	0.11
+poly        MTPSVM          1837 	0.10
 poly        MTLS_SVM        1837 	0.10
 poly        CRMTL_C         1837 	0.10
 poly        SSRC_CRMTL      1837 	0.10
-poly        CRMTL_M         2004 	0.11
+poly        CRMTL_M         2004 	0.18
 poly        SSRM_CRMTL      2004 	0.11
 rbf         CRMTL_P         1206 	0.07
-rbf         SSRP_CRMTL      1206 	0.07
+rbf         SSRP_CRMTL      1206 	0.06
+poly        SSRC_CRMTL_DCDM01837 	0.10
+poly        SSRC_CRMTL_DCDM11837 	0.13
 rbf         SVM             167  	0.01
 rbf         PSVM            167  	0.01
 rbf         LS_SVM          167  	0.01
 rbf         TWSVM           167  	0.01
-rbf         MTPSVM          1837 	0.10
-rbf         MTLS_SVM        1837 	0.10
+rbf         MTPSVM          1837 	0.12
+rbf         MTLS_SVM        1837 	0.09
 rbf         CRMTL_C         1837 	0.10
-rbf         SSRC_CRMTL      1837 	0.14
-rbf         CRMTL_M         2004 	0.12
-rbf         SSRM_CRMTL      2004 	0.14
-rbf         CRMTL_P         1206 	0.07
-rbf         SSRP_CRMTL      1206 	0.07
+rbf         SSRC_CRMTL      1837 	0.09
+rbf         CRMTL_M         2004 	0.10
+rbf         SSRM_CRMTL      2004 	0.10
+rbf         CRMTL_P         1206 	0.06
+rbf         SSRP_CRMTL      1206 	0.06
+rbf         SSRC_CRMTL_DCDM01837 	0.09
+rbf         SSRC_CRMTL_DCDM11837 	0.13

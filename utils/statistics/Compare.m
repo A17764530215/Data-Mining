@@ -13,18 +13,20 @@ function [ Summary ] = Compare(Path, File, DataSets, INDICES, MethodA, MethodB)
         % Record
         try
             [ Result{i}, State(i,:) ] = CompareAB(Path, D, MethodA, MethodB);
-        catch ME
-            if strcmp(ME.identifier, 'Stat:CompareAB')
-                if strcmp(ME.message, 'No record file')
-                    continue;
-                elseif strcmp(ME.message, 'record error')
+            if State(i,1)~=1
+                
                     % record errors
                     IParams = CreateParams(MethodB);
                     R = Result{i};
                     ERROR_ID = find(R(:,3)~=0);
                     ErrorParams{i} = IParams(ERROR_ID);
                     ErrorResult{i} = R(ERROR_ID,:);
-                    fprintf('record error');
+                    fprintf('record error\n');
+            end
+        catch ME
+            if strcmp(ME.identifier, 'Stat:CompareAB')
+                if strcmp(ME.message, 'No record file')
+                    continue;
                 end
             end
         end
