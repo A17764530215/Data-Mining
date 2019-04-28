@@ -9,6 +9,8 @@ All data mining practice with Matlab
   * LS-TWSVM: Least squares twin support vector machine
   * $\nu$-TWSVM: $\nu$-Twin support vector machine
 
+[More Kernel methods](http://www.shogun-toolbox.org/examples/latest/index.html)
+
 ## Multi-task learning
 * RMTL: Regularized multi-task learning
   * MTLS-SVM: Multi-task least squares support vector machine
