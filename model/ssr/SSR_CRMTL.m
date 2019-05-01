@@ -6,7 +6,7 @@ function [  CVStat, CVTime, CVRate ] = SSR_CRMTL( xTrain, yTrain, xTest, yTest, 
 [ X, Y, T, ~ ] = GetAllData(xTrain, yTrain, TaskNum);
 Sym = @(H) ((H+H')/2 + 1e-5*speye(size(H)));
 [ change, step ] = Change(IParams);
-[ dcdm ] = isfield(IParams, 'dcdm');
+IParams = rmfield(IParams, 'solver');
 n = GetParamsCount(IParams);
 CVStat = zeros(n, opts.IndexCount, TaskNum);
 CVTime = zeros(n, 1);
@@ -53,8 +53,13 @@ end
 
     function [ rate ] = Compare(Alpha1, Alpha0, S)
         Diff = abs(Alpha1-Alpha0);
-        rate(1) = max(Diff(S));
-        rate(2) = max(Diff);
+        if size(Diff(S), 1) > 0
+            rate(1) = max(Diff(S));
+            rate(2) = max(Diff);
+        else
+            rate(1) = 0;
+            rate(2) = max(Diff);
+        end
     end
 
     function [ change, step ] = Change(IParams)
@@ -109,26 +114,11 @@ end
         S = S0 | SC;
         Rate = mean([S0, SC]);
         if find(R, 1) > 0
-            f = (H1(S,R)'+H1(R,S))*Alpha1(S)/2-1;
+            f = H1(R,S)*Alpha1(S)-1;
             lb = zeros(size(f));
             ub = repmat(opts.C, size(f));
-            if dcdm
-                [ Alpha1(R) ] = DCDM_mex(H1(R,R), f, 0, opts.C, opts.dcdm);
-            else
-                [ Alpha1(R) ] = quadprog(H1(R,R), f, [], [], [], [], lb, ub, [], opts.solver);
-            end
+            [ Alpha1(R) ] = quadprog(H1(R,R), f, [], [], [], [], lb, ub, [], opts.solver);
         end
-    end
-
-    function [ L ] = HingeLoss(y)
-        Loss = 1 - y;
-        Loss(y > 1) = 0;
-        L = sum(Loss);
-    end
-
-    function [ Gap ] = DualGap(H1, Alpha1, opts)
-        f = H1*Alpha1;
-        Gap = (Alpha1'*H1*Alpha1)+opts.C*HingeLoss(f)-sum(Alpha1);
     end
 
     function [ yTest, Rate ] = Predict(xTest, X, Y, T, Alpha, TaskNum, opts)

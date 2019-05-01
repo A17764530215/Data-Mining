@@ -1,7 +1,7 @@
 clear
 clc
 load('LabSParams.mat');
-SParams = reshape(SParams, 12, 3);
+SParams = reshape(SParams, 18, 3);
 figure();
 
 %% Paper1
@@ -21,8 +21,9 @@ figure();
 %% Paper3
 [ d ] = DATA5R({
     'SVM','PSVM','LS-SVM','TWSVM','MTPSVM','MTLS-SVM',...
+    'IRMTL-C','SSRC-IRMTL','IRMTL-M','SSRM-IRMTL','IRMTL-P','SSRP-IRMTL',...
     'CRMTL-C','SSRC-CRMTL','CRMTL-M','SSRM-CRMTL','CRMTL-P','SSRP-CRMTL',...
-}, [ 1 4 5 6 7 8 ]);
+}, [ 1 2 3 5 6 13 14 ]);
 
 %     'IRMTL-C','SSRC-IRMTL','IRMTL-M','SSRM-IRMTL','IRMTL-P','SSRP-IRMTL',...
 %     'RMTL-L1','SSRL1-IRMTL','RMTL-L2','SSRL2-IRMTL','RMTL-L2','SSRL2-IRMTL',...
@@ -43,9 +44,9 @@ for k = [ 1  3 ]
 end
 
 %% Safe screening
-[ d ] = DATA5R({'Flag', 'S0', 'SC', 'C0', 'CC', 'Inactive', 'Screening', 'Speedup'}, [ 8 ]);
+[ d ] = DATA5R({'Flag', 'S0', 'SC', 'C0', 'CC', 'K1', 'K2', 'Inactive', 'Screening', 'Speedup'}, [ 10 ]);
 for i = [ 1 3 ]
-    Params = reshape(SParams(7:12,i), [2 3]);
+    Params = reshape(SParams(13:18,i), [2 3]);
     for k = [ 1 : 3 ]
         p = Params{2,k};
         Name = sprintf('MyStat-%s-%s', p.ID , p.kernel.type);

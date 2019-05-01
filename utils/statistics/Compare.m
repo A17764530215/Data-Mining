@@ -7,7 +7,7 @@ function [ Summary ] = Compare(Path, File, DataSets, INDICES, MethodA, MethodB)
     Result = cell(n, 1);
     ErrorParams = cell(n, 1);
     ErrorResult = cell(n, 1);
-    State = zeros(n, 8);
+    State = zeros(n, 10);
     for i = INDICES
         D = DataSets(i);
         % Record

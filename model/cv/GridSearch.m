@@ -25,6 +25,7 @@ function [ GSStat, GSTime, GSRate ] = GridSearch(DataSet, IParams, cv, opts)
     % 获取全部数据并标准化
     [ X, Y, ValInd, TaskNum, Kfold ] = GetMultiTask(DataSet);
     [ X ] = Normalize(X);
+    IParams.solver = opts.solver;
     
     if cv
         % 有交叉验证

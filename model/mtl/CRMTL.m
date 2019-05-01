@@ -6,6 +6,9 @@ function [ yTest, Time ] = CRMTL( xTrain, yTrain, xTest, opts )
 TaskNum = length(xTrain);
 [ X, Y, T, ~ ] = GetAllData(xTrain, yTrain, TaskNum);
 Sym = @(H) (H+H')/2 + 1e-5*speye(size(H));
+solver = opts.solver;
+opts.solver = [];
+opts = rmfield(opts, 'solver');
 count = GetParamsCount(opts);
 if count > 1
     % Íø¸ñËÑË÷¼ÓËÙ
@@ -14,6 +17,7 @@ if count > 1
     [ change, step ] = Change(opts);
     for i = 1 : count
         params = GetParams(opts, i);
+        params.solver = solver;
         tic;
         if mod(i, step) ~= 1
             switch change 
