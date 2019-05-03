@@ -23,7 +23,7 @@ end
 
 %% 统计安全筛选
 for i = 1 : 3
-    Params = reshape(SParams(13:18,i), [2 3]);
+    Params = reshape(SParams(7:18,i), [2 6]);
     Src = sprintf('./data/ssr-complete/%s/5-fold/', lower(Kernels{i}));
     for k = 1:3
         p = Params{2,k};

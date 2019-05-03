@@ -1,56 +1,68 @@
-function [  CVStat, CVTime, CVRate ] = SSR_IRMTL( xTrain, yTrain, xTest, yTest, TaskNum, IParams, opts )
+function [ CVStat, CVTime, CVRate ] = SSR_IRMTL( xTrain, yTrain, xTest, yTest, TaskNum, IParams, opts )
 %SSR_IRMTL 此处显示有关此函数的摘要
 % Safe Screening for IRMTL
 %   此处显示详细说明
 
-%% Fit
 [ X, Y, T, ~ ] = GetAllData(xTrain, yTrain, TaskNum);
-solver = opts.solver;
+Sym = @(H) (H+H')/2 + 1e-5*speye(size(H));
+IParams = rmfield(IParams, 'solver');
 [ change, step ] = Change(IParams);
 n = GetParamsCount(IParams);
 CVStat = zeros(n, opts.IndexCount, TaskNum);
 CVTime = zeros(n, 2);
-CVRate = zeros(n, 6);
+CVRate = zeros(n, 4);
 for i = 1 : n
     params1 = GetParams(IParams, i);
     params1.solver = opts.solver;
     tic;
-    [ H1 ] = Prepare(X, Y, TaskNum, params1);
-    C1 = params1.C;
     if mod(i, step) ~= 1
-        C0 = params0.C;
         % solve the rest problem
         switch change
             case 'C'
-                [ Alpha1 ] = DVI_C(H1, Alpha0, C1, C0);
-            case 'H'
-                [ Alpha1 ] = DVI_H(H0, H1, Alpha0, C1);
+                [ Alpha1 ] = DVI_C(H1, Alpha0, params1.C, params0.C);
+            case 'mu'
+                % 重新计算Hessian阵
+                H0 = H1;
+                [ H1 ] = Sym(Q/params1.mu + P);
+                [ Alpha1 ] = DVI_H(H0, H1, Alpha0, params1.C);
+            case 'p'
+                % 重新计算Hessian阵
+                H0 = H1;
+                [ Q, P ] = Prepare(X, Y, T, TaskNum, params1);
+                [ H1 ] = Sym(Q/params1.mu + P);
+                [ Alpha1 ] = DVI_H(H0, H1, Alpha0, params1.C);
             otherwise
-                throw(MException('SSR_IRMTL', 'Change: no parameter changed'));
+                throw(MException('SSR:IRMTL', 'Change: no parameter changed'));
         end
-        [ Alpha0, S, CVRate(i,1:2) ] = Reduced(H1, Alpha1, C1);
+        [ Alpha0, ~, CVRate(i,1:2) ] = Reduced(H1, Alpha1, params1);
     else
         % solve the first problem
-        [ Alpha0 ] = Primal(H1, C1);
+        [ Q, P ] = Prepare(X, Y, T, TaskNum, params1);
+        % 重新计算Hessian阵
+        [ H1 ] = Sym(Q/params1.mu + P);
+        [ Alpha0 ] = Primal(H1, params1);
     end
-    H0 = H1;
     CVTime(i, 1) = toc;
     % 检验筛选出来的0和C，是不是原有的0和C
-    if mod(i, step) ~= 1
-        [ Alpha1 ] = Primal(H1, params1.C);
-        [ CVRate(i, 5:6) ] = Compare(Alpha1, Alpha0, S);
-    end
+%     if mod(i, step) ~= 1
+%         [ Alpha1 ] = Primal(H1, params1);
+%         [ CVRate(i, 5:6) ] = Compare(Alpha1, Alpha0, S);
+%     end
     % 预测
-    [ y_hat, CVRate(i, 3:4) ] = Predict(X, Y, xTest, Alpha0, params1);
+    [ y_hat, CVRate(i, 3:4) ] = Predict(X, Y, T, xTest, TaskNum, Alpha0, params1);
     CVStat(i,:,:) = MTLStatistics(TaskNum, y_hat, yTest, opts);
     params0 = params1;
 end
 
     function [ rate ] = Compare(Alpha1, Alpha0, S)
-        DiffS = Alpha1(S)-Alpha0(S);
-        DiffA = Alpha1-Alpha0;
-        rate(1) = max(DiffS);
-        rate(2) = max(DiffA);
+        Diff = abs(Alpha1-Alpha0);
+        if size(Diff(S), 1) > 0
+            rate(1) = max(Diff(S));
+            rate(2) = max(Diff);
+        else
+            rate(1) = 0;
+            rate(2) = max(Diff);
+        end
     end
 
     function [ change, step ] = Change(IParams)
@@ -62,13 +74,13 @@ end
             step = length(IParams.C);
         elseif p1.mu ~= p2.mu
             step = length(IParams.mu);
-            change = 'H';
+            change = 'mu';
         else
             k1 = p1.kernel;
             k2 = p2.kernel;
             if strcmp(k1.type, 'rbf') && strcmp(k2.type, 'rbf')
                 if k1.p1 ~= k2.p1
-                    change = 'H';
+                    change = 'p';
                     step = length(IParams.kernel.p1);
                 else
                     throw(MException('SSR_CRMTL', 'Change: no parameter changed'));
@@ -79,7 +91,7 @@ end
         end
     end
 
-    function [ H ] = Prepare(X, Y, TaskNum, opts)
+    function [ Q, P ] = Prepare(X, Y, T, TaskNum, opts)
         % construct hessian matrix
         Q = Y.*Kernel(X, X, opts.kernel).*Y';
         P = cell(TaskNum, 1);
@@ -87,32 +99,32 @@ end
             Tt = T==t;
             P{t} = Q(Tt,Tt);
         end
-        H = Cond(Q/opts.mu + spblkdiag(P{:}));
+        P = spblkdiag(P{:});
     end
 
-    function [ Alpha1 ] = Primal(H1, C1)
+    function [ Alpha1 ] = Primal(H1, opts)
         % primal problem
         e = ones(size(H1, 1), 1);
         lb = zeros(size(H1, 1), 1);
-        [ Alpha1 ] = quadprog(H1,-e,[],[],[],[],lb,C1*e,[],solver);
+        [ Alpha1 ] = quadprog(H1,-e,[],[],[],[],lb,opts.C*e,[],opts.solver);
     end
 
-    function [ Alpha1, S, Rate ] = Reduced(H1, Alpha1, C1)
+    function [ Alpha1, S, Rate ] = Reduced(H1, Alpha1, opts)
         % reduced problem
         R = Alpha1 == Inf;
         S0 = Alpha1 == 0;
-        SC = Alpha1 == C1;
+        SC = Alpha1 == opts.C;
         S = S0 | SC;
         Rate = mean([S0, SC]);
         if mean(R) > 0
             f = H1(R,S)*Alpha1(S)-1;
             lb = zeros(size(f));
-            ub = C1*ones(size(f));
-            [ Alpha1(R) ] = quadprog(H1(R,R),f,[],[],[],[],lb,ub,[],solver);
+            ub = opts.C*ones(size(f));
+            [ Alpha1(R) ] = quadprog(H1(R,R),f,[],[],[],[],lb,ub,[],opts.solver);
         end
     end
 
-    function [ yTest, Rate ] = Predict(X, Y, xTest, Alpha, opts)
+    function [ yTest, Rate ] = Predict(X, Y, T, xTest, TaskNum, Alpha, opts)
         % extract opts
         mu = opts.mu;
         C = opts.C;

@@ -23,7 +23,7 @@ figure();
     'SVM','PSVM','LS-SVM','TWSVM','MTPSVM','MTLS-SVM',...
     'IRMTL-C','SSRC-IRMTL','IRMTL-M','SSRM-IRMTL','IRMTL-P','SSRP-IRMTL',...
     'CRMTL-C','SSRC-CRMTL','CRMTL-M','SSRM-CRMTL','CRMTL-P','SSRP-CRMTL',...
-}, [ 1 2 3 5 6 13 14 ]);
+}, [ 1 5 6 7 8 13 14 ]);
 
 %     'IRMTL-C','SSRC-IRMTL','IRMTL-M','SSRM-IRMTL','IRMTL-P','SSRP-IRMTL',...
 %     'RMTL-L1','SSRL1-IRMTL','RMTL-L2','SSRL2-IRMTL','RMTL-L2','SSRL2-IRMTL',...
@@ -44,10 +44,10 @@ for k = [ 1  3 ]
 end
 
 %% Safe screening
-[ d ] = DATA5R({'Flag', 'S0', 'SC', 'C0', 'CC', 'K1', 'K2', 'Inactive', 'Screening', 'Speedup'}, [ 10 ]);
+[ d ] = DATA5R({'Flag', 'S0', 'SC', 'C0', 'CC', 'K1', 'K2', 'Inactive', 'Screening', 'Speedup'}, [ 2 3 4 5 ]);
 for i = [ 1 3 ]
-    Params = reshape(SParams(13:18,i), [2 3]);
-    for k = [ 1 : 3 ]
+    Params = reshape(SParams(7:18,i), [2 6]);
+    for k = [ 1 : 6 ]
         p = Params{2,k};
         Name = sprintf('MyStat-%s-%s', p.ID , p.kernel.type);
         Path = sprintf('./results/paper3/statistics/%s.mat', Name);

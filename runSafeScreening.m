@@ -7,7 +7,7 @@ Kernels = {'Linear', 'Poly' 'RBF'};
 SParams = reshape(SParams, 18, 3);
 % DATA5R
 DataSetIndices = [ 1:31 ];
-ParamIndices = [ 1:6 13:18 ];
+ParamIndices = [ 7:12 ];
 OverWrite = false;
 
 %% 实验开始trust-region-reflective 'TolCon', 300*eps, 
@@ -46,16 +46,16 @@ for k = [ 1 3  ]
                     if mod(j, 2) == 0 && j > 6
                         [ Result, State ] = CompareAB(SavePath, DataSet, SParams{j-1,k}, SParams{j,k});
                         if State(1) == 1
-                            if State(9) > 0.1
-                                fprintf('pass: %s %.6f %.2f\n', Name, State(7), State(9));
-                                fprintf(fd, 'pass: %s %.6f %.2f\n', Name, State(7), State(9));
+                            if State(8) > 0.1
+                                fprintf('pass: %s %.6f %.2f\n', Name, State(7), State(8));
+                                fprintf(fd, 'pass: %s %.6f %.2f\n', Name, State(7), State(8));
                             else
-                                fprintf('warning: %s %.6f %.2f\n', Name, State(7), State(9));
-                                fprintf(fd, 'warning: %s %.6f %.2f\n', Name, State(7), State(9));
+                                fprintf('warning: %s %.6f %.2f\n', Name, State(7), State(8));
+                                fprintf(fd, 'warning: %s %.6f %.2f\n', Name, State(7), State(8));
                             end
                         else
-                            fprintf('error: %s %.2f %.6f %.9f\n', Name, State(7), State(9), State(1));
-                            fprintf(fd, 'error: %s %.2f %.6f %.9f\n', Name, State(7), State(9), State(1));
+                            fprintf('error: %s %.2f %.6f %.9f\n', Name, State(7), State(8), State(1));
+                            fprintf(fd, 'error: %s %.2f %.6f %.9f\n', Name, State(7), State(8), State(1));
                         end
                     end
                 catch Exception
