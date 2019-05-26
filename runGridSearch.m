@@ -2,20 +2,19 @@
 clc
 clear
 
-Path = './data/classify';
+Path = './data/paper2';
 if exist(Path, 'dir') == 0
     mkdir(Path);
 end
 
-load('MTL_UCI5.mat');
+load('DATA5.mat');
 load('LabCParams.mat');
 
-DataSets = MTL_UCI5;
 CParams = reshape(CParams, 17, 3);
 
 % 数据集
-DataSetIndices = [ 2 ];
-ParamIndices = [ 14 15 ];
+DataSetIndices = [ 1:9 28:54 ];
+ParamIndices = [ 1:6 9:13 16 17 ];
 ForceWrite = true;
 
 %% 实验设置
@@ -31,7 +30,7 @@ for i = DataSetIndices
     [ X, Y, ValInd ] = GetMultiTask(DataSet);
     [ X ] = Normalize(X);
     for j = ParamIndices
-        Method = CParams{j, 1};
+        Method = CParams{j, 2};
         Name = [Method.ID, '-', DataSet.Name];
         SavePath = sprintf('%s/%s/%d-fold/', Path, Method.kernel.type, DataSet.Kfold);
         if exist(SavePath, 'dir') == 0
@@ -43,9 +42,9 @@ for i = DataSetIndices
             continue;
         else
             try
-                [ CVStat, CVTime ] = GridSearch(DataSet, Method, false, opts);
+                [ CVStat, CVTime ] = GridSearch(DataSet, Method, true, opts);
 %                 [ CVStat, CVTime ] = GridSearchCV(@MTL, X, Y, Method, DataSet.TaskNum, DataSet.Kfold, ValInd, opts);
-                save(StatPath, 'CVStat', 'CVTime');
+                save(StatPath, 'CVStat', 'CVTime', 'Method');
                 fprintf(fd, 'save: %s\n', StatPath);
             catch Exception
                 delete('check-point.mat');

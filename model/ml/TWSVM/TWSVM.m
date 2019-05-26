@@ -42,9 +42,9 @@ end
     function [ change, step ] = Change(opts)
         p1 = GetParams(opts, 1);
         p2 = GetParams(opts, 2);
-        if p1.C1 ~= p2.C1
+        if p1.C ~= p2.C
             change = 'C';
-            step = length(opts.C1);
+            step = length(opts.C);
         else
             k1 = p1.kernel;
             k2 = p2.kernel;
@@ -80,8 +80,8 @@ end
     end
 
     function [ Alpha, Mu ] = Primal(H, G, e1, e2, m1, m2, params)
-        Alpha = quadprog(H,-e2,[],[],[],[],zeros(m2, 1),e2*params.C1,[],params.solver);
-        Mu = quadprog(G,-e1,[],[],[],[],zeros(m1, 1),e1*params.C1,[],params.solver);
+        Alpha = quadprog(H,-e2,[],[],[],[],zeros(m2, 1),e2*params.C,[],params.solver);
+        Mu = quadprog(G,-e1,[],[],[],[],zeros(m1, 1),e1*params.C,[],params.solver);
     end
 
     function [ u1, b1, u2, b2 ] = GetWeight(S2R, R2S, Alpha, Mu)

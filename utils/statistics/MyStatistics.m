@@ -35,4 +35,5 @@ function [ d ] = MyStatistics(DataSets, IParams, Type, opts)
     end
     d.Name = Name; d.Time = Time;
     d.Rank = Rank; d.Data = Data;
+    d.Methods = IParams;
 end
