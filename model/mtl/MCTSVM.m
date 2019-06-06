@@ -131,14 +131,14 @@ end
     end
 
     function [ H1, H2 ] = GetHessian(Q, P, R, S, opts)
-        H1 = Cond(Q + 1/opts.rho*P);
-        H2 = Cond(R + 1/opts.rho*S);
+        Sym = @(H) (H+H')/2 + 1e-5;
+        H1 = Sym(Q + 1/opts.rho*P);
+        H2 = Sym(R + 1/opts.rho*S);
     end
 
     function [ Alpha, Gamma ] = Primal(H1, H2, e1, e2, m1,m2, opts)
-        Sym = @(H) (H+H')/2;
-        Alpha = quadprog(Sym(H1),-e2,[],[],[],[],zeros(m2, 1),opts.C*e2,[],opts.solver);
-        Gamma = quadprog(Sym(H2),-e1,[],[],[],[],zeros(m1, 1),opts.C*e1,[],opts.solver);
+        Alpha = quadprog(H1,-e2,[],[],[],[],zeros(m2, 1),opts.C*e2,[],opts.solver);
+        Gamma = quadprog(H2,-e1,[],[],[],[],zeros(m1, 1),opts.C*e1,[],opts.solver);
     end
 
     function [ U, V ] = GetWeight(EEF, FFE, EEFt, FFEt, Alpha, Gamma, I, TaskNum, opts)

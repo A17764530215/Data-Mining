@@ -10,11 +10,12 @@ end
 load('DATA5.mat');
 load('LabCParams.mat');
 
-CParams = reshape(CParams, 17, 3);
+% DataSets = MTL_UCI5;
+CParams = reshape(CParams, 16, 3);
 
 % 数据集
-DataSetIndices = [ 1:9 28:54 ];
-ParamIndices = [ 1:6 9:13 16 17 ];
+DataSetIndices = [ 1:9 28:54];
+ParamIndices = [ 15 16 ];
 ForceWrite = true;
 
 %% 实验设置
@@ -44,7 +45,7 @@ for i = DataSetIndices
             try
                 [ CVStat, CVTime ] = GridSearch(DataSet, Method, true, opts);
 %                 [ CVStat, CVTime ] = GridSearchCV(@MTL, X, Y, Method, DataSet.TaskNum, DataSet.Kfold, ValInd, opts);
-                save(StatPath, 'CVStat', 'CVTime', 'Method');
+                save(StatPath, 'CVStat', 'CVTime');
                 fprintf(fd, 'save: %s\n', StatPath);
             catch Exception
                 delete('check-point.mat');

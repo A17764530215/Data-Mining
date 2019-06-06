@@ -65,7 +65,7 @@ end
             if strcmp(k1.type, 'rbf') && strcmp(k2.type, 'rbf')
                 if k1.p1 ~= k2.p1
                     change = 'p1';
-                    step = length(IParams.kernel.p1);
+                    step = length(opts.kernel.p1);
                 else
                     throw(MException('MTL:MTvTWSVM2', 'Change: no parameter changed'));
                 end
@@ -76,14 +76,14 @@ end
     end
 
     function [ H1, H2 ] = GetHessian(Q, P, R, S, TaskNum, params)
-        H1 = params.mu*Q + TaskNum*(1-params.mu)*P;
-        H2 = params.mu*R + TaskNum*(1-params.mu)*S;
+        Sym = @(H) (H+H')/2 + 1e-5*speye(size(H));
+        H1 = Sym(params.mu*Q + (1-params.mu)*TaskNum*P);
+        H2 = Sym(params.mu*R + (1-params.mu)*TaskNum*S);
     end
 
-    function [ Alpha, Gamma ] = Primal(H1, H2, e1, e2, m1, m2, params)
-        symmetric = @(H) (H+H')/2;
-        Alpha = quadprog(symmetric(H1),[],-e2',-params.nv,[],[],zeros(m2, 1),e2/m2,[],params.solver);
-        Gamma = quadprog(symmetric(H2),[],-e1',-params.nv,[],[],zeros(m1, 1),e1/m1,[],params.solver);
+    function [ Alpha, Gamma ] = Primal(H1, H2, e1, e2, m1, m2, params)        
+        Alpha = quadprog(H1,[],-e2',-params.nv,[],[],zeros(m2, 1),e2/m2,[],params.solver);
+        Gamma = quadprog(H2,[],-e1',-params.nv,[],[],zeros(m1, 1),e1/m1,[],params.solver);
     end
 
     function [ U, V ] = GetUV(Alpha, Gamma, EEF, FFE, EEFc, FFEc, N, TaskNum, params)

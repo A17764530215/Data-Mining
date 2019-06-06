@@ -33,11 +33,11 @@ if count > 1
             [ Q, P, R, S, EEF, FFE, EEFc, FFEc, e1, e2, m1, m2 ] = Prepare(X, Y, N, TaskNum, params.kernel);
             [ H1, H2 ] = GetHessian(Q, P, R, S, TaskNum, params);
         end
-        % 重新求解优化问题
+        % 求解模型
         [ Alpha, Gamma ] = Primal(H1, H2, e1, e2, m1, m2, params);
         [ Time(i, 1) ] = toc;
         % 预测
-        [ U, V ] = GetWeight(EEF, FFE, EEFc, FFEc, Alpha, Gamma, N, TaskNum, params);
+        [ U, V ] = GetUV(EEF, FFE, EEFc, FFEc, Alpha, Gamma, N, TaskNum, params);
         [ yTest{i} ] = Predict(xTest, X, TaskNum, U, V, params.kernel);
     end
 else
@@ -48,7 +48,7 @@ else
     [ Alpha, Gamma ] = Primal(H1, H2, e1, e2, m1, m2, opts);
     Time = toc;
     % 预测
-    [ U, V ] = GetWeight(EEF, FFE, EEFc, FFEc, Alpha, Gamma, N, TaskNum, opts);
+    [ U, V ] = GetUV(EEF, FFE, EEFc, FFEc, Alpha, Gamma, N, TaskNum, opts);
     [ yTest ] = Predict(xTest, X, TaskNum, U, V, opts.kernel);
 end
 
@@ -88,7 +88,7 @@ end
         Gamma = quadprog(H2,-e1,[],[],[],[],zeros(m1, 1),opts.C*e1,[],opts.solver);
     end
 
-    function [ U, V ] = GetWeight(EEF, FFE, EEFc, FFEc, Alpha, Gamma, N, TaskNum, opts)
+    function [ U, V ] = GetUV(EEF, FFE, EEFc, FFEc, Alpha, Gamma, N, TaskNum, opts)
         CAlpha = mat2cell(Alpha, N(2,:));
         CGamma = mat2cell(Gamma, N(1,:));
         u = -EEF*Alpha;

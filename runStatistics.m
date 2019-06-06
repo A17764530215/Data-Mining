@@ -2,7 +2,7 @@ clear;
 clc;
 
 % 加载数据和参数
-load('DATA5R.mat')
+load('DATA5.mat')
 load('LabRParams.mat');
 load('LabCParams.mat');
 load('LabSParams.mat');
@@ -10,14 +10,14 @@ load('LabSParams.mat');
 % 将三种核函数的实验分开
 Kernels = {'Linear', 'Poly', 'RBF'};
 RParams = reshape(RParams, 14, 3);
-CParams = reshape(CParams, 17, 3);
+CParams = reshape(CParams, 16, 3);
 SParams = reshape(SParams, 18, 3);
 
 %% 统计数据
-opts = InitOptions('clf', 1, [], 0, 3);
+opts = InitOptions('clf', 1, [], 0, 2);
 for i = 1 : 3
-    [ Summary ] = MyStatistics(DataSets, SParams(:,i), 'ssr-complete', opts);
-    Path = ['./results/paper3/MyStat-Stat-', Kernels{i}, '.mat'];
+    [ Summary ] = MyStatistics(DataSets, CParams(:,i), 'paper2', opts);
+    Path = ['./results/paper2-new/MyStat-Stat-', Kernels{i}, '.mat'];
     save(Path, 'Summary');
 end
 

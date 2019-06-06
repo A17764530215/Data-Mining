@@ -19,7 +19,7 @@ function [ LabStat, LabTime, HasStat ] = LabStatistics(Path, DataSet, IParams, o
         SavePath = sprintf('%s/%s/%d-fold/', Path, Method.kernel.type, DataSet.Kfold);
         Name = [Method.ID, '-', DataSet.Name];
         StatPath = [ SavePath, Name, '.mat'];
-        if exist(StatPath, 'file') == 2
+        if exist(StatPath, 'file') == 2             
             load(StatPath);
             [ ~, ~, n ] = size(CVStat);
             if n~= DataSet.TaskNum
@@ -32,7 +32,7 @@ function [ LabStat, LabTime, HasStat ] = LabStatistics(Path, DataSet, IParams, o
                 LabStat(k,:,:) = Stat(:,:,1);
                 LabTime(k,:) = Time(1,:);
                 HasStat = 1;
-            end
+            end        
         end
     end
 end

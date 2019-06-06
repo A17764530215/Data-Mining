@@ -29,20 +29,20 @@ if count > 1
                     throw(MException('MTL:MTvTWSVM', 'no parameter changed'));
             end
         else
-            % 新一轮搜索需要重新初始化
+            % 新一轮网格搜索
             [ Q, P, R, S, EEF, FFE, EEFc, FFEc, e1, e2, m1, m2 ] = Prepare(X, Y, N, TaskNum, params.kernel);
             [ H1, H2 ] = GetHessian(Q, P, R, S, TaskNum, params);
         end
         % 求解模型
         [ Alpha, Gamma ] = Primal(H1, H2, e1, e2, m1, m2, params);
         Time(i, 1) = toc;
-        [ U, V ] = GetUV(Alpha, Gamma, EEF, FFE, EEFc, FFEc, N, TaskNum, params);
         % 预测
+        [ U, V ] = GetUV(Alpha, Gamma, EEF, FFE, EEFc, FFEc, N, TaskNum, params);
         [ yTest{i} ] = Predict(xTest, X, TaskNum, U, V, params.kernel);
     end
 else
     tic;
-    [ Q, P, R, S, EEF, FFE, EEFc, FFEc, e1, e2, m1, m2 ] = Prepare(X, Y, N, TaskNum, kernel);
+    [ Q, P, R, S, EEF, FFE, EEFc, FFEc, e1, e2, m1, m2 ] = Prepare(X, Y, N, TaskNum, opts.kernel);
     [ H1, H2 ] = GetHessian(Q, P, R, S, TaskNum, opts);
     [ Alpha, Gamma ] = Primal(H1, H2, e1, e2, m1, m2, opts);
     Time = toc;
@@ -65,7 +65,7 @@ end
             if strcmp(k1.type, 'rbf') && strcmp(k2.type, 'rbf')
                 if k1.p1 ~= k2.p1
                     change = 'p1';
-                    step = length(IParams.kernel.p1);
+                    step = length(opts.kernel.p1);
                 else
                     throw(MException('MTL:MTvTWSVM', 'Change: no parameter changed'));
                 end
@@ -76,14 +76,14 @@ end
     end
 
     function [ H1, H2 ] = GetHessian(Q, P, R, S, TaskNum, params)
-        H1 = Q + TaskNum/params.mu*P;
-        H2 = R + TaskNum/params.mu*S;
+        Sym = @(H) (H+H')/2 + 1e-5*speye(size(H));
+        H1 = Sym(Q + TaskNum/params.mu*P);
+        H2 = Sym(R + TaskNum/params.mu*S);
     end
 
     function [ Alpha, Gamma ] = Primal(H1, H2, e1, e2, m1, m2, params)
-        symmetric = @(H) (H+H')/2;
-        Alpha = quadprog(symmetric(H1),[],-e2',-params.nv,[],[],zeros(m2, 1),e2/m2,[],params.solver);
-        Gamma = quadprog(symmetric(H2),[],-e1',-params.nv,[],[],zeros(m1, 1),e1/m1,[],params.solver);
+        Alpha = quadprog(H1,[],-e2',-params.nv,[],[],zeros(m2, 1),e2/m2,[],params.solver);
+        Gamma = quadprog(H2,[],-e1',-params.nv,[],[],zeros(m1, 1),e1/m1,[],params.solver);
     end
 
     function [ U, V ] = GetUV(Alpha, Gamma, EEF, FFE, EEFc, FFEc, N, TaskNum, params)
