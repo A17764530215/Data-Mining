@@ -19,7 +19,7 @@ All data mining practice with Matlab
 * [DMTSVM: Multi-task twin support vector machine](https://link.springer.com/chapter/10.1007%2F978-3-642-34481-7_42)
   * [MTCTSVM: Multi-task centroid twin support vector machine](https://doi.org/10.1016/j.neucom.2014.07.025)
   * [MTLS-TWSVM: Multi-task least squares twin support vector machine](https://www.sciencedirect.com/science/article/pii/S0925231219302061)
-  * [MT-$\nu$-TWSVM: Multi-task $\nu$ twin support vector machines](https://link.springer.com/10.1007/s00521-019-04628-5)
+  * [MT-ν-TWSVM: Multi-task ν-twin support vector machines](https://link.springer.com/10.1007/s00521-019-04628-5)
 
 ## Multi-class learning
 
