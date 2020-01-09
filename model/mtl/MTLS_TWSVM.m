@@ -156,7 +156,7 @@ function [ yTest, Time ] = GridSMWPrimal(X, Y, N, TaskNum, xTest, opts)
     end
 
     function [ Alpha, Gamma ] = SMW_Primal(A, B, AA, BB, Ac, Bc, AAc, BBc, TaskNum, e1, e2, opts)
-        
+    % 采用SMW加速矩阵求逆
         [ invD1 ] = BlockInverion(Bc, AAc, BBc, TaskNum, opts.rho, opts.C);
         [ invD2 ] = BlockInverion(Ac, BBc, AAc, TaskNum, opts.rho, opts.C);
         [ Alpha ] = SMW_Solve(invD1, B, AA, B', e2);
@@ -196,10 +196,10 @@ end
                     change = 'p1';
                     step = length(opts.kernel.p1);
                 else
-                    throw(MException('MTL:DMTSVM', 'Change: no parameter changed'));
+                    throw(MException('MTL:LSTWSVM', 'Change: no parameter changed'));
                 end
             else 
-                throw(MException('MTL:DMTSVM', 'Change: no parameter changed'));
+                throw(MException('MTL:LSTWSVM', 'Change: no parameter changed'));
             end
         end
     end
