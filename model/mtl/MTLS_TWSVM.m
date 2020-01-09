@@ -1,7 +1,7 @@
 function [ yTest, Time ] = MTLS_TWSVM(xTrain, yTrain, xTest, opts)
-%MTLS_TWSVM ´Ë´¦ÏÔÊ¾ÓĞ¹Ø´Ëº¯ÊıµÄÕªÒª
+%MTLS_TWSVM æ­¤å¤„æ˜¾ç¤ºæœ‰å…³æ­¤å‡½æ•°çš„æ‘˜è¦
 % Multi-Task Least Square Twin Support Vector Machine
-%   ´Ë´¦ÏÔÊ¾ÏêÏ¸ËµÃ÷
+%   æ­¤å¤„æ˜¾ç¤ºè¯¦ç»†è¯´æ˜
 
 TaskNum = length(xTrain);
 [ X, Y, ~, N ] = GetAllData(xTrain, yTrain, TaskNum);
@@ -16,7 +16,7 @@ else
 end
 
 function [ yTest, Time ] = GridPrimal(X, Y, N, TaskNum, xTest, opts)
-% Íø¸ñËÑË÷¼ÓËÙ
+% ç½‘æ ¼æœç´¢åŠ é€Ÿ
     count = GetParamsCount(opts);
     yTest = cell(count, 1);
     Time = zeros(count, 1);
@@ -43,26 +43,26 @@ function [ yTest, Time ] = GridPrimal(X, Y, N, TaskNum, xTest, opts)
     end
     
     function [ Q, P, R, S, EEF, FFE, EEFc, FFEc, e1, e2 ] = Prepare(X, Y, N, TaskNum, kernel)
-        % ·Ö¸îÕı¸ºÀàµã
+        % åˆ†å‰²æ­£è´Ÿç±»ç‚¹
         A = X(Y==1,:);
         B = X(Y==-1,:);
         [m1, ~] = size(A);
         [m2, ~] = size(B);
-        % ºËº¯Êı
+        % æ ¸å‡½æ•°
         e1 = ones(m1, 1);
         e2 = ones(m2, 1);        
         if strcmp(kernel.type, 'linear')
-            E = [Kernel(A, X, kernel) e1];
-            F = [Kernel(B, X, kernel) e2];
-        else
             E = [A e1];
             F = [B e2];
+        else
+            E = [Kernel(A, X, kernel) e1];
+            F = [Kernel(B, X, kernel) e2];
         end
-        % µÃµ½Q,R¾ØÕó
+        % å¾—åˆ°Q,RçŸ©é˜µ
         EEF = Cond(E'*E)\F';
         FFE = Cond(F'*F)\E';
         Q = F*EEF; R = E*FFE;
-        % µÃµ½P,S¾ØÕó
+        % å¾—åˆ°P,SçŸ©é˜µ
         Ec = mat2cell(E, N(1,:));
         Fc = mat2cell(F, N(2,:));
         EEFc = cell(TaskNum, 1);
@@ -92,7 +92,7 @@ function [ yTest, Time ] = GridPrimal(X, Y, N, TaskNum, xTest, opts)
 end
 
 function [ yTest, Time ] = GridSMWPrimal(X, Y, N, TaskNum, xTest, opts)
-% Íø¸ñËÑË÷¼ÓËÙ
+% ç½‘æ ¼æœç´¢åŠ é€Ÿ
     count = GetParamsCount(opts);
     yTest = cell(count, 1);
     Time = zeros(count, 1);
@@ -119,27 +119,27 @@ function [ yTest, Time ] = GridSMWPrimal(X, Y, N, TaskNum, xTest, opts)
     end
     
     function [ E, F, EE, FF, EEF, FFE, Ec, Fc, EEc, FFc, EEFc, FFEc, e1, e2 ] = SMWPrepare(X, Y, N, TaskNum, kernel)
-        % ·Ö¸îÕı¸ºÀàµã
+        % åˆ†å‰²æ­£è´Ÿç±»ç‚¹
         A = X(Y==1,:);
         B = X(Y==-1,:);
         [m1, ~] = size(A);
         [m2, ~] = size(B);
-        % ºËº¯Êı
+        % æ ¸å‡½æ•°
         e1 = ones(m1, 1);
         e2 = ones(m2, 1);
         if strcmp(kernel.type, 'linear')
-            E = [Kernel(A, X, kernel) e1];
-            F = [Kernel(B, X, kernel) e2];
-        else
             E = [A e1];
             F = [B e2];
+        else
+            E = [Kernel(A, X, kernel) e1];
+            F = [Kernel(B, X, kernel) e2];
         end
-        % µÃµ½EE,FF¾ØÕó
+        % å¾—åˆ°EE,FFçŸ©é˜µ
         EE = E'*E;
         FF = F'*F;
         EEF = Cond(E'*E)\F';
         FFE = Cond(F'*F)\E';
-        % µÃµ½EEc,FFc¾ØÕó
+        % å¾—åˆ°EEc,FFcçŸ©é˜µ
         Ec = mat2cell(E, N(1,:));
         Fc = mat2cell(F, N(2,:));
         EEc = cell(TaskNum, 1);
