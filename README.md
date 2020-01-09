@@ -29,11 +29,11 @@ All data mining practice with Matlab
  * AGNES
  
 ## Sample Selection Method
- * Neighbors Property Pattern Selection (NPPS)
+ * [Neighbors Property Pattern Selection (NPPS)](https://www.mitpressjournals.org/doi/10.1162/neco.2007.19.3.816)
  * Neighbour Distribution Pattern (NDP)
  * Fixed Neighborhood Sphere Sample Selection (FNSSS)
- * Distance-based Sample Selection Method (DSSM)
- * Knn-based Sample Selection Method(KSSM)
+ * [Distance-based Sample Selection Method (DSSM)](https://doi.org/10.3233/IFS-151785)
+ * [Knn-based Sample Selection Method(KSSM)](https://doi.org/10.3233/IFS-151785)
  * Border-Edge Pattern Selection (BEPS)
  * Concept Boundary Detection (CBD)
  * Multi-Class Instance Selection (MCIS)
