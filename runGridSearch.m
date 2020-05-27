@@ -2,7 +2,7 @@
 clc
 clear
 
-Path = './data/paper2';
+Path = './data/paper4/';
 if exist(Path, 'dir') == 0
     mkdir(Path);
 end
@@ -14,8 +14,8 @@ load('LabCParams.mat');
 CParams = reshape(CParams, 16, 3);
 
 % 数据集
-DataSetIndices = [ 1:9 28:54];
-ParamIndices = [ 15 16 ];
+DataSetIndices = [ 1 ];
+ParamIndices = [ 9 ];
 ForceWrite = true;
 
 %% 实验设置

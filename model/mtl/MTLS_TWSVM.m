@@ -196,10 +196,10 @@ end
                     change = 'p1';
                     step = length(opts.kernel.p1);
                 else
-                    throw(MException('MTL:DMTSVM', 'Change: no parameter changed'));
+                    throw(MException('MTLS_TWSVM', 'Change: no parameter changed'));
                 end
             else 
-                throw(MException('MTL:DMTSVM', 'Change: no parameter changed'));
+                throw(MException('MTLS_TWSVM', 'Change: no parameter changed'));
             end
         end
     end
