@@ -1,7 +1,7 @@
 clear
 clc
-load('LabSParams.mat');
-SParams = reshape(SParams, 18, 3);
+load('LabCParams.mat');
+CParams = reshape(CParams, 16, 3);
 figure();
 
 %% Paper1
@@ -12,11 +12,25 @@ figure();
 }, [9:13 14]);
 
 %% Paper2
+STL = [1:6 15 16];
+MTL = [9:13 15 16];
 [ d ] = DATA5({
     'SVM','PSVM','LS-SVM','TWSVM','LS-TWSVM','\nu-TWSVM','ITWSVM',...
     'RMTL','MTPSVM','MTLS-SVM','MTL-aLS-SVM',...
     'DMTSVM','MCTSVM','MTLS_TWSVM','MT-\nu-TWSVM I','MT-\nu-TWSVM II'
-}, [9:13 15 16]);
+}, MTL);
+
+Kernels = {'Linear', 'Poly', 'RBF'};
+d.IDX = STL;
+PlotPaper2(d, 1, Kernels{2}, 'STL');
+PlotPaper2(d, 1, Kernels{3}, 'STL');
+d.IDX = MTL;
+PlotPaper2(d, 1, Kernels{2}, 'MTL');
+PlotPaper2(d, 1, Kernels{3}, 'MTL');
+PlotPaper2(d, 5, Kernels{2}, 'MTL');
+PlotPaper2(d, 6, Kernels{2}, 'MTL');
+PlotPaper2(d, 7, Kernels{2}, 'MTL');
+PlotPaper2(d, 8, Kernels{2}, 'MTL');
 
 %% Paper3
 [ d ] = DATA5R({
@@ -24,18 +38,17 @@ figure();
     'IRMTL-C','SSRC-IRMTL','IRMTL-M','SSRM-IRMTL','IRMTL-P','SSRP-IRMTL',...
     'CRMTL-C','SSRC-CRMTL','CRMTL-M','SSRM-CRMTL','CRMTL-P','SSRP-CRMTL',...
 }, [ 1 5 6 7 8 13 14 ]);
+
 Kernels = {'Linear', 'Poly', 'RBF'};
 type = {'data', 'time'};
-for k = [ 1  3 ]
+for k = [ 1 3 ]
     Path = ['./results/paper3/MyStat-Stat-', Kernels{k}, '.mat'];
     load(Path);
     for i = 1 : 2
         clf;
-        FigureFactory(type{i}, Summary, d, 1:4);
+        FigureFactory(type{i}, Summary, d, [1:4]);
         path = sprintf('./results/paper3/figures/Figure-%s-%s', upper(type{i}), Kernels{k});
-        saveas(gcf, [path, '.png']);
         saveas(gcf, path, 'fig');
-        saveas(gcf, path, 'epsc');
     end
 end
 
@@ -52,9 +65,7 @@ for i = [ 1 3 ]
             clf;
             FigureFactory('state', Summary, d, [1:4]);
             path = sprintf('./results/paper3/figures/%s', Name);
-            saveas(gcf, [path, '.png']);
             saveas(gcf, path, 'fig');
-            saveas(gcf, path, 'epsc');
             fprintf([path, '\n']);
         end
     end
@@ -68,8 +79,10 @@ function [ d ] = DATA5(legends, idx)
 % 数据集属性
     d.Arcs = [0,0,0,0,45,45,0,0,0];
     d.Counts = [ 9, 8, 5, 5, 5, 10, 6, 6, 3 ];
-    d.Draws = {@plot, @bar, @plot, @bar, @bar, @bar, @plot, @plot,@bar };
-    d.Grids = {'on', 'off', 'on', 'off', 'off', 'off', 'on', 'on', 'off'};
+%     d.Draws = {@plot, @bar, @plot, @bar, @bar, @bar, @plot, @plot,@bar };
+%     d.Grids = {'on', 'off', 'on', 'off', 'off', 'off', 'on', 'on', 'off'};
+    d.Draws = {@bar, @bar, @bar, @bar, @bar, @bar, @bar, @bar, @bar };
+    d.Grids = {'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off'};
     d.Titles = {'Monk', 'Isolet', 'Letter_1', 'Letter_2', 'Caltech 101', 'Caltech 256', 'Flags', 'Emotions', 'MTL'};
     d.xLabels = { 'Task Size', 'Dataset Index', '#Task', 'Dataset Index', 'Category', 'Category',  'Task Size', 'Task Size', 'Dataset'};
     d.XTicklabel = {
@@ -79,12 +92,12 @@ function [ d ] = DATA5(legends, idx)
         'T1', 'T2', 'T3', 'T4', 'T5',...
         'Birds','Insects','Flowers','Mammals','Instruments',...
         'Aircrafts','Balls','Bikes', 'Birds','Boats','Flowers', 'Instruments','Plants','Mammals', 'Vehicles',...
-        '100', '120', '140', '160', '180', '191',...
+        '100', '120', '140', '160', '180', '194',...
         '100', '120', '140', '160', '180', '200',...
         'Letter', 'Spam_{3}', 'Spam_{15}'
     };
     d.Legends = legends;
-    d.STL = idx;
+    d.IDX = idx;
 end
 
 function [ d ] = DATA5R(legends, idx)
@@ -103,8 +116,7 @@ function [ d ] = DATA5R(legends, idx)
         'Flowers_3', 'Instruments_5','Plants_4','Mammals_{10}', 'Vehicles_9'
     };
     d.Legends = legends;
-    d.STL = idx;
-%         'Aircrafts_5','Balls_5','Bikes_6', 'Birds_9','Boats_4',...
+    d.IDX = idx;
 end
 
 % 绘图
@@ -117,4 +129,21 @@ function [] = Curve(Summary, INDICES, IDX, Kernel, Name)
             saveas(gcf, path);
         end
     end
+end
+
+function [] = PlotPaper2(d, k, kernel, type)
+    Path = ['./results/paper2/MyStat-Stat-', kernel, '.mat'];
+    load(Path);
+    
+    clf;
+    
+    subplot(1, 2, 1);
+    FigureFactory('data', Summary, d, k);
+    hold on;
+    subplot(1, 2, 2);
+    FigureFactory('time', Summary, d, k);
+    
+    path = sprintf('./results/paper2/figures/%s-Accuracy-%s-%s', d.Titles{k}, kernel, type);
+    path = replace(path, ' ', '');
+    saveas(gcf, path, 'fig');
 end

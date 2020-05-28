@@ -29,14 +29,14 @@ if count > 1
         end
         [ Alpha ] = Primal(H, Y, e, params);
         [ Time(i,1) ] = toc;
-        [ yTest{i} ] = Predict(xTest, X, Y, K, Alpha, params.kernel);
+        [ yTest{i} ] = Predict(xTest, X, Y, K, Alpha, params);
     end    
 else
     tic
     [ H, K, e ] = Prepare(X, Y, opts.kernel);
     [ Alpha ] = Primal(H, Y, e, opts);
     Time = toc;
-    [ yTest ] = Predict(xTest, X, Y, K, Alpha, opts.kernel);
+    [ yTest ] = Predict(xTest, X, Y, K, Alpha, opts);
 end
 
     function [ change, step ] = Change(opts)
@@ -71,10 +71,10 @@ end
         Alpha = quadprog(H, -e, Y', 0, [], [], 0*e, opts.C*e, [], opts.solver);
     end
 
-    function [ yTest ] = Predict(xTest, X, Y, K, Alpha, kernel)
-        svi = Alpha > 0;
-        b = mean(Y(svi)-K(svi,svi)*(Y(svi).*Alpha(svi)));
-        yTest = sign(Kernel(xTest, X(svi,:), kernel)*(Y(svi).*Alpha(svi))+b);
+    function [ yTest ] = Predict(xTest, X, Y, K, Alpha, opts)
+        svi = Alpha > 0 & Alpha < opts.C;
+        b = mean(Y(svi)-K(svi,:)*(Y.*Alpha));
+        yTest = sign(Kernel(xTest, X(svi,:), opts.kernel)*(Y(svi).*Alpha(svi))+b);
         yTest(yTest==0) = 1;
     end
 

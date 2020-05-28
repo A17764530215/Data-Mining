@@ -1,13 +1,13 @@
 clear;clc;
 
 % 加载数据集和网格搜索参数
-load('DATA5R.mat');
+load('DATA5R-Revision.mat');
 load('LabSParams.mat');
 Kernels = {'Linear', 'Poly' 'RBF'};
-SParams = reshape(SParams, 18, 3);
+SParams = reshape(SParams, 20, 3);
 % DATA5R
-DataSetIndices = [ 1:31 ];
-ParamIndices = [ 7:12 ];
+DataSetIndices = [ 20 ];
+ParamIndices = [ 5,6,19,20 ];
 OverWrite = false;
 
 %% 实验开始trust-region-reflective 'TolCon', 300*eps, 
@@ -18,10 +18,10 @@ solver = optimoptions('QUADPROG', 'Display', 'off',...
     'ConstraintTolerance', 1e-12);
 opts = InitOptions('clf', 0, solver, 0, 3);
 fd = fopen(['./log/log-', datestr(now, 'yyyymmddHHMM'), '.txt'], 'w');
-Path = './data/ssr-complete';
+Path = './data/ssr-revision';
 Kfold = 1;
-%%
-for k = [ 1 3  ]
+%
+for k = [ 1, 3  ]
     fprintf('runGridSearch:%s\n', Kernels{k});
     for i = DataSetIndices
         DataSet = DataSets(i);
@@ -43,7 +43,7 @@ for k = [ 1 3  ]
                     % 保存记录
                     save(StatPath, 'CVStat', 'CVTime', 'CVRate', 'Method');
                     fprintf(fd, 'save: %s\n', StatPath);
-                    if mod(j, 2) == 0 && j > 6
+                    if mod(j, 2) == 0 && j > 6 && j < 19
                         [ Result, State ] = CompareAB(SavePath, DataSet, SParams{j-1,k}, SParams{j,k});
                         if State(1) == 1
                             if State(8) > 0.1

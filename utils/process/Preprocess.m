@@ -33,9 +33,10 @@ function [ Data, Map ] = Preprocess( Raw, AttributeTypes )
                 Data(:, i) = Col;
             elseif AttributeTypes(i) == 3
                 % Categorical
+                Col = categorical(Col);
                 Classes = unique(Col);
                 for j = 1 : length(Classes)
-                    Data(strcmp(Col, Classes{j}), i) = j;
+                    Data(Col==Classes(j), i) = j;
                 end
                 Map{1, i} = Classes;
             else

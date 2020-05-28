@@ -52,11 +52,11 @@ function [ yTest, Time ] = GridPrimal(X, Y, N, TaskNum, xTest, opts)
         e1 = ones(m1, 1);
         e2 = ones(m2, 1);        
         if strcmp(kernel.type, 'linear')
-            E = [Kernel(A, X, kernel) e1];
-            F = [Kernel(B, X, kernel) e2];
-        else
             E = [A e1];
             F = [B e2];
+        else
+            E = [Kernel(A, X, kernel) e1];
+            F = [Kernel(B, X, kernel) e2];
         end
         % µ√µΩQ,Ræÿ’Û
         EEF = Cond(E'*E)\F';
@@ -220,12 +220,16 @@ end
     function [ yTest ] = Predict(xTest, X, U, V, TaskNum, kernel)
         yTest = cell(TaskNum, 1);
         for t = 1 : TaskNum
-            Et = xTest{t};
-            [m, ~] = size(Et);
+            Xt = xTest{t};
+            [m, ~] = size(Xt);
             et = ones(m, 1);
-            KAt = [Kernel(Et, X, kernel) et];
-            D1 = abs(KAt * U{t})/norm(U{t}(1:end-1));
-            D2 = abs(KAt * V{t})/norm(V{t}(1:end-1));
+            if strcmp(kernel.type, 'linear')
+                K = [Xt et];
+            else
+                K = [Kernel(Xt, X, kernel) et];
+            end
+            D1 = abs(K * U{t})/norm(U{t}(1:end-1));
+            D2 = abs(K * V{t})/norm(V{t}(1:end-1));
             yt = sign(D2-D1);
             yt(yt==0) = 1;
             yTest{t} = yt;

@@ -121,6 +121,78 @@ end
         end
     end
 
+    function [ w ] = GetWeight(X, Y, T, Alpha, TaskNum, opts)
+        % extract opts
+        mu = opts.mu;
+        % predict
+        m = size(X, 2);
+        w = zeros(TaskNum, m);
+        for t = 1 : TaskNum
+            Tt = T==t;
+            w0 = get_w(X, Y, Alpha);
+            vt = TaskNum*get_w(X(Tt,:), Y(Tt,:), Alpha(Tt,:));
+            wt = mu*w0 + (1-mu)*TaskNum*vt;
+            w(t,:) = wt;            
+        end
+                
+        function [ w ] = get_w(X, Y, Alpha)
+            w = X'*(Y.*Alpha);
+        end
+    end
+
+    function [ ] = plot_plane(w)
+        
+        a = w(1, 1);
+        b = w(1, 2);
+        
+        x = [-4:0.1:2];
+        
+        y0 = -a*x/b;
+        yn = (1-a*x)/b;
+        yp = (-1-a*x)/b;
+
+        plot(x, y0, 'k-');hold on;
+        plot(x, yp, 'r:');hold on;
+        plot(x, yn, 'b:');hold on;
+    end
+
+    function [ ] = PlotBoundary1(w, D, S, T)
+        
+        N = size(w, 1);
+        
+        for t = 1 : N
+            
+            subplot(1, N, t);
+            title(['Task-', int2str(t)]);
+            xlabel('a');
+            ylabel('b');
+            
+            Tt = T == t;
+            Scatter(D(~S & Tt,:), 16, 'ro', 'bo')
+            Scatter(D(S & Tt,:), 16, 'r+', 'b+');
+        
+            plot_plane(w(t,:));
+        end
+    end
+
+    function [ ] = PlotBoundary2(w, D, T)
+        
+        N = size(w, 1);
+        
+        for t = 1 : N
+            
+            subplot(1, N, t);
+            title(['Task-', int2str(t)]);
+            xlabel('a');
+            ylabel('b');
+            
+            Tt = T == t;
+            Scatter(D(Tt,:), 16, 'ro', 'bo');
+        
+            plot_plane(w(t,:));
+        end
+    end
+
     function [ yTest, Rate ] = Predict(xTest, X, Y, T, Alpha, TaskNum, opts)
         % extract opts
         mu = opts.mu;
