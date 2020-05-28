@@ -12,13 +12,14 @@ All data mining practice with Matlab
 [More Kernel methods](http://www.shogun-toolbox.org/examples/latest/index.html)
 
 ## Multi-task learning
-* RMTL: Regularized multi-task learning
-  * MTLS-SVM: Multi-task least squares support vector machine
-  * MTPSVM: Multi-tasl proximal support vector machine
-  * MT-aLS-SVM: Multi-task asymmetric least squares support vector machine
-* DMTSVM: Multi-task twin support vector machine
-  * MTCTSVM: Multi-task centroid twin support vector machine
+* [RMTL: Regularized multi-task learning](https://dl.acm.org/doi/10.1145/1014052.1014067)
+  * [MTLS-SVM: Multi-task least squares support vector machine](https://link.springer.com/article/10.1007%2Fs11042-013-1526-5)
+  * [MTPSVM: Multi-tasl proximal support vector machine](https://doi.org/10.1016/j.patcog.2015.01.014)
+  * [MT-aLS-SVM: Multi-task asymmetric least squares support vector machine](https://link.springer.com/article/10.1007%2Fs10489-017-1087-9)
+* [DMTSVM: Multi-task twin support vector machine](https://link.springer.com/chapter/10.1007%2F978-3-642-34481-7_42)
+  * [MTCTSVM: Multi-task centroid twin support vector machine](https://doi.org/10.1016/j.neucom.2014.07.025)
   * [MTLS-TWSVM: Multi-task least squares twin support vector machine](https://www.sciencedirect.com/science/article/pii/S0925231219302061)
+  * [MT-ν-TWSVM: Multi-task ν-twin support vector machines](https://link.springer.com/10.1007/s00521-019-04628-5)
 
 ## Multi-class learning
 
@@ -28,11 +29,11 @@ All data mining practice with Matlab
  * AGNES
  
 ## Sample Selection Method
- * Neighbors Property Pattern Selection (NPPS)
+ * [Neighbors Property Pattern Selection (NPPS)](https://www.mitpressjournals.org/doi/10.1162/neco.2007.19.3.816)
  * Neighbour Distribution Pattern (NDP)
  * Fixed Neighborhood Sphere Sample Selection (FNSSS)
- * Distance-based Sample Selection Method (DSSM)
- * Knn-based Sample Selection Method(KSSM)
+ * [Distance-based Sample Selection Method (DSSM)](https://doi.org/10.3233/IFS-151785)
+ * [Knn-based Sample Selection Method(KSSM)](https://doi.org/10.3233/IFS-151785)
  * Border-Edge Pattern Selection (BEPS)
  * Concept Boundary Detection (CBD)
  * Multi-Class Instance Selection (MCIS)
