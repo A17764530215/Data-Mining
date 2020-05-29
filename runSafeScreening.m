@@ -7,9 +7,9 @@ Kernels = {'Linear', 'Poly' 'RBF'};
 SParams = reshape(SParams, 20, 3);
 % DATA5R
 DataSetIndices = [ 20 ];
-ParamIndices = [ 5,6,19,20 ];
+ParamIndices = [ 5,6,13,14 ];
 OverWrite = false;
-
+cv = false;
 %% 实验开始trust-region-reflective 'TolCon', 300*eps, 
 solver = optimoptions('QUADPROG', 'Display', 'off',...
     'Algorithm', 'interior-point-convex',...

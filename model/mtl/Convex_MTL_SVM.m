@@ -5,7 +5,7 @@ function [ yTest, Time, Alpha ] =  Convex_MTL_SVM( xTrain, yTrain, xTest, opts )
 
 TaskNum = length(xTrain);
 [ X, Y, T, ~ ] = GetAllData(xTrain, yTrain, TaskNum);
-Sym = @(H) (H+H')/2 + 1e-5*speye(size(H));
+Sym = @(H) (H+H')/2 + 1e-7*speye(size(H));
 solver = opts.solver;
 opts.solver = [];
 opts = rmfield(opts, 'solver');
@@ -52,9 +52,9 @@ else
     [ Q, P ] = GetHessian(X, Y, T, TaskNum, opts);
     [ H ] = Sym(opts.mu*opts.mu*Q + (1-opts.mu)*(1-opts.mu)*P);
     [ Alpha ] = quadprog(H,f,[],[],Aeq,beq,lb,opts.C*ub,[],solver);
-    Time = toc;
-    % Ô¤²â
     [ b ] = GetBias(H, Y, T, Alpha, TaskNum, opts);
+    Time = toc;
+    % Ô¤²â    
     [ yTest ] =  Predict(xTest, X, Y, T, Alpha, b, TaskNum, opts);
 end
 
