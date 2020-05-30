@@ -10,8 +10,14 @@ function [ Q, P, R, S, EEF, FFE, EEFc, FFEc, e1, e2, m1, m2 ] = Prepare(X, Y, N,
     % ºËº¯Êý
     e1 = ones(m1, 1);
     e2 = ones(m2, 1);
-    E = [Kernel(A, X, kernel) e1];
-    F = [Kernel(B, X, kernel) e2];
+    % Kernel
+    if strcmp(kernel.type, 'linear')
+        E = [A e1];
+        F = [B e2];
+    else
+        E = [Kernel(A, X, kernel) e1];
+        F = [Kernel(B, X, kernel) e2];
+    end
     % µÃµ½Q,R¾ØÕó
     EEF = Cond(E'*E)\F';
     FFE = Cond(F'*F)\E';
@@ -34,4 +40,3 @@ function [ Q, P, R, S, EEF, FFE, EEFc, FFEc, e1, e2, m1, m2 ] = Prepare(X, Y, N,
     P = spblkdiag(P{:});
     S = spblkdiag(S{:});
 end
-

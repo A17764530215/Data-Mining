@@ -144,5 +144,4 @@ end
             y = H(:,svi)*(Y(svi,:).*Alpha(svi,:));
         end
     end
-
 end

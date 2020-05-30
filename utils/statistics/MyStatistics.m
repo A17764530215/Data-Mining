@@ -39,18 +39,20 @@ function [ d ] = MyStatistics(DataSets, IParams, Type, opts)
     for i = 1 : m
         VariableNames{i} = IParams{i}.ID;
     end
-    % convert to table
-    Rank = cell2table(num2cell(Rank'), 'VariableNames', VariableNames, 'RowNames', RowNames);
-    Time = cell2table(num2cell(Time'*1000), 'VariableNames', VariableNames, 'RowNames', RowNames);
-    Stats = struct('Rank', Rank, 'Time',  Time);
-    n = length(opts.Indices);
-    for i = 1 : n
-        Index = cell2table(num2cell(Data(:,:,i)'*100),'VariableNames', VariableNames, 'RowNames', RowNames);
-        Stats.(opts.Indices{i}) = Index;
-    end
-    % remaining
+    % configuration
     d.VariableNames = VariableNames;
     d.RowNames = RowNames; 
     d.Methods = IParams;
-    d.Stats = Stats;
+    % convert to table
+    if ~isempty(RowNames)
+        Rank = cell2table(num2cell(Rank'), 'VariableNames', VariableNames, 'RowNames', RowNames);
+        Time = cell2table(num2cell(Time'*1000), 'VariableNames', VariableNames, 'RowNames', RowNames);
+        Stats = struct('Rank', Rank, 'Time',  Time);
+        n = length(opts.Indices);
+        for i = 1 : n
+            Index = cell2table(num2cell(Data(:,:,i)'*100),'VariableNames', VariableNames, 'RowNames', RowNames);
+            Stats.(opts.Indices{i}) = Index;
+        end
+        d.Stats = Stats;
+    end
 end

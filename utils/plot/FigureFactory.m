@@ -17,7 +17,11 @@ end
 
     [ d ] = SetLabels(d, Type);
     [ Info ] = Transform(Data, d, 1);
-    BatchDraw(Info, IDX);
+    if length(IDX) > 1
+        BatchDraw(Info, IDX);
+    else
+        DrawResult(Info(IDX));
+    end
 
     function [ d ] = SetLabels(d, type)
         switch type
@@ -41,9 +45,9 @@ end
             s.XLabel = d.xLabels{i};
             s.YLabel = d.yLabels{k};
             s.XTicklabels = xTickLabels{i};
-            s.Legends = d.Legends(d.STL);
+            s.Legends = d.Legends(d.IDX);
             s.Arc = d.Arcs(i);
-            s.Stat = data(d.STL,:,k);
+            s.Stat = data(d.IDX,:,k);
             Summary = cat(1, Summary, s);
         end
     end
@@ -62,7 +66,11 @@ end
     %DRAWRESULT 此处显示有关此函数的摘要
     % 绘制实验结果
     %   此处显示详细说明
-        s.Draw(s.Stat');
+        if strcmp(s.Grid, 'on') == 1
+            s.Draw(s.Stat', 'LineWidth', 1);
+        else
+            s.Draw(s.Stat');
+        end
         title(s.Title)
         xlabel(s.XLabel);
         ylabel(s.YLabel);
@@ -72,4 +80,3 @@ end
     end
 
 end
-
