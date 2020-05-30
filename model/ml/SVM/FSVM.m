@@ -12,9 +12,9 @@ function [ yTest, Time ] = FSVM(xTrain, yTrain, xTest, opts)
     [ X, Y, T ] = GetAllData(xTrain, yTrain, TaskNum);
     [m, ~] = size(X);
     e = ones(m, 1);
-    Anew = SNTFit(X, Y, T, TaskNum);
-    [ xTest ] = SNT(xTest, A, T, TaskNum)
-    [ yTest ] = Predict(Alpha);
+    [ Anew ] = SNTFit(X, Y, T, TaskNum);
+    [ xTest ] = SNT(xTest, A, T, TaskNum);
+    [ yTest ] = Predict(Anew);
     % 停止计时
     Time = toc;
     
@@ -30,7 +30,7 @@ function [ yTest, Time ] = FSVM(xTrain, yTrain, xTest, opts)
         % 交替求解CSVM-Style Normalization Transformation (SNT)
         while (true)
             % 1. SNT 样式规范化转换
-            [ xTrain ] = SNT(xTrain, A, T, TaskNum);
+            [ xTrain ] = SNT(xTrain, Aold, T, TaskNum);
             % 2. CSVM Learning 在转换后的样本上训练
             [ W, Alpha ] = Fit(xTrain, yTrain, C);
             % 3. SNT 学习. 根据公式(5)更新变换矩阵A
@@ -57,10 +57,10 @@ function [ yTest, Time ] = FSVM(xTrain, yTrain, xTest, opts)
 
     function [ W, Alpha ] = Fit(xTrain, yTrain, C)
         K = Kernel(xTrain, xTrain, kernel);
-        H = Cond(diag(yTrain)*K*diag(yTrain));
+        H = Cond(yTrain.*K.*yTrain');
         Alpha = quadprog(H, -e, [], [], [], [], zeros(m, 1), C*e, [], []);
-        svi = Alpha > 0;
-        W = K(svi:svi)*diag(yTrain(svi))*Alpha(svi);
+        I = Alpha > 0;
+        W = K(I:I)*(yTrain(I).*Alpha(I));
     end
 
     function [ yTest ] = Predict(Alpha)
