@@ -1,4 +1,4 @@
-function [ GSStat, GSTime, GSRate ] = GridSearch(DataSet, IParams, cv, opts)
+function [ GSStat, GSTime, GSRate ] = GridSearch(DataSet, IParams, opts)
 %GRIDSEARCH 此处显示有关此函数的摘要
 % 网格搜索
 %   此处显示详细说明
@@ -27,7 +27,7 @@ function [ GSStat, GSTime, GSRate ] = GridSearch(DataSet, IParams, cv, opts)
     [ X ] = Normalize(X);
     IParams.solver = opts.solver;
     
-    if cv
+    if opts.cv
         % 有交叉验证
         fprintf('crossvalid\n');
         [ GSStat, GSTime, GSRate ] = CrossValid(X, Y, TaskNum, Kfold, ValInd, IParams, opts);
@@ -124,8 +124,7 @@ function [ GSStat, GSTime, GSRate ] = GridSearch(DataSet, IParams, cv, opts)
         GSTime = cat(3, mean(CVTime, 1), std(CVTime, 1));
         GSRate = cat(3, mean(CVRate, 1), std(CVRate, 1));
         GSStat = permute(GSStat, [2 3 4 1]);
-        GSRate = permute(GSRate, [2,3,1]);
         GSTime = permute(GSTime, [2,3,1]);
+        GSRate = permute(GSRate, [2,3,1]);
     end
-
 end

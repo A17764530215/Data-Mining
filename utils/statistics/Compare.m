@@ -32,7 +32,6 @@ function [ Summary ] = Compare(Path, File, DataSets, INDICES, MethodA, MethodB)
             end
         end
     end
-    fprintf('Compare finished\n');
     % convert to table
     VariableNames = {'Flag', 'S_0', 'S_c', 'T_0', 'T_c','K_0','K_1',...
         'Inactive', 'Screening', 'Speedup_1', 'Speedup_2', 'Speedup_3'};

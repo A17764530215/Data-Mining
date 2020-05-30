@@ -1,7 +1,6 @@
 function [ yTest, Time ] = MTLS_TWSVM(xTrain, yTrain, xTest, opts)
-%MTLS_TWSVM 此处显示有关此函数的摘要
+%MTLS_TWSVM
 % Multi-Task Least Square Twin Support Vector Machine
-%   此处显示详细说明
 
 TaskNum = length(xTrain);
 [ X, Y, ~, N ] = GetAllData(xTrain, yTrain, TaskNum);
@@ -16,7 +15,7 @@ else
 end
 
 function [ yTest, Time ] = GridPrimal(X, Y, N, TaskNum, xTest, opts)
-% 网格搜索加速
+% 网格搜索加�??
     count = GetParamsCount(opts);
     yTest = cell(count, 1);
     Time = zeros(count, 1);
@@ -48,7 +47,7 @@ function [ yTest, Time ] = GridPrimal(X, Y, N, TaskNum, xTest, opts)
         B = X(Y==-1,:);
         [m1, ~] = size(A);
         [m2, ~] = size(B);
-        % 核函数
+        % 核函�?
         e1 = ones(m1, 1);
         e2 = ones(m2, 1);        
         if strcmp(kernel.type, 'linear')
@@ -92,7 +91,7 @@ function [ yTest, Time ] = GridPrimal(X, Y, N, TaskNum, xTest, opts)
 end
 
 function [ yTest, Time ] = GridSMWPrimal(X, Y, N, TaskNum, xTest, opts)
-% 网格搜索加速
+% 网格搜索加�??
     count = GetParamsCount(opts);
     yTest = cell(count, 1);
     Time = zeros(count, 1);
@@ -124,7 +123,7 @@ function [ yTest, Time ] = GridSMWPrimal(X, Y, N, TaskNum, xTest, opts)
         B = X(Y==-1,:);
         [m1, ~] = size(A);
         [m2, ~] = size(B);
-        % 核函数
+        % 核函�?
         e1 = ones(m1, 1);
         e2 = ones(m2, 1);
         if strcmp(kernel.type, 'linear')
@@ -156,7 +155,7 @@ function [ yTest, Time ] = GridSMWPrimal(X, Y, N, TaskNum, xTest, opts)
     end
 
     function [ Alpha, Gamma ] = SMW_Primal(A, B, AA, BB, Ac, Bc, AAc, BBc, TaskNum, e1, e2, opts)
-    % 采用SMW加速矩阵求逆
+    % 采用SMW加�?�矩阵求�?
         [ invD1 ] = BlockInverion(Bc, AAc, BBc, TaskNum, opts.rho, opts.C);
         [ invD2 ] = BlockInverion(Ac, BBc, AAc, TaskNum, opts.rho, opts.C);
         [ Alpha ] = SMW_Solve(invD1, B, AA, B', e2);

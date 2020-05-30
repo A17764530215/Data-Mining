@@ -1,4 +1,4 @@
-function [ yTest, Time, Alpha ] =  Convex_MTL_SVM( xTrain, yTrain, xTest, opts )
+function [ yTest, Time ] =  Convex_MTL_SVM( xTrain, yTrain, xTest, opts )
 %Convex_MTL_SVM 此处显示有关此函数的摘要
 % A Convex Formulation of SVM-Based Multi-task Learning
 %   此处显示详细说明
