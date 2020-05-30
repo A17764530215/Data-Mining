@@ -4,7 +4,11 @@ function [ OStat, OTime ] = GSStatistics(TaskNum, IStat, ITime, opts)
 %   此处显示详细说明
 
     % 回归分类性能
-    OStat = zeros(opts.IndexCount, TaskNum, 2);
+    if opts.cv
+        OStat = zeros(opts.IndexCount*2, TaskNum, 2);
+    else
+        OStat = zeros(opts.IndexCount, TaskNum, 2);
+    end
     % 找平均准确率最高的一组
     MStat = mean(IStat, 3);
     [ ~, I ] = opts.Find(MStat(:,1));

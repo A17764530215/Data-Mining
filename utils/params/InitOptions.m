@@ -31,9 +31,9 @@ function [ opts ] = InitOptions( name, cv, mean, solver, hasfig, version)
     
     if nargin > 5
         if version == 1
-            % 第一版只统计了Accuracy和标准差
+            % 第一版只统计了Accuracy
+            opts.IndexCount = 1;
             opts.Indices = {'Accuracy', 'Std1'};
-            opts.IndexCount = 2;
         elseif version == 2
             % 第二版交换了Precision和Recall顺序
             opts.IndexCount = 4;

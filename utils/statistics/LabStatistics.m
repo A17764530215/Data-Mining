@@ -12,7 +12,11 @@ function [ LabStat, LabTime, HasStat ] = LabStatistics(Path, DataSet, IParams, o
         TaskNum = DataSet.TaskNum;
     end
     % 统计数据
-    LabStat = zeros(nParams, TaskNum, opts.IndexCount);
+    if opts.cv
+        LabStat = zeros(nParams, TaskNum, opts.IndexCount*2);
+    else
+        LabStat = zeros(nParams, TaskNum, opts.IndexCount);
+    end
     LabTime = zeros(nParams, 2);
     for k = 1 : nParams
         Method = IParams{k};
